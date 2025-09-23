@@ -22,4 +22,11 @@
         android:name="com.iie.st10320489.stylu.ui.profile.ProfileFragment"
         android:label="@string/title_profile"
         tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/navigation_item"
+        android:name="com.iie.st10320489.stylu.ui.item.ItemFragment"
+        android:label="My Items"
+        tools:layout="@layout/fragment_item" />
+
 </navigation>

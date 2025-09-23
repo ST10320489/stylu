@@ -9,8 +9,7 @@
     <item
         android:id="@+id/navigation_wardrobe"
         android:icon="@drawable/ic_tshirt"
-        android:title="Wardrobe"
-        android:visible="false" />
+        android:title="Wardrobe" />
 
     <item
         android:id="@+id/navigation_profile"
