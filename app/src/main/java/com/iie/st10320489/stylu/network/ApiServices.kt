@@ -28,7 +28,9 @@ data class UserData(
 
 class ApiService {
     private val baseUrl = "http://localhost:5038"
-    private val authRepository = AuthRepository()
+    private val authRepository = AuthRepository(
+        context = TODO()
+    )
 
     suspend fun testConnection(): Result<String> = withContext(Dispatchers.IO) {
         return@withContext try {

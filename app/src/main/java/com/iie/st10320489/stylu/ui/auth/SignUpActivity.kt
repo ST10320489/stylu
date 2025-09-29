@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.iie.st10320489.stylu.MainActivity
 import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.databinding.ActivitySignupBinding
 import kotlinx.coroutines.launch
@@ -51,9 +52,9 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
 
-        // Google sign up (placeholder)
+        // Google sign up (OAuth)
         binding.btnGoogleSignUp.setOnClickListener {
-            Toast.makeText(this, "Google sign up coming soon!", Toast.LENGTH_SHORT).show()
+            authViewModel.signInWithGoogle(this)
         }
 
         // Navigate to login
@@ -161,23 +162,39 @@ class SignUpActivity : AppCompatActivity() {
                     is AuthState.Loading -> {
                         binding.btnSignUp.isEnabled = false
                         binding.btnSignUp.text = "Creating Account..."
+                        binding.btnGoogleSignUp.isEnabled = false
+                    }
+                    is AuthState.OAuthInProgress -> {
+                        binding.btnSignUp.isEnabled = false
+                        binding.btnGoogleSignUp.isEnabled = false
+                        Toast.makeText(this@SignUpActivity, "Opening Google Sign-In...", Toast.LENGTH_SHORT).show()
                     }
                     is AuthState.Success -> {
-                        binding.btnSignUp.isEnabled = true
-                        binding.btnSignUp.text = "Register"
-                        Toast.makeText(this@SignUpActivity, state.message, Toast.LENGTH_LONG).show()
-                        // Navigate to login after successful signup
-                        startActivity(Intent(this@SignUpActivity, LoginActivity::class.java))
-                        finish()
+                        if (state.message.contains("Google") || state.message.contains("Already logged in")) {
+                            // For Google sign-in or existing session, go directly to MainActivity
+                            Toast.makeText(this@SignUpActivity, state.message, Toast.LENGTH_SHORT).show()
+                            startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
+                            finish()
+                        } else {
+                            // For regular signup, show message and navigate to login
+                            binding.btnSignUp.isEnabled = true
+                            binding.btnSignUp.text = "Register"
+                            binding.btnGoogleSignUp.isEnabled = true
+                            Toast.makeText(this@SignUpActivity, state.message, Toast.LENGTH_LONG).show()
+                            startActivity(Intent(this@SignUpActivity, LoginActivity::class.java))
+                            finish()
+                        }
                     }
                     is AuthState.Error -> {
                         binding.btnSignUp.isEnabled = true
                         binding.btnSignUp.text = "Register"
+                        binding.btnGoogleSignUp.isEnabled = true
                         Toast.makeText(this@SignUpActivity, state.message, Toast.LENGTH_LONG).show()
                     }
                     is AuthState.Idle -> {
                         binding.btnSignUp.isEnabled = true
                         binding.btnSignUp.text = "Register"
+                        binding.btnGoogleSignUp.isEnabled = true
                     }
                 }
             }

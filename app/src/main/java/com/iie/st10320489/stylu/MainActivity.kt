@@ -1,10 +1,15 @@
 package com.iie.st10320489.stylu
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -13,6 +18,9 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.iie.st10320489.stylu.databinding.ActivityMainBinding
+import com.iie.st10320489.stylu.network.DirectSupabaseAuth
+import com.iie.st10320489.stylu.ui.auth.LoginActivity
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +36,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check if user is authenticated
+        if (!DirectSupabaseAuth.isLoggedIn()) {
+            redirectToLogin()
+            return
+        }
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -49,6 +64,8 @@ class MainActivity : AppCompatActivity() {
         binding.fab.setImageResource(R.drawable.ic_tshirt)
         binding.fab.setOnClickListener { switchToWardrobeMenu() }
 
+        // Display user info
+        displayUserInfo()
 
         // Listen for navigation changes
         navController.addOnDestinationChangedListener { _, destination, _ ->
@@ -77,6 +94,20 @@ class MainActivity : AppCompatActivity() {
         switchToDefaultMenu()
     }
 
+    private fun displayUserInfo() {
+        val user = DirectSupabaseAuth.getCurrentUser()
+        user?.let {
+            Toast.makeText(this, "Welcome ${it.email}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun redirectToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
     // Handle custom back button
     override fun onSupportNavigateUp(): Boolean {
         return if (navController.currentDestination?.id !in topLevelDestinations) {
@@ -91,7 +122,6 @@ class MainActivity : AppCompatActivity() {
             false
         }
     }
-
 
     /** Switch FAB and bottom nav to default (home/profile) */
     private fun switchToDefaultMenu() {
@@ -156,5 +186,31 @@ class MainActivity : AppCompatActivity() {
             }
         }
         popupMenu.show()
+    }
+
+//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+//        menuInflater.inflate(R.menu.main, menu)
+//        return true
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        return when (item.itemId) {
+//            R.id.action_logout -> {
+//                logout()
+//                true
+//            }
+//            else -> super.onOptionsItemSelected(item)
+//        }
+//    }
+
+    private fun logout() {
+        lifecycleScope.launch {
+            try {
+                DirectSupabaseAuth.signOut()
+                redirectToLogin()
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Logout failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

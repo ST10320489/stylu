@@ -1,7 +1,8 @@
-// AuthViewModel.kt
 package com.iie.st10320489.stylu.ui.auth
 
-import androidx.lifecycle.ViewModel
+import android.app.Activity
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.iie.st10320489.stylu.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,12 +12,13 @@ import kotlinx.coroutines.launch
 sealed class AuthState {
     object Idle : AuthState()
     object Loading : AuthState()
+    object OAuthInProgress : AuthState()
     data class Success(val message: String) : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
-class AuthViewModel : ViewModel() {
-    private val authRepository = AuthRepository()
+class AuthViewModel(application: Application) : AndroidViewModel(application) {
+    private val authRepository = AuthRepository(application.applicationContext)
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState
@@ -63,6 +65,40 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error(errorMessage)
                 }
         }
+    }
+
+    fun signInWithGoogle(activity: Activity) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            authRepository.signInWithGoogle(activity)
+                .onSuccess { accessToken ->
+                    _authState.value = AuthState.Success("Google sign-in successful")
+                }
+                .onFailure { exception ->
+                    if (exception.message?.contains("OAuth flow initiated") == true) {
+                        _authState.value = AuthState.OAuthInProgress
+                    } else {
+                        val errorMessage = when {
+                            exception.message?.contains("cancelled") == true ->
+                                "Google sign-in was cancelled"
+                            exception.message?.contains("network") == true ->
+                                "Network error. Please check your connection"
+                            else -> exception.message ?: "Google sign-in failed"
+                        }
+                        _authState.value = AuthState.Error(errorMessage)
+                    }
+                }
+        }
+    }
+
+    fun checkAuthState() {
+        if (authRepository.isLoggedIn()) {
+            _authState.value = AuthState.Success("Already logged in")
+        }
+    }
+
+    fun setOAuthError(errorMessage: String) {
+        _authState.value = AuthState.Error(errorMessage)
     }
 
     fun resetState() {

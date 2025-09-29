@@ -26,6 +26,10 @@ class LoginActivity : AppCompatActivity() {
 
         setupUI()
         observeAuthState()
+        checkForOAuthError()
+
+        // Check if user is already logged in
+        authViewModel.checkAuthState()
     }
 
     private fun setupUI() {
@@ -44,6 +48,11 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
+        // Google Sign-In button (OAuth)
+        binding.btnGoogleSignIn?.setOnClickListener {
+            authViewModel.signInWithGoogle(this)
+        }
+
         // Navigate to register
         binding.txtLink.setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
@@ -52,6 +61,12 @@ class LoginActivity : AppCompatActivity() {
         // Biometric login (placeholder)
         binding.btnBiometric.setOnClickListener {
             Toast.makeText(this, "Biometric login coming soon!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun checkForOAuthError() {
+        intent.getStringExtra("oauth_error")?.let { error ->
+            authViewModel.setOAuthError(error)
         }
     }
 
@@ -97,20 +112,28 @@ class LoginActivity : AppCompatActivity() {
                     is AuthState.Loading -> {
                         binding.btnLogin.isEnabled = false
                         binding.btnLogin.text = "Signing in..."
+                        binding.btnGoogleSignIn?.isEnabled = false
+                    }
+                    is AuthState.OAuthInProgress -> {
+                        binding.btnLogin.isEnabled = false
+                        binding.btnGoogleSignIn?.isEnabled = false
+                        Toast.makeText(this@LoginActivity, "Opening Google Sign-In...", Toast.LENGTH_SHORT).show()
                     }
                     is AuthState.Success -> {
-                        Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@LoginActivity, state.message, Toast.LENGTH_SHORT).show()
                         startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                         finish()
                     }
                     is AuthState.Error -> {
                         binding.btnLogin.isEnabled = true
                         binding.btnLogin.text = "Login"
+                        binding.btnGoogleSignIn?.isEnabled = true
                         Toast.makeText(this@LoginActivity, state.message, Toast.LENGTH_LONG).show()
                     }
                     is AuthState.Idle -> {
                         binding.btnLogin.isEnabled = true
                         binding.btnLogin.text = "Login"
+                        binding.btnGoogleSignIn?.isEnabled = true
                     }
                 }
             }

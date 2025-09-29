@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    kotlin("plugin.serialization") version "1.9.10"  // Add this line
 }
 
 android {
@@ -51,16 +50,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Supabase
-    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.0.4")
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.0.4")
+    // Custom Tabs for OAuth flow (only dependency needed for OAuth)
+    implementation("androidx.browser:browser:1.6.0")
 
-    // Ktor
-    implementation("io.ktor:ktor-client-android:2.3.4")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.4")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
-
-    // Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    // Coroutines for async operations
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }

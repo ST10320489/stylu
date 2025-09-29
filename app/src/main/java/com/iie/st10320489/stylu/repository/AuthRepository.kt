@@ -1,33 +1,40 @@
 package com.iie.st10320489.stylu.repository
 
-import com.iie.st10320489.stylu.network.DirectSupabaseAuth
+import android.app.Activity
+import android.content.Context
+import android.net.Uri
+import com.iie.st10320489.stylu.auth.SimpleOAuthManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class AuthRepository {
-    private val supabaseAuth = DirectSupabaseAuth
+class AuthRepository(private val context: Context) {
+    private val oAuthManager = SimpleOAuthManager(context)
 
     suspend fun signUp(email: String, password: String, firstName: String, lastName: String): Result<String> = withContext(Dispatchers.IO) {
-        return@withContext supabaseAuth.signUp(email, password, firstName, lastName)
+        return@withContext oAuthManager.signUpWithEmail(email, password, firstName, lastName)
     }
 
     suspend fun signIn(email: String, password: String): Result<String> = withContext(Dispatchers.IO) {
-        return@withContext supabaseAuth.signIn(email, password)
+        return@withContext oAuthManager.signInWithEmail(email, password)
+    }
+
+    suspend fun signInWithGoogle(activity: Activity): Result<String> = withContext(Dispatchers.IO) {
+        return@withContext oAuthManager.signInWithGoogle(activity)
+    }
+
+    suspend fun handleOAuthCallback(uri: Uri): Result<String> = withContext(Dispatchers.IO) {
+        return@withContext oAuthManager.handleOAuthCallback(uri)
     }
 
     suspend fun signOut(): Result<Unit> = withContext(Dispatchers.IO) {
-        return@withContext supabaseAuth.signOut()
+        return@withContext oAuthManager.signOut()
     }
 
-    fun getCurrentAccessToken(): String? {
-        return supabaseAuth.getCurrentAccessToken()
-    }
+    fun getCurrentAccessToken() = oAuthManager.getCurrentAccessToken()
 
-    fun isLoggedIn(): Boolean {
-        return supabaseAuth.isLoggedIn()
-    }
+    fun isLoggedIn() = oAuthManager.isLoggedIn()
 
-    fun getCurrentUserEmail(): String? {
-        return supabaseAuth.getCurrentUserEmail()
-    }
+    fun getCurrentUserEmail() = oAuthManager.getCurrentUser()?.email
+
+    fun getCurrentUser() = oAuthManager.getCurrentUser()
 }

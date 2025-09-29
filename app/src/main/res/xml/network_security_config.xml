@@ -2,6 +2,8 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">supabase.co</domain>
-        <domain includeSubdomains="true">fkmhmtioehokrukqwano.supabase.co</domain>
+        <domain includeSubdomains="true">googleapis.com</domain>
+        <domain includeSubdomains="true">googleusercontent.com</domain>
+        <domain includeSubdomains="true">accounts.google.com</domain>
     </domain-config>
 </network-security-config>
