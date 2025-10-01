@@ -21,6 +21,8 @@ import com.iie.st10320489.stylu.databinding.ActivityMainBinding
 import com.iie.st10320489.stylu.network.DirectSupabaseAuth
 import com.iie.st10320489.stylu.ui.auth.LoginActivity
 import kotlinx.coroutines.launch
+import android.widget.Button
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -153,7 +155,7 @@ class MainActivity : AppCompatActivity() {
         navView.inflateMenu(R.menu.bottom_nav_menu_wardrobe)
 
         fab.setImageResource(R.drawable.ic_add)
-        fab.setOnClickListener { showFabDropdown() }
+        fab.setOnClickListener { showFabPopup() }
 
         navView.setOnItemSelectedListener { menuItem ->
             val options = androidx.navigation.navOptions {
@@ -175,33 +177,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showFabDropdown() {
-        val popupMenu = PopupMenu(this, binding.fab)
-        popupMenu.menuInflater.inflate(R.menu.fab_menu, popupMenu.menu)
-        popupMenu.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.action_add_item -> { /* TODO: open Add Item */ true }
-                R.id.action_add_outfit -> { /* TODO: open Add Outfit */ true }
-                else -> false
-            }
+    // Update your FAB popup method
+    private fun showFabPopup() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_fab_menu, null)
+        val dialog = android.app.AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        // Make background transparent
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // Handle button clicks
+        dialogView.findViewById<Button>(R.id.btn_create_outfit).setOnClickListener {
+            // TODO: Navigate to Create Outfit
+            Toast.makeText(this, "Create Outfit clicked", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
         }
-        popupMenu.show()
+
+        dialogView.findViewById<Button>(R.id.btn_add_item).setOnClickListener {
+            // Navigate to Add Item Fragment using Navigation Component
+            navController.navigate(R.id.navigation_add_item)
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_cancel).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        menuInflater.inflate(R.menu.main, menu)
-//        return true
-//    }
-//
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        return when (item.itemId) {
-//            R.id.action_logout -> {
-//                logout()
-//                true
-//            }
-//            else -> super.onOptionsItemSelected(item)
-//        }
-//    }
 
     private fun logout() {
         lifecycleScope.launch {

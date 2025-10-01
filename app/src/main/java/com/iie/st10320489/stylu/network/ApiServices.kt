@@ -10,13 +10,13 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-data class UserProfile(
+/*data class UserProfile(
     val success: Boolean,
     val userId: String?,
     val email: String?,
     val role: String?,
     val userMetadata: String?
-)
+)*/
 
 data class UserData(
     val success: Boolean,
@@ -55,7 +55,7 @@ class ApiService {
         }
     }
 
-    suspend fun getUserProfile(): Result<UserProfile> = withContext(Dispatchers.IO) {
+    /*suspend fun getUserProfile(): Result<UserProfile> = withContext(Dispatchers.IO) {
         return@withContext try {
             val token = authRepository.getCurrentAccessToken()
                 ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
@@ -111,7 +111,7 @@ class ApiService {
             Result.failure(Exception("Network error: ${e.message}"))
         }
     }
-
+*/
     suspend fun getUserData(): Result<UserData> = withContext(Dispatchers.IO) {
         return@withContext try {
             val token = authRepository.getCurrentAccessToken()

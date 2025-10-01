@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Image Preview -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <ImageView
+                android:id="@+id/ivItemImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/gradient_cloud"
+                android:contentDescription="Item image" />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Select Image Button -->
+        <Button
+            android:id="@+id/btnSelectImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Image"
+            android:textColor="@android:color/white"
+            android:background="@drawable/btn_primary_bg"
+            android:paddingVertical="12dp"
+            android:fontFamily="@font/poppinsmedium"
+            android:textAllCaps="false"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Remove Background Button -->
+        <Button
+            android:id="@+id/btnRemoveBackground"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Remove Background"
+            android:textColor="@color/purple_text"
+            android:background="@drawable/btn_secondary_bg"
+            android:paddingVertical="12dp"
+            android:fontFamily="@font/poppinsmedium"
+            android:textAllCaps="false"
+            android:enabled="false"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Item Name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Item Name"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etItemName"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:hint="e.g. Blue Denim Jacket"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsregular"
+            android:letterSpacing="0.05"
+            android:paddingLeft="10dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Category -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Category"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spCategory"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:paddingLeft="10dp"
+            android:spinnerMode="dropdown"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Subcategory -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Subcategory"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spSubcategory"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:paddingLeft="10dp"
+            android:spinnerMode="dropdown"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Color -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Color"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etColor"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:hint="e.g. Blue"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsregular"
+            android:letterSpacing="0.05"
+            android:paddingLeft="10dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Size -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Size"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etSize"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:hint="e.g. M, L, XL"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsregular"
+            android:letterSpacing="0.05"
+            android:paddingLeft="10dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Price -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Price (Optional)"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etPrice"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:hint="e.g. 299.99"
+            android:inputType="numberDecimal"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsregular"
+            android:letterSpacing="0.05"
+            android:paddingLeft="10dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Weather Tag -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Weather Suitability"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spWeatherTag"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:paddingLeft="10dp"
+            android:spinnerMode="dropdown"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btnSaveItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Item"
+            android:textColor="@android:color/white"
+            android:background="@drawable/btn_primary_bg"
+            android:paddingVertical="12dp"
+            android:fontFamily="@font/tanmeringue"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Cancel Button -->
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:textColor="@color/purple_text"
+            android:background="@drawable/btn_secondary_bg"
+            android:paddingVertical="12dp"
+            android:fontFamily="@font/tanmeringue"
+            android:textAllCaps="false"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+</ScrollView>
