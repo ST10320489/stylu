@@ -115,6 +115,8 @@ object DirectSupabaseAuth {
                 currentAccessToken = responseJson.optString("access_token")
                 currentRefreshToken = responseJson.optString("refresh_token")
 
+                android.util.Log.d("DirectSupabaseAuth", "User $email logged in. Access Token: $currentAccessToken")
+
                 val userJson = responseJson.optJSONObject("user")
                 if (userJson != null) {
                     val userMetadataJson = userJson.optJSONObject("user_metadata")
@@ -147,32 +149,20 @@ object DirectSupabaseAuth {
         }
     }
 
-    suspend fun getOAuthUrl(provider: String, redirectUrl: String): Result<String> = withContext(Dispatchers.IO) {
-        try {
-            // Properly encode the redirect URL
-            val encodedRedirect = java.net.URLEncoder.encode(redirectUrl, "UTF-8")
-            val url = "$SUPABASE_URL/auth/v1/authorize?provider=$provider&redirect_to=$encodedRedirect"
-            Result.success(url)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
     fun setSession(accessToken: String, refreshToken: String?) {
         currentAccessToken = accessToken
         currentRefreshToken = refreshToken
 
-        // Optionally parse the JWT to extract user info
+        android.util.Log.d("DirectSupabaseAuth", "Session manually set. Access Token: $currentAccessToken")
+
         try {
             val parts = accessToken.split(".")
             if (parts.size == 3) {
                 val payload = String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING))
                 val json = JSONObject(payload)
-
                 val email = json.optString("email")
                 val userId = json.optString("sub")
                 val userMetadataJson = json.optJSONObject("user_metadata")
-
                 val userMetadata = if (userMetadataJson != null) {
                     UserMetadata(
                         firstName = userMetadataJson.optString("first_name"),
@@ -194,6 +184,17 @@ object DirectSupabaseAuth {
             }
         } catch (e: Exception) {
             android.util.Log.e("DirectSupabaseAuth", "Failed to parse JWT", e)
+        }
+    }
+
+    suspend fun getOAuthUrl(provider: String, redirectUrl: String): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            // Properly encode the redirect URL
+            val encodedRedirect = java.net.URLEncoder.encode(redirectUrl, "UTF-8")
+            val url = "$SUPABASE_URL/auth/v1/authorize?provider=$provider&redirect_to=$encodedRedirect"
+            Result.success(url)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
