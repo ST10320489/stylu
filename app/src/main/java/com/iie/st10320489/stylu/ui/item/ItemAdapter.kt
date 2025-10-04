@@ -8,34 +8,49 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.ui.item.models.WardrobeItem
 
-class ItemAdapter :
-    ListAdapter<WardrobeItem, ItemAdapter.ItemViewHolder>(ItemDiffCallback()) {
+class ItemAdapter(
+    private val onItemClick: ((WardrobeItem) -> Unit)? = null
+) : ListAdapter<WardrobeItem, ItemAdapter.ItemViewHolder>(ItemDiffCallback()) {
 
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val nameText: TextView = itemView.findViewById(R.id.tvItemName)
         private val imageView: ImageView = itemView.findViewById(R.id.ivItemImage)
 
-        fun bind(item: WardrobeItem) {
-            nameText.text = item.name
-
-            // Placeholder drawable for now
-            imageView.setImageResource(
-                when (item.image) {
-                    "white-shirt" -> R.drawable.white_shirt
-                    "hoody" -> R.drawable.sweater
-                    "sneakers" -> R.drawable.shoes
-                    else -> R.drawable.sunny
+        init {
+            itemView.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onItemClick?.invoke(getItem(position))
                 }
-            )
-
-            // Later, for images from URL:
-            // Glide.with(itemView).load(item.image).into(imageView)
+            }
         }
-    }
 
+        fun bind(item: WardrobeItem) {
+            // Display the item name first
+            nameText.text = if (!item.name.isNullOrEmpty()) {
+                item.name
+            } else if (!item.colour.isNullOrEmpty()) {
+                "${item.colour} ${item.subcategory}"
+            } else {
+                item.subcategory
+            }
+
+            // Load image from Supabase using Glide
+            Glide.with(itemView.context)
+                .load(item.imageUrl)
+                .placeholder(R.drawable.cloudy) // placeholder
+                .error(R.drawable.sunny) // error image
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .centerCrop()
+                .into(imageView)
+        }
+
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -51,12 +66,8 @@ class ItemAdapter :
 
 class ItemDiffCallback : DiffUtil.ItemCallback<WardrobeItem>() {
     override fun areItemsTheSame(oldItem: WardrobeItem, newItem: WardrobeItem) =
-        oldItem.name == newItem.name && oldItem.category == newItem.category
+        oldItem.itemId == newItem.itemId
 
     override fun areContentsTheSame(oldItem: WardrobeItem, newItem: WardrobeItem) =
         oldItem == newItem
 }
-
-
-
-
