@@ -10,8 +10,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.iie.st10320489.stylu.R
-import com.iie.st10320489.stylu.network.DirectSupabaseAuth
-import com.iie.st10320489.stylu.network.SupabaseProfileService
+import com.iie.st10320489.stylu.network.ApiService
+import com.iie.st10320489.stylu.network.UpdateProfileRequest
 import kotlinx.coroutines.launch
 
 class ProfileSettingsFragment : Fragment() {
@@ -24,12 +24,17 @@ class ProfileSettingsFragment : Fragment() {
     private lateinit var btnSave: Button
     private lateinit var btnCancel: Button
 
+    private lateinit var apiService: ApiService
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_profile_settings, container, false)
+
+        // Initialize API Service
+        apiService = ApiService(requireContext())
 
         initializeViews(view)
         setupClickListeners()
@@ -63,33 +68,21 @@ class ProfileSettingsFragment : Fragment() {
             try {
                 showLoading(true)
 
-                // Check if user is logged in
-                if (!DirectSupabaseAuth.isLoggedIn()) {
-                    Toast.makeText(requireContext(), "Please log in first", Toast.LENGTH_SHORT).show()
-                    requireActivity().onBackPressed()
-                    return@launch
-                }
-
-                val accessToken = DirectSupabaseAuth.getCurrentAccessToken()
-                if (accessToken == null) {
-                    Toast.makeText(requireContext(), "Session expired. Please log in again", Toast.LENGTH_SHORT).show()
-                    requireActivity().onBackPressed()
-                    return@launch
-                }
-
-                // Fetch profile from Supabase
-                val result = SupabaseProfileService.getCurrentProfile(accessToken)
+                // Fetch profile from API
+                val result = apiService.getCurrentProfile()
 
                 result.onSuccess { profile ->
                     // Populate fields with profile data
                     etFirstName.setText(profile.firstName ?: "")
                     etLastName.setText(profile.lastName ?: "")
-                    etEmail.setText(profile.email)
+                    etEmail.setText(profile.email ?: "")
                     etPhone.setText(profile.phoneNumber ?: "")
                     etPassword.setText("") // Never show password
 
                     // Make email read-only (users shouldn't change their email easily)
                     etEmail.isEnabled = false
+
+                    Toast.makeText(requireContext(), "Profile loaded successfully", Toast.LENGTH_SHORT).show()
                 }.onFailure { exception ->
                     val message = exception.message ?: "Failed to load profile"
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
@@ -109,12 +102,6 @@ class ProfileSettingsFragment : Fragment() {
             try {
                 showLoading(true)
 
-                val accessToken = DirectSupabaseAuth.getCurrentAccessToken()
-                if (accessToken == null) {
-                    Toast.makeText(requireContext(), "Session expired. Please log in again", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-
                 // Get values from fields
                 val firstName = etFirstName.text.toString().trim()
                 val lastName = etLastName.text.toString().trim()
@@ -128,30 +115,33 @@ class ProfileSettingsFragment : Fragment() {
                     return@launch
                 }
 
+                // Validate email
+                if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    Toast.makeText(requireContext(), "Please enter a valid email", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
                 // Validate password if provided
                 if (password.isNotEmpty() && password.length < 6) {
                     Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
 
-                // Update profile
-                val result = SupabaseProfileService.updateProfile(
-                    accessToken = accessToken,
+                // Create update request
+                val updateRequest = UpdateProfileRequest(
                     firstName = firstName,
                     lastName = lastName,
                     phoneNumber = if (phone.isEmpty()) null else phone,
-                    email = email
+                    email = email,
+                    password = if (password.isEmpty()) null else password
                 )
+
+                // Update profile through API
+                val result = apiService.updateProfile(updateRequest)
 
                 result.onSuccess { message ->
                     Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-
-                    // If password was provided, update it
-                    if (password.isNotEmpty()) {
-                        updatePasswordAsync(accessToken, password)
-                    } else {
-                        requireActivity().onBackPressed()
-                    }
+                    requireActivity().onBackPressed()
                 }.onFailure { exception ->
                     val message = exception.message ?: "Failed to update profile"
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
@@ -166,36 +156,13 @@ class ProfileSettingsFragment : Fragment() {
         }
     }
 
-    private fun updatePasswordAsync(accessToken: String, newPassword: String) {
-        lifecycleScope.launch {
-            try {
-                val passwordResult = SupabaseProfileService.updatePassword(accessToken, newPassword)
-
-                passwordResult.onSuccess { message ->
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-                    requireActivity().onBackPressed()
-                }.onFailure { exception ->
-                    Toast.makeText(
-                        requireContext(),
-                        "Profile updated but password change failed: ${exception.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    requireActivity().onBackPressed()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(
-                    requireContext(),
-                    "Profile updated but password change failed: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-                requireActivity().onBackPressed()
-            }
-        }
-    }
-
     private fun showLoading(isLoading: Boolean) {
         btnSave.isEnabled = !isLoading
         btnCancel.isEnabled = !isLoading
+        etFirstName.isEnabled = !isLoading
+        etLastName.isEnabled = !isLoading
+        etPhone.isEnabled = !isLoading
+        etPassword.isEnabled = !isLoading
 
         if (isLoading) {
             btnSave.text = "Saving..."

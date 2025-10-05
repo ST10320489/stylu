@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.iie.st10320489.stylu.R
-import com.iie.st10320489.stylu.network.DirectSupabaseAuth
-import com.iie.st10320489.stylu.network.SupabaseProfileService
+import com.iie.st10320489.stylu.network.ApiService
+import com.iie.st10320489.stylu.network.SystemSettings
 import kotlinx.coroutines.launch
 
 class SystemSettingsFragment : Fragment() {
@@ -23,6 +23,8 @@ class SystemSettingsFragment : Fragment() {
     private lateinit var cbNotifyOutfitReminders: CheckBox
     private lateinit var btnSave: Button
     private lateinit var btnCancel: Button
+
+    private lateinit var apiService: ApiService
 
     // Dropdown options
     private val languages = arrayOf("English", "Afrikaans", "Zulu", "Xhosa", "French", "Spanish")
@@ -38,7 +40,12 @@ class SystemSettingsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_system_settings, container, false)
+        val view = inflater.inflate(R.layout.fragment_system_settings, container, false)
+
+        // Initialize API Service
+        apiService = ApiService(requireContext())
+
+        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -108,23 +115,14 @@ class SystemSettingsFragment : Fragment() {
     private fun loadCurrentSystemSettings() {
         lifecycleScope.launch {
             try {
-                // Check if user is logged in
-                if (!DirectSupabaseAuth.isLoggedIn()) {
-                    Toast.makeText(context, "Please log in first", Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
-                    return@launch
-                }
+                showLoading(true)
 
-                val accessToken = DirectSupabaseAuth.getCurrentAccessToken()
-                if (accessToken == null) {
-                    Toast.makeText(context, "Session expired", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
+                // Fetch system settings from API
+                val result = apiService.getCurrentSystemSettings()
 
-                // Fetch profile which contains system settings
-                val result = SupabaseProfileService.getCurrentProfile(accessToken)
-                result.onSuccess { profile ->
-                    populateSettingsFields(profile)
+                result.onSuccess { settings ->
+                    populateSettingsFields(settings)
+                    Toast.makeText(context, "Settings loaded successfully", Toast.LENGTH_SHORT).show()
                 }.onFailure { error ->
                     Toast.makeText(context, "Failed to load settings: ${error.message}", Toast.LENGTH_SHORT).show()
                     // Keep defaults if loading fails
@@ -132,60 +130,46 @@ class SystemSettingsFragment : Fragment() {
 
             } catch (e: Exception) {
                 Toast.makeText(context, "Error loading settings: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                showLoading(false)
             }
         }
     }
 
-    private fun populateSettingsFields(profile: com.iie.st10320489.stylu.network.SupabaseUserProfile) {
+    private fun populateSettingsFields(settings: SystemSettings) {
         // Set language selection
-        profile.language?.let { lang ->
-            val languageIndex = languageCodes.indexOf(lang)
-            if (languageIndex >= 0) {
-                spLanguage.setSelection(languageIndex)
-            }
+        val languageIndex = languageCodes.indexOf(settings.language)
+        if (languageIndex >= 0) {
+            spLanguage.setSelection(languageIndex)
         }
 
         // Set temperature unit selection
-        profile.temperatureUnit?.let { unit ->
-            val tempIndex = temperatureCodes.indexOf(unit)
-            if (tempIndex >= 0) {
-                spTemperatureUnit.setSelection(tempIndex)
-            }
+        val tempIndex = temperatureCodes.indexOf(settings.temperatureUnit)
+        if (tempIndex >= 0) {
+            spTemperatureUnit.setSelection(tempIndex)
         }
 
         // Set reminder time selection
-        profile.defaultReminderTime?.let { time ->
-            val timeIndex = reminderTimes.indexOf(time)
-            if (timeIndex >= 0) {
-                spReminderTime.setSelection(timeIndex)
-            }
+        val timeIndex = reminderTimes.indexOf(settings.defaultReminderTime)
+        if (timeIndex >= 0) {
+            spReminderTime.setSelection(timeIndex)
         }
 
         // Set weather sensitivity selection
-        profile.weatherSensitivity?.let { sensitivity ->
-            val sensitivityIndex = sensitivityCodes.indexOf(sensitivity)
-            if (sensitivityIndex >= 0) {
-                spWeatherSensitivity.setSelection(sensitivityIndex)
-            }
+        val sensitivityIndex = sensitivityCodes.indexOf(settings.weatherSensitivity)
+        if (sensitivityIndex >= 0) {
+            spWeatherSensitivity.setSelection(sensitivityIndex)
         }
 
         // Set notification checkboxes
-        profile.notifyWeather?.let { cbNotifyWeather.isChecked = it }
-        profile.notifyOutfitReminders?.let { cbNotifyOutfitReminders.isChecked = it }
+        cbNotifyWeather.isChecked = settings.notifyWeather
+        cbNotifyOutfitReminders.isChecked = settings.notifyOutfitReminders
     }
 
     private fun saveSystemSettings() {
         lifecycleScope.launch {
             try {
-                val accessToken = DirectSupabaseAuth.getCurrentAccessToken()
-                if (accessToken == null) {
-                    Toast.makeText(context, "Please log in first", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-
-                // Show loading state
-                btnSave.isEnabled = false
-                btnSave.text = "Saving..."
+                showLoading(true)
 
                 // Get selected values
                 val selectedLanguageIndex = spLanguage.selectedItemPosition
@@ -193,9 +177,8 @@ class SystemSettingsFragment : Fragment() {
                 val selectedTimeIndex = spReminderTime.selectedItemPosition
                 val selectedSensitivityIndex = spWeatherSensitivity.selectedItemPosition
 
-                // Update settings in Supabase
-                val result = SupabaseProfileService.updateSystemSettings(
-                    accessToken = accessToken,
+                // Create settings object
+                val settings = SystemSettings(
                     language = languageCodes[selectedLanguageIndex],
                     temperatureUnit = temperatureCodes[selectedTempIndex],
                     defaultReminderTime = reminderTimes[selectedTimeIndex],
@@ -203,6 +186,9 @@ class SystemSettingsFragment : Fragment() {
                     notifyWeather = cbNotifyWeather.isChecked,
                     notifyOutfitReminders = cbNotifyOutfitReminders.isChecked
                 )
+
+                // Update settings through API
+                val result = apiService.updateSystemSettings(settings)
 
                 result.onSuccess { message ->
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -214,10 +200,25 @@ class SystemSettingsFragment : Fragment() {
             } catch (e: Exception) {
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
-                // Reset button state
-                btnSave.isEnabled = true
-                btnSave.text = "Save Changes"
+                showLoading(false)
             }
+        }
+    }
+
+    private fun showLoading(isLoading: Boolean) {
+        btnSave.isEnabled = !isLoading
+        btnCancel.isEnabled = !isLoading
+        spLanguage.isEnabled = !isLoading
+        spTemperatureUnit.isEnabled = !isLoading
+        spReminderTime.isEnabled = !isLoading
+        spWeatherSensitivity.isEnabled = !isLoading
+        cbNotifyWeather.isEnabled = !isLoading
+        cbNotifyOutfitReminders.isEnabled = !isLoading
+
+        if (isLoading) {
+            btnSave.text = "Saving..."
+        } else {
+            btnSave.text = "Save Changes"
         }
     }
 }
