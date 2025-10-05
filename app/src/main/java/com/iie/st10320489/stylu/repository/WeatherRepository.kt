@@ -13,18 +13,20 @@ class WeatherRepository {
 
     companion object {
         private const val TAG = "WeatherRepository"
-        private const val PRETORIA_LAT = -25.7479
-        private const val PRETORIA_LON = 28.2293
     }
 
-    suspend fun getWeeklyForecast(location: String = "Pretoria"): Result<List<DailyWeather>> =
+    suspend fun getWeeklyForecast(
+        latitude: Double,
+        longitude: Double,
+        locationName: String = "Your Location"
+    ): Result<List<DailyWeather>> =
         withContext(Dispatchers.IO) {
             try {
-                Log.d(TAG, "Fetching 7-day weather for: $location")
+                Log.d(TAG, "Fetching weather for: $locationName (lat: $latitude, lon: $longitude)")
 
                 val response = weatherApi.getForecast(
-                    latitude = PRETORIA_LAT,
-                    longitude = PRETORIA_LON
+                    latitude = latitude,
+                    longitude = longitude
                 )
 
                 Log.d(TAG, "API returned ${response.daily.time.size} days")
@@ -65,20 +67,20 @@ class WeatherRepository {
 
     private fun mapWeatherCondition(code: Int): String {
         return when (code) {
-            0, 1, 2 -> "sun"                    // Clear, mainly clear, partly cloudy
-            3, 45, 48 -> "cloudy"               // Overcast, fog
-            51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> "rain"  // Rain and showers
-            71, 73, 75, 77, 85, 86 -> "rain"    // Snow
-            95, 96, 99 -> "thunder"             // Thunderstorm
+            0, 1, 2 -> "sun"
+            3, 45, 48 -> "cloudy"
+            51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> "rain"
+            71, 73, 75, 77, 85, 86 -> "rain"
+            95, 96, 99 -> "thunder"
             else -> "cloudy"
         }
     }
 
     private fun mapWeatherBackground(code: Int): String {
         return when (code) {
-            0, 1, 2 -> "sun"                    // Clear, mainly clear, partly cloudy
-            3, 45, 48 -> "cloudy"               // Overcast, fog
-            else -> "rain"                       // All precipitation including thunderstorms
+            0, 1, 2 -> "sun"
+            3, 45, 48 -> "cloudy"
+            else -> "rain"
         }
     }
 }

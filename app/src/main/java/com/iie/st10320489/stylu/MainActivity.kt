@@ -190,8 +190,7 @@ class MainActivity : AppCompatActivity() {
 
         // Handle button clicks
         dialogView.findViewById<Button>(R.id.btn_create_outfit).setOnClickListener {
-            // TODO: Navigate to Create Outfit
-            Toast.makeText(this, "Create Outfit clicked", Toast.LENGTH_SHORT).show()
+            navController.navigate(R.id.action_navigation_wardrobe_to_createOutfitFragment)
             dialog.dismiss()
         }
 

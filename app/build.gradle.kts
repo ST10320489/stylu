@@ -67,16 +67,15 @@ dependencies {
     // UCrop (image cropping)
     implementation("com.github.yalantis:ucrop:2.2.8")
 
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+
     // Glide (image loading)
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-
-    // Gson for JSON parsing
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
-    // Coroutines (you likely already have this)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }
