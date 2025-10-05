@@ -1,7 +1,0 @@
-<resources>
-    <string name="app_name">stylu</string>
-    <string name="title_home">Home</string>
-    <string name="title_wardrobe">Wardrobe</string>
-    <string name="title_profile">Profile</string>
-    <string name="notifications">Notification</string>
-</resources>
