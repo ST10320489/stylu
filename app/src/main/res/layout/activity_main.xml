@@ -1,0 +1,72 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <!-- Top toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@android:color/white"
+        android:elevation="4dp"
+        app:titleCentered="true"
+        app:titleTextAppearance="@style/MyToolbarTitle"
+        app:navigationIcon="@drawable/ic_back"
+        android:contentInsetStart="0dp"
+        android:contentInsetLeft="0dp"
+        android:contentInsetStartWithNavigation="0dp"/>
+
+
+
+    <!-- NavHostFragment: This hosts your fragments and uses the nav_graph -->
+    <fragment
+        android:id="@+id/nav_host_fragment_activity_main"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomNavCard"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/mobile_navigation" />
+
+    <!-- Bottom Navigation Container -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bottomNavCard"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="26dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="40dp"
+        app:cardElevation="8dp"
+        android:backgroundTint="#ffffff">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:menu="@menu/bottom_nav_menu"
+            app:itemIconTint="@color/purple_primary"
+            app:itemTextColor="@color/purple_primary"
+            android:background="@android:color/transparent"
+            app:labelVisibilityMode="labeled"
+            app:itemBackground="@null"
+            app:elevation="0dp" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- Floating Circle Button (Center Elevated) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_alignBottom="@id/bottomNavCard"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="35dp"
+        android:src="@drawable/ic_tshirt"
+        app:backgroundTint="@color/purple_primary"
+        app:elevation="10dp"
+        app:tint="@android:color/white" />
+</RelativeLayout>
