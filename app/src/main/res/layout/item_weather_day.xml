@@ -1,0 +1,56 @@
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="93dp"
+    android:layout_height="171dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginEnd="12dp"
+    app:cardCornerRadius="40dp">
+
+    <!-- Gradient container -->
+    <FrameLayout
+        android:id="@+id/gradientContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_sun">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/tvWeekDay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mon"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:gravity="center"
+                android:fontFamily="@font/tanmeringue"/>
+
+            <ImageView
+                android:id="@+id/ivWeatherIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="80dp"
+                android:layout_marginTop="8dp"
+                android:contentDescription="Weather icon"
+                android:src="@drawable/sunny"/>
+
+            <TextView
+                android:id="@+id/tvTempMinMax"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12°C - 25°C"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:gravity="center"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/poppinssemibold"/>
+        </LinearLayout>
+    </FrameLayout>
+
+</androidx.cardview.widget.CardView>
