@@ -25,7 +25,7 @@ class ItemFragment : Fragment() {
     private var _binding: FragmentItemBinding? = null
     private val binding get() = _binding!!
 
-    private val itemRepository = ItemRepository()
+    private lateinit var itemRepository: ItemRepository
     private lateinit var itemAdapter: ItemAdapter
 
     private var allItems: List<WardrobeItem> = emptyList()
@@ -44,8 +44,11 @@ class ItemFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize repository with context
+        itemRepository = ItemRepository(requireContext())
+
         setupRecyclerView()
-        loadItemsFromDatabase()
+        loadItemsFromAPI()
     }
 
     private fun setupRecyclerView() {
@@ -65,24 +68,25 @@ class ItemFragment : Fragment() {
         binding.rvItems.adapter = itemAdapter
     }
 
-    private fun loadItemsFromDatabase() {
+    private fun loadItemsFromAPI() {
         lifecycleScope.launch {
             try {
                 showLoading(true)
 
-                // Fetch all items
+                // Fetch all items from API
                 val itemsResult = itemRepository.getUserItems()
                 itemsResult.onSuccess { items ->
                     allItems = items
 
-                    // Fetch category counts
+                    // Fetch category counts from API
                     val countsResult = itemRepository.getItemCountsByCategory()
                     countsResult.onSuccess { counts ->
                         categoryCounts = counts
                         setupCategoryButtons()
                         filterItems(selectedCategory)
                     }.onFailure {
-                        // If counts fail, still show items
+                        // If counts fail, still show items with manual count
+                        categoryCounts = calculateCategoryCounts(items)
                         setupCategoryButtons()
                         filterItems(selectedCategory)
                     }
@@ -106,6 +110,11 @@ class ItemFragment : Fragment() {
                 showLoading(false)
             }
         }
+    }
+
+    private fun calculateCategoryCounts(items: List<WardrobeItem>): Map<String, Int> {
+        return items.groupBy { it.category }
+            .mapValues { it.value.size }
     }
 
     private fun setupCategoryButtons() {
@@ -161,26 +170,105 @@ class ItemFragment : Fragment() {
 
     private fun showItemOptions(item: WardrobeItem) {
         // Show dialog with options: View Details, Edit, Delete
-        val options = arrayOf("View Details", "Delete")
+        val options = arrayOf("View Details", "Edit", "Delete")
 
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle(item.name)
+            .setTitle(item.name ?: item.subcategory)
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> {
-                        // TODO: Navigate to item detail view
-                        Toast.makeText(requireContext(), "View details coming soon", Toast.LENGTH_SHORT).show()
-                    }
-                    1 -> confirmDelete(item)
+                    0 -> viewItemDetails(item)
+                    1 -> editItem(item)
+                    2 -> confirmDelete(item)
                 }
             }
             .show()
     }
 
+    private fun viewItemDetails(item: WardrobeItem) {
+        // Create a simple details dialog
+        val message = buildString {
+            append("Name: ${item.name ?: "N/A"}\n")
+            append("Category: ${item.category}\n")
+            append("Subcategory: ${item.subcategory}\n")
+            append("Color: ${item.colour ?: "N/A"}\n")
+            append("Size: ${item.size ?: "N/A"}\n")
+            append("Weather Tag: ${item.weatherTag ?: "N/A"}\n")
+            append("Times Worn: ${item.timesWorn}")
+        }
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle(item.name ?: item.subcategory)
+            .setMessage(message)
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun editItem(item: WardrobeItem) {
+        // Create an edit dialog with editable fields
+        val editView = layoutInflater.inflate(R.layout.dialog_edit_item, null)
+
+        val etName = editView.findViewById<android.widget.EditText>(R.id.etEditName)
+        val etColor = editView.findViewById<android.widget.EditText>(R.id.etEditColor)
+        val etSize = editView.findViewById<android.widget.EditText>(R.id.etEditSize)
+
+        // Pre-fill with current values
+        etName.setText(item.name)
+        etColor.setText(item.colour)
+        etSize.setText(item.size)
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Edit Item")
+            .setView(editView)
+            .setPositiveButton("Save") { _, _ ->
+                val updates = mutableMapOf<String, Any>()
+
+                val name = etName.text.toString().trim()
+                if (name.isNotEmpty()) updates["name"] = name
+
+                val color = etColor.text.toString().trim()
+                if (color.isNotEmpty()) updates["colour"] = color
+
+                val size = etSize.text.toString().trim()
+                if (size.isNotEmpty()) updates["size"] = size
+
+                if (updates.isNotEmpty()) {
+                    updateItem(item.itemId, updates)
+                } else {
+                    Toast.makeText(requireContext(), "No changes made", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun updateItem(itemId: Int, updates: Map<String, Any>) {
+        lifecycleScope.launch {
+            try {
+                showLoading(true)
+
+                val result = itemRepository.updateItem(itemId, updates)
+                result.onSuccess { message ->
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                    loadItemsFromAPI() // Refresh list
+                }.onFailure { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to update: ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
     private fun confirmDelete(item: WardrobeItem) {
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Delete Item")
-            .setMessage("Are you sure you want to delete ${item.name}?")
+            .setMessage("Are you sure you want to delete ${item.name ?: item.subcategory}?")
             .setPositiveButton("Delete") { _, _ ->
                 deleteItem(item)
             }
@@ -196,7 +284,7 @@ class ItemFragment : Fragment() {
                 val result = itemRepository.deleteItem(item.itemId)
                 result.onSuccess {
                     Toast.makeText(requireContext(), "Item deleted", Toast.LENGTH_SHORT).show()
-                    loadItemsFromDatabase() // Refresh list
+                    loadItemsFromAPI() // Refresh list
                 }.onFailure { error ->
                     Toast.makeText(
                         requireContext(),
@@ -252,7 +340,7 @@ class ItemFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         // Refresh items when returning to fragment (e.g., after adding new item)
-        loadItemsFromDatabase()
+        loadItemsFromAPI()  // Changed from loadItemsFromDatabase()
     }
 
     override fun onDestroyView() {

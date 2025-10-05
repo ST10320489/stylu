@@ -1,15 +1,13 @@
 package com.iie.st10320489.stylu.ui.item.models
 
-// Update your WardrobeItem model to match database structure
 data class WardrobeItem(
     val itemId: Int,
-    val name: String,  // We'll derive this from subcategory or colour
-    val category: String,
+    val name: String?,
     val subcategory: String,
-    val imageUrl: String,
+    val category: String,
     val colour: String?,
     val size: String?,
-    val price: Double?,
+    val imageUrl: String,
     val weatherTag: String?,
-    val timesWorn: Int = 0
+    val timesWorn: Int
 )
