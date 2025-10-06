@@ -22,6 +22,7 @@ import com.iie.st10320489.stylu.network.DirectSupabaseAuth
 import com.iie.st10320489.stylu.ui.auth.LoginActivity
 import kotlinx.coroutines.launch
 import android.widget.Button
+import androidx.activity.OnBackPressedCallback
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,8 +33,7 @@ class MainActivity : AppCompatActivity() {
     // Top-level destinations (no back button)
     private val topLevelDestinations = setOf(
         R.id.navigation_home,
-        R.id.navigation_profile,
-        R.id.navigation_wardrobe
+        R.id.navigation_profile
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,42 +66,45 @@ class MainActivity : AppCompatActivity() {
         binding.fab.setImageResource(R.drawable.ic_tshirt)
         binding.fab.setOnClickListener { switchToWardrobeMenu() }
 
-        // Display user info
-        displayUserInfo()
 
         // Listen for navigation changes
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            // Update bottom nav selection safely
-            binding.bottomNavigationView.menu.findItem(destination.id)?.isChecked = true
+            supportActionBar?.title = destination.label
 
             if (destination.id == R.id.navigation_home) {
-                // Hide toolbar on Home
                 binding.toolbar.visibility = View.GONE
             } else {
-                // Show toolbar on other pages
                 binding.toolbar.visibility = View.VISIBLE
             }
 
-            // Show custom back button only for non-top-level destinations
-            if (destination.id !in topLevelDestinations) {
-                supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
-            } else {
-                supportActionBar?.setDisplayHomeAsUpEnabled(false)
-                binding.toolbar.navigationIcon = null
-            }
+            // Show back button for non-top-level destinations
+            supportActionBar?.setDisplayHomeAsUpEnabled(destination.id !in topLevelDestinations)
+            binding.toolbar.navigationIcon = if (destination.id !in topLevelDestinations)
+                ContextCompat.getDrawable(this, R.drawable.ic_back)
+            else null
         }
+
 
         // Setup default menu
         switchToDefaultMenu()
+
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (!navigateBackToHome()) {
+                    // If already at a top-level destination, finish the activity
+                    finish()
+                }
+            }
+        })
     }
 
-    private fun displayUserInfo() {
+    /*private fun displayUserInfo() {
         val user = DirectSupabaseAuth.getCurrentUser()
         user?.let {
             Toast.makeText(this, "Welcome ${it.email}", Toast.LENGTH_SHORT).show()
         }
-    }
+    }*/
 
     private fun redirectToLogin() {
         val intent = Intent(this, LoginActivity::class.java)
@@ -113,17 +116,27 @@ class MainActivity : AppCompatActivity() {
     // Handle custom back button
     override fun onSupportNavigateUp(): Boolean {
         return if (navController.currentDestination?.id !in topLevelDestinations) {
-            // Always go back to Home when back button is pressed
             navController.navigate(R.id.navigation_home)
-
-            // Reset bottom nav and FAB to default
             switchToDefaultMenu()
-
             true
         } else {
             false
         }
     }
+
+
+    private fun navigateBackToHome(): Boolean {
+        val currentId = navController.currentDestination?.id
+        return if (currentId != null && currentId !in topLevelDestinations) {
+            navController.navigate(R.id.navigation_home)
+            switchToDefaultMenu()
+            true
+        } else {
+            false
+        }
+    }
+
+
 
     /** Switch FAB and bottom nav to default (home/profile) */
     private fun switchToDefaultMenu() {

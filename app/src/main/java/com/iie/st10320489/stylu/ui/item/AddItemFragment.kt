@@ -23,6 +23,7 @@ import com.iie.st10320489.stylu.data.models.item.ItemUploadRequest
 import com.iie.st10320489.stylu.network.DirectSupabaseAuth
 import com.iie.st10320489.stylu.repository.ItemRepository
 import com.yalantis.ucrop.UCrop
+import com.yalantis.ucrop.UCropActivity
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
@@ -203,10 +204,19 @@ class AddItemFragment : Fragment() {
     private fun startImageCrop(sourceUri: Uri) {
         val destinationUri = Uri.fromFile(File(requireContext().cacheDir, "cropped_${System.currentTimeMillis()}.jpg"))
 
+        val options = UCrop.Options().apply {
+            setAllowedGestures(
+                UCropActivity.SCALE,  // scale
+                UCropActivity.ROTATE, // rotate
+                UCropActivity.ALL     // both in crop
+            )
+            setHideBottomControls(false) // show ratio controls
+        }
+
         UCrop.of(sourceUri, destinationUri)
-            .withAspectRatio(1f, 1f)
-            .withMaxResultSize(1080, 1080)
+            .withOptions(options)
             .start(requireContext(), this)
+
     }
 
     @Deprecated("Deprecated in Java")

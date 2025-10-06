@@ -1,5 +1,7 @@
 package com.iie.st10320489.stylu.ui.wardrobe
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
@@ -27,6 +29,8 @@ import com.iie.st10320489.stylu.ui.item.ItemAdapter
 import com.iie.st10320489.stylu.ui.item.models.WardrobeItem
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 
 data class ItemLayout(
     val item: WardrobeItem,
@@ -246,10 +250,11 @@ class CreateOutfitFragment : Fragment() {
 
         com.bumptech.glide.Glide.with(requireContext())
             .load(item.imageUrl)
-            .centerCrop()
+            .fitCenter() // ensures full image is displayed
             .placeholder(R.drawable.cloudy)
             .error(R.drawable.sunny)
             .into(imageView)
+
 
         removeBtn.setOnClickListener {
             itemLayouts.remove(item.itemId)
@@ -374,8 +379,16 @@ class CreateOutfitFragment : Fragment() {
                     items = itemsWithLayout
                 )
 
+                val bitmap = getCanvasBitmap()
+                val imagePath = saveBitmapToFile(bitmap, "outfit_${System.currentTimeMillis()}")
+
+
                 val result = apiService.createOutfitWithLayout(request)
-                result.onSuccess {
+                result.onSuccess { savedOutfit ->
+                    // savedOutfit.outfitId comes from API response
+                    val bitmap = getCanvasBitmap()
+                    saveBitmapToFile(bitmap, "outfit_${savedOutfit.outfitId}")
+
                     Toast.makeText(requireContext(), "Outfit saved!", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
                 }.onFailure { error ->
@@ -390,4 +403,42 @@ class CreateOutfitFragment : Fragment() {
             }
         }
     }
+
+    private fun getCanvasBitmap(): Bitmap {
+        // Hide FAB
+        fabAddItems.visibility = View.INVISIBLE
+
+        // Hide all remove buttons
+        val removeButtons = mutableListOf<View>()
+        for (i in 0 until canvasContainer.childCount) {
+            val child = canvasContainer.getChildAt(i)
+            val removeBtn = child.findViewById<View>(R.id.btnRemoveItem)
+            if (removeBtn != null) {
+                removeButtons.add(removeBtn)
+                removeBtn.visibility = View.INVISIBLE
+            }
+        }
+
+        // Draw bitmap
+        val bitmap = Bitmap.createBitmap(canvasContainer.width, canvasContainer.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvasContainer.draw(canvas)
+
+        // Restore visibility
+        fabAddItems.visibility = View.VISIBLE
+        removeButtons.forEach { it.visibility = View.VISIBLE }
+
+        return bitmap
+    }
+
+
+
+    private fun saveBitmapToFile(bitmap: Bitmap, fileName: String) {
+        val file = File(requireContext().filesDir, "$fileName.png")
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+    }
+
+
 }
