@@ -1,5 +1,6 @@
 package com.iie.st10320489.stylu.ui.home
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,10 @@ import com.iie.st10320489.stylu.ui.home.models.DailyWeather
 
 class WeatherAdapter(private val weatherList: List<DailyWeather>) :
     RecyclerView.Adapter<WeatherAdapter.WeatherViewHolder>() {
+
+    companion object {
+        private const val TAG = "WeatherAdapter"
+    }
 
     class WeatherViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvWeekDay: TextView = itemView.findViewById(R.id.tvWeekDay)
@@ -36,22 +41,52 @@ class WeatherAdapter(private val weatherList: List<DailyWeather>) :
         holder.tvWeekDay.text = weather.day
         holder.tvTempMinMax.text = "${weather.minTemp}°C - ${weather.maxTemp}°C"
 
+        // Debug: Log what we're receiving
+        Log.d(TAG, "Position $position: Day=${weather.day}, Condition='${weather.condition}', Background='${weather.background}'")
+
         // Set icon based on condition
         val iconRes = when(weather.condition) {
-            "sun" -> R.drawable.sunny
-            "cloudy" -> R.drawable.cloudy
-            "rain" -> R.drawable.rain
-            "thunder" -> R.drawable.thunder
-            else -> R.drawable.sunny
+            "sun" -> {
+                Log.d(TAG, "  -> Setting SUNNY icon")
+                R.drawable.sunny
+            }
+            "cloudy" -> {
+                Log.d(TAG, "  -> Setting CLOUDY icon")
+                R.drawable.cloudy
+            }
+            "rain" -> {
+                Log.d(TAG, "  -> Setting RAIN icon")
+                R.drawable.rain
+            }
+            "thunder" -> {
+                Log.d(TAG, "  -> Setting THUNDER icon")
+                R.drawable.thunder
+            }
+            else -> {
+                Log.e(TAG, "  -> UNKNOWN condition: '${weather.condition}' - defaulting to sunny")
+                R.drawable.sunny
+            }
         }
         holder.ivWeatherIcon.setImageResource(iconRes)
 
         // Set gradient background based on condition
         val gradientRes = when(weather.background) {
-            "sun" -> R.drawable.gradient_sun
-            "cloudy" -> R.drawable.gradient_cloud
-            "rain" -> R.drawable.gradient_rain
-            else -> R.drawable.gradient_sun
+            "sun" -> {
+                Log.d(TAG, "  -> Setting SUN gradient")
+                R.drawable.gradient_sun
+            }
+            "cloudy" -> {
+                Log.d(TAG, "  -> Setting CLOUDY gradient")
+                R.drawable.gradient_cloud
+            }
+            "rain" -> {
+                Log.d(TAG, "  -> Setting RAIN gradient")
+                R.drawable.gradient_rain
+            }
+            else -> {
+                Log.e(TAG, "  -> UNKNOWN background: '${weather.background}' - defaulting to sun")
+                R.drawable.gradient_sun
+            }
         }
         holder.gradientContainer.background =
             ContextCompat.getDrawable(holder.itemView.context, gradientRes)
