@@ -43,7 +43,8 @@ data class SystemSettings(
 
 class ApiService(context: Context) {
 
-    private val baseUrl = "http://10.0.2.2:5038"
+   private val baseUrl = "https://stylu-api-x69c.onrender.com"
+
     private val authRepository = AuthRepository(context)
 
     companion object {
