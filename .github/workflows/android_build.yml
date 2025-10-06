@@ -1,0 +1,104 @@
+name: Android CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      
+      - name: Run Lint
+        run: ./gradlew lintDebug
+        continue-on-error: true
+      
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest
+      
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+      
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: stylu-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+      
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: |
+            app/build/reports/tests/
+            app/build/reports/lint-results-debug.html
+      
+      - name: Generate Test Coverage Report
+        run: ./gradlew jacocoTestReport
+        continue-on-error: true
+      
+      - name: Upload Coverage Reports
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-reports
+          path: app/build/reports/jacoco/
+
+  instrumented-tests:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      - name: Run Instrumented Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          profile: pixel_6
+          script: ./gradlew connectedDebugAndroidTest
+      
+      - name: Upload Instrumented Test Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: instrumented-test-reports
+          path: app/build/reports/androidTests/
