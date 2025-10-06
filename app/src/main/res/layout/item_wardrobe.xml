@@ -22,8 +22,10 @@
             android:id="@+id/ivItemImage"
             android:layout_width="139dp"
             android:layout_height="101dp"
-            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_tshirt" />
+
 
         <TextView
             android:id="@+id/tvItemName"
