@@ -19,7 +19,7 @@ import java.net.URL
 
 class ItemRepository(private val context: Context? = null) {
 
-    private val baseUrl = "http://10.0.2.2:5038" // Your API base URL
+    private val baseUrl = "https://stylu-api-x69c.onrender.com"
     private val itemApiService = context?.let { ItemApiService() }
 
     companion object {
