@@ -73,20 +73,16 @@ Built using Kotlin and the MVVM architecture, Stylu connects to a custom REST AP
 
 ## Testing
 
-Stylu includes automated tests for functionality and performance.  
-See **AutomatedTest.docx** for details.
 
-![Build Pipeline](images/Picture1.png)
 
-![ItemLayoutTest Results](images/Picture2.png)
+
 
  *ItemLayoutTest*
 
-![DataModelTest Results](images/Picture3.png)
+
 
 *DataModelTest*
 
-![AuthValidationTest Results](images/Picture4.png)
   
 *AuthValidationTest*  
 
