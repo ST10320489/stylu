@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
-    // Top-level destinations (no back button)
     private val topLevelDestinations = setOf(
         R.id.navigation_home,
         R.id.navigation_profile
@@ -39,7 +38,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Check if user is authenticated
         if (!DirectSupabaseAuth.isLoggedIn()) {
             redirectToLogin()
             return
@@ -48,26 +46,19 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Setup toolbar
         setSupportActionBar(binding.toolbar)
         binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
 
-        // Setup NavController
         navController = findNavController(R.id.nav_host_fragment_activity_main)
 
-        // Setup AppBar with top-level destinations
         val appBarConfig = AppBarConfiguration(topLevelDestinations)
         setupActionBarWithNavController(navController, appBarConfig)
 
-        // Setup BottomNavigationView
         binding.bottomNavigationView.setupWithNavController(navController)
 
-        // Setup FAB default click = switch to wardrobe
         binding.fab.setImageResource(R.drawable.ic_tshirt)
         binding.fab.setOnClickListener { switchToWardrobeMenu() }
 
-
-        // Listen for navigation changes
         navController.addOnDestinationChangedListener { _, destination, _ ->
             supportActionBar?.title = destination.label
 
@@ -77,34 +68,22 @@ class MainActivity : AppCompatActivity() {
                 binding.toolbar.visibility = View.VISIBLE
             }
 
-            // Show back button for non-top-level destinations
             supportActionBar?.setDisplayHomeAsUpEnabled(destination.id !in topLevelDestinations)
             binding.toolbar.navigationIcon = if (destination.id !in topLevelDestinations)
                 ContextCompat.getDrawable(this, R.drawable.ic_back)
             else null
         }
 
-
-        // Setup default menu
         switchToDefaultMenu()
-
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (!navigateBackToHome()) {
-                    // If already at a top-level destination, finish the activity
                     finish()
                 }
             }
         })
     }
-
-    /*private fun displayUserInfo() {
-        val user = DirectSupabaseAuth.getCurrentUser()
-        user?.let {
-            Toast.makeText(this, "Welcome ${it.email}", Toast.LENGTH_SHORT).show()
-        }
-    }*/
 
     private fun redirectToLogin() {
         val intent = Intent(this, LoginActivity::class.java)
@@ -113,7 +92,6 @@ class MainActivity : AppCompatActivity() {
         finish()
     }
 
-    // Handle custom back button
     override fun onSupportNavigateUp(): Boolean {
         return if (navController.currentDestination?.id !in topLevelDestinations) {
             navController.navigate(R.id.navigation_home)
@@ -123,7 +101,6 @@ class MainActivity : AppCompatActivity() {
             false
         }
     }
-
 
     private fun navigateBackToHome(): Boolean {
         val currentId = navController.currentDestination?.id
@@ -136,9 +113,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-
-    /** Switch FAB and bottom nav to default (home/profile) */
     private fun switchToDefaultMenu() {
         val navView = binding.bottomNavigationView
         val fab = binding.fab
@@ -159,7 +133,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Switch FAB and bottom nav to wardrobe menu */
     private fun switchToWardrobeMenu() {
         val navView = binding.bottomNavigationView
         val fab = binding.fab
@@ -184,13 +157,11 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        // Navigate to wardrobe fragment if not already there
         if (navController.currentDestination?.id != R.id.navigation_wardrobe) {
             navController.navigate(R.id.navigation_wardrobe)
         }
     }
 
-    // Update your FAB popup method
     private fun showFabPopup() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_fab_menu, null)
         val dialog = android.app.AlertDialog.Builder(this)
@@ -198,17 +169,32 @@ class MainActivity : AppCompatActivity() {
             .setCancelable(true)
             .create()
 
-        // Make background transparent
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        // Handle button clicks
         dialogView.findViewById<Button>(R.id.btn_create_outfit).setOnClickListener {
-            navController.navigate(R.id.action_navigation_wardrobe_to_createOutfitFragment)
-            dialog.dismiss()
+            val currentDestination = navController.currentDestination?.id
+
+            try {
+                when (currentDestination) {
+                    R.id.navigation_wardrobe -> {
+                        navController.navigate(R.id.action_navigation_wardrobe_to_createOutfitFragment)
+                    }
+                    R.id.navigation_item -> {
+                        navController.navigate(R.id.action_items_to_createOutfit)
+                    }
+                    else -> {
+                        navController.navigate(R.id.navigation_wardrobe)
+                        navController.navigate(R.id.action_navigation_wardrobe_to_createOutfitFragment)
+                    }
+                }
+                dialog.dismiss()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Navigation error: ${e.message}", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
         }
 
         dialogView.findViewById<Button>(R.id.btn_add_item).setOnClickListener {
-            // Navigate to Add Item Fragment using Navigation Component
             navController.navigate(R.id.navigation_add_item)
             dialog.dismiss()
         }
@@ -219,7 +205,6 @@ class MainActivity : AppCompatActivity() {
 
         dialog.show()
     }
-
 
     private fun logout() {
         lifecycleScope.launch {

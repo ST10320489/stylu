@@ -12,6 +12,7 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
@@ -81,6 +82,7 @@ class CreateOutfitFragment : Fragment() {
         setupRecyclerView()
         setupClickListeners()
         setupSearch()
+        setupBackPressHandler()
         loadItems()
     }
 
@@ -143,7 +145,33 @@ class CreateOutfitFragment : Fragment() {
         }
 
         btnCancel.setOnClickListener {
-            findNavController().navigateUp()
+            if (itemLayouts.isNotEmpty()) {
+                showExitConfirmationDialog()
+            } else {
+                findNavController().navigateUp()
+            }
+        }
+
+        canvasContainer.setOnLongClickListener {
+            if (itemLayouts.isNotEmpty()) {
+                Toast.makeText(
+                    requireContext(),
+                    "Drag with 1 finger - Pinch with 2 fingers to resize",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            true
+        }
+    }
+
+    private fun setupBackPressHandler() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            if (itemLayouts.isNotEmpty()) {
+                showExitConfirmationDialog()
+            } else {
+                isEnabled = false
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
         }
     }
 
@@ -250,11 +278,10 @@ class CreateOutfitFragment : Fragment() {
 
         com.bumptech.glide.Glide.with(requireContext())
             .load(item.imageUrl)
-            .fitCenter() // ensures full image is displayed
+            .fitCenter()
             .placeholder(R.drawable.cloudy)
             .error(R.drawable.sunny)
             .into(imageView)
-
 
         removeBtn.setOnClickListener {
             itemLayouts.remove(item.itemId)
@@ -273,59 +300,111 @@ class CreateOutfitFragment : Fragment() {
             itemLayouts[item.itemId] = initialLayout
         }
 
-        makeDraggableAndScalable(itemView, item)
+        makeDraggableAndScalable(itemView, item, removeBtn)
         canvasContainer.addView(itemView)
+
+        if (itemLayouts.size == 0) {
+            Toast.makeText(requireContext(), "Drag to move - Pinch to resize", Toast.LENGTH_LONG).show()
+        }
     }
 
-    private fun makeDraggableAndScalable(view: View, item: WardrobeItem) {
+    private fun makeDraggableAndScalable(view: View, item: WardrobeItem, removeBtn: ImageButton) {
         var dX = 0f
         var dY = 0f
         var scaleFactor = 1f
+        var isScaling = false
 
         val scaleGestureDetector = ScaleGestureDetector(requireContext(), object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                isScaling = true
+                view.elevation = 8f * resources.displayMetrics.density
+                return true
+            }
+
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 scaleFactor *= detector.scaleFactor
-                scaleFactor = scaleFactor.coerceIn(0.5f, 3.0f)
+                scaleFactor = scaleFactor.coerceIn(0.3f, 5.0f)
 
                 view.scaleX = scaleFactor
                 view.scaleY = scaleFactor
+
+                removeBtn.scaleX = 1f / scaleFactor
+                removeBtn.scaleY = 1f / scaleFactor
 
                 itemLayouts[item.itemId] = itemLayouts[item.itemId]?.copy(scale = scaleFactor)
                     ?: ItemLayout(item, view.x, view.y, scaleFactor, view.width, view.height)
 
                 return true
             }
+
+            override fun onScaleEnd(detector: ScaleGestureDetector) {
+                isScaling = false
+                view.elevation = 4f * resources.displayMetrics.density
+            }
         })
+
+        var touchCount = 0
 
         view.setOnTouchListener { v, event ->
             scaleGestureDetector.onTouchEvent(event)
 
-            when (event.action) {
+            when (event.action and MotionEvent.ACTION_MASK) {
                 MotionEvent.ACTION_DOWN -> {
                     dX = v.x - event.rawX
                     dY = v.y - event.rawY
                     v.bringToFront()
+                    touchCount = 1
                     true
                 }
+
+                MotionEvent.ACTION_POINTER_DOWN -> {
+                    touchCount = event.pointerCount
+                    true
+                }
+
                 MotionEvent.ACTION_MOVE -> {
-                    if (!scaleGestureDetector.isInProgress) {
+                    if (!isScaling && !scaleGestureDetector.isInProgress && touchCount == 1) {
                         val newX = event.rawX + dX
                         val newY = event.rawY + dY
 
-                        val maxX = canvasContainer.width - v.width.toFloat()
-                        val maxY = canvasContainer.height - v.height.toFloat()
+                        val maxX = canvasContainer.width.toFloat()
+                        val maxY = canvasContainer.height.toFloat()
 
-                        v.x = newX.coerceIn(0f, maxX)
-                        v.y = newY.coerceIn(0f, maxY)
+                        v.x = newX.coerceIn(-v.width * 0.2f, maxX - v.width * 0.8f)
+                        v.y = newY.coerceIn(-v.height * 0.2f, maxY - v.height * 0.8f)
 
                         itemLayouts[item.itemId] = itemLayouts[item.itemId]?.copy(x = v.x, y = v.y)
                             ?: ItemLayout(item, v.x, v.y, scaleFactor, v.width, v.height)
                     }
                     true
                 }
+
+                MotionEvent.ACTION_POINTER_UP -> {
+                    touchCount = event.pointerCount - 1
+                    true
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    touchCount = 0
+                    isScaling = false
+                    false
+                }
+
                 else -> false
             }
         }
+    }
+
+    private fun showExitConfirmationDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Discard Outfit?")
+            .setMessage("Are you sure you want to exit? You will lose this outfit if you haven't saved it.")
+            .setPositiveButton("Exit") { _, _ ->
+                itemLayouts.clear()
+                findNavController().navigateUp()
+            }
+            .setNegativeButton("Stay", null)
+            .show()
     }
 
     private fun showSaveOutfitDialog() {
@@ -379,13 +458,8 @@ class CreateOutfitFragment : Fragment() {
                     items = itemsWithLayout
                 )
 
-                val bitmap = getCanvasBitmap()
-                val imagePath = saveBitmapToFile(bitmap, "outfit_${System.currentTimeMillis()}")
-
-
                 val result = apiService.createOutfitWithLayout(request)
                 result.onSuccess { savedOutfit ->
-                    // savedOutfit.outfitId comes from API response
                     val bitmap = getCanvasBitmap()
                     saveBitmapToFile(bitmap, "outfit_${savedOutfit.outfitId}")
 
@@ -405,10 +479,8 @@ class CreateOutfitFragment : Fragment() {
     }
 
     private fun getCanvasBitmap(): Bitmap {
-        // Hide FAB
         fabAddItems.visibility = View.INVISIBLE
 
-        // Hide all remove buttons
         val removeButtons = mutableListOf<View>()
         for (i in 0 until canvasContainer.childCount) {
             val child = canvasContainer.getChildAt(i)
@@ -419,19 +491,19 @@ class CreateOutfitFragment : Fragment() {
             }
         }
 
-        // Draw bitmap
-        val bitmap = Bitmap.createBitmap(canvasContainer.width, canvasContainer.height, Bitmap.Config.ARGB_8888)
+        val bitmap = Bitmap.createBitmap(
+            canvasContainer.width,
+            canvasContainer.height,
+            Bitmap.Config.ARGB_8888
+        )
         val canvas = Canvas(bitmap)
         canvasContainer.draw(canvas)
 
-        // Restore visibility
         fabAddItems.visibility = View.VISIBLE
         removeButtons.forEach { it.visibility = View.VISIBLE }
 
         return bitmap
     }
-
-
 
     private fun saveBitmapToFile(bitmap: Bitmap, fileName: String) {
         val file = File(requireContext().filesDir, "$fileName.png")
@@ -439,6 +511,4 @@ class CreateOutfitFragment : Fragment() {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
         }
     }
-
-
 }

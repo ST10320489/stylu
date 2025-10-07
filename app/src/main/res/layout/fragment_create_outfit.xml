@@ -11,6 +11,7 @@
         android:layout_height="match_parent"
         android:layout_marginTop="70dp">
 
+        <!-- 🔥 UPDATED: Increased canvas from 0.58 to 0.65 (bigger) -->
         <FrameLayout
             android:id="@+id/canvasContainer"
             android:layout_width="0dp"
@@ -19,7 +20,7 @@
             android:background="@android:color/white"
             app:layout_constraintBottom_toTopOf="@id/actionButtons"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.58"
+            app:layout_constraintHeight_percent="0.65"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
