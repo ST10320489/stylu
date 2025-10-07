@@ -105,7 +105,8 @@ https://youtu.be/3CBfyZGEFmc?si=R3Cg0n3TLWCKHB6g
 - Android Developers. (2024). *Guide to app architecture*. Google. Available at: [https://developer.android.com/jetpack/guide](https://developer.android.com/jetpack/guide)  
 - JetBrains. (2024). *Kotlin Documentation*. JetBrains. Available at: [https://kotlinlang.org/docs/home.html](https://kotlinlang.org/docs/home.html)  
 - Square Inc. (2023). *Retrofit: A type-safe HTTP client for Android and Java*. GitHub. Available at: [https://github.com/square/retrofit](https://github.com/square/retrofit)  
-- Google. (2024). *Material Design 3*. Google. Available at: [https://m3.material.io](https://m3.material.io)  
+- Google. (2024). *Material Design 3*. Google. Available at: [https://m3.material.io](https://m3.material.io)
+- OpenAI. (2024). ChatGPT: Language m
 - OpenWeather. (2024). *OpenWeather API Documentation*. Available at: [https://openweathermap.org/api](https://openweathermap.org/api)  
 - Render. (2025). *Render Deployment Platform*. Available at: [https://render.com](https://render.com)  
 - Remove.bg. (2024). *AI Background Removal API Documentation*. Available at: [https://www.remove.bg/api](https://www.remove.bg/api)
