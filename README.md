@@ -32,7 +32,7 @@ Built using Kotlin and the MVVM architecture, Stylu connects to a custom REST AP
 
 ##  Demonstration
 
-**YouTube Demo Link:** *(Coming Soon)*
+**https://youtu.be/3CBfyZGEFmc?si=R3Cg0n3TLWCKHB6g*
 
 ---
 
