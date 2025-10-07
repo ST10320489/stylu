@@ -38,10 +38,10 @@ Built using Kotlin and the MVVM architecture, Stylu connects to a custom REST AP
 
 ## API Integration
 
-**API Base URL:**  
-`private val baseUrl = "https://stylu-api-x69c.onrender.com"`
+**Published API:**  
+`https://stylu-api-x69c.onrender.com
 
-**Backend Repository:**  
+**Local API code:**  
 [https://github.com/ST10252644/stylu_api.git](https://github.com/ST10252644/stylu_api.git)
 
 **Frontend Repository:**  
