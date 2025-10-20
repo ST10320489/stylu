@@ -24,7 +24,7 @@
                 android:id="@+id/tvWeekDay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mon"
+                android:text="@string/monday_short"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
@@ -36,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="80dp"
                 android:layout_marginTop="8dp"
-                android:contentDescription="Weather icon"
+                android:contentDescription="@string/weather_icon"
                 android:src="@drawable/sunny"/>
 
             <TextView

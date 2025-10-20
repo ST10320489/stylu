@@ -1,0 +1,179 @@
+<resources>
+    <string name="app_name">stylu</string>
+    <string name="title_home">Khaya</string>
+    <string name="title_wardrobe">Dziḓorobho</string>
+    <string name="title_profile">Profaili</string>
+    <string name="notifications">Ṱhogomelo</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_settings">Mitheo ya Profaili</string>
+    <string name="system_settings">Mitheo ya System</string>
+    <string name="biometric_login">Inga ka Biometric</string>
+    <string name="biometric_description">Inga nga tsala ya minwe kana vhuhosi ha mutshilo</string>
+    <string name="logout">Buda</string>
+    <string name="logout_message">Ndi khwine u bula kholomo?</string>
+    <string name="cancel">Hanya</string>
+
+    <!-- Profile Settings -->
+    <string name="first_name">Dzina</string>
+    <string name="last_name">Dzina la Muhulu</string>
+    <string name="phone_number">Nomoro ya Foni</string>
+    <string name="email">Imeile</string>
+    <string name="password">Phaswedi</string>
+    <string name="enter_first_name">Tula dzina</string>
+    <string name="enter_last_name">Tula dzina la muhulu</string>
+    <string name="enter_phone_number">Tula nomoro ya foni</string>
+    <string name="enter_email">Tula imeile</string>
+    <string name="enter_password">Tula phaswedi</string>
+    <string name="save_changes">Tshimbidza dzi fhedzi</string>
+
+    <!-- System Settings -->
+    <string name="language">Luvha</string>
+    <string name="temperature_unit">Yunit ya Vhuṱungu</string>
+    <string name="reminder_time">Nako ya Ṱhogomelo</string>
+    <string name="weather_sensitivity">Khubvumo ya Vhuṱungu</string>
+    <string name="notify_weather_alerts">Ḽaṱela dzi Ṱhogomelo dza Vhuṱungu</string>
+    <string name="notify_outfit_reminders">Ḽaṱela dzi Ṱhogomelo dza Mivhungo</string>
+
+    <!-- Language Options (does not change)-->
+    <string name="language_english">English</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="language_xhosa">Xhosa</string>
+    <string name="language_zulu">Zulu</string>
+    <string name="language_tswana">Tswana</string>
+    <string name="language_ndebele">Ndebele</string>
+    <string name="language_french">French</string>
+    <string name="language_italian">Italian</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_venda">Venda</string>
+
+    <!-- Temperature Units -->
+    <string name="celsius">Celsius (°C)</string>
+    <string name="fahrenheit">Fahrenheit (°F)</string>
+
+    <!-- Weather Sensitivity -->
+    <string name="sensitivity_low">Hasi</string>
+    <string name="sensitivity_normal">Zwavhuḓi</string>
+    <string name="sensitivity_high">Huhu</string>
+
+    <!-- Add Item -->
+    <string name="item_image">Tshithu tsha u ṱoḓa</string>
+    <string name="select_image">Khetha tshithu</string>
+    <string name="remove_background">Bvisa mbiluni</string>
+    <string name="item_name">Dzina la tshithu</string>
+    <string name="item_name_hint">e.g. Jaka ya Denim ya Blue</string>
+    <string name="category">Mulayo</string>
+    <string name="subcategory">Mulayo wa Ṱhukhu</string>
+    <string name="color">Mivhudzi</string>
+    <string name="color_hint">e.g. Blue</string>
+    <string name="size">Vhulalo</string>
+    <string name="size_hint">e.g. M, L, XL</string>
+    <string name="price_optional">Mutengo (Hu khou ṱoḓea)</string>
+    <string name="price_hint">e.g. 299.99</string>
+    <string name="weather_suitability">Vhulalo ha vhuṱungu</string>
+    <string name="save_item">Boloka tshithu</string>
+
+    <!-- Home -->
+    <string name="outfit_calendar">Kalendara ya mivhungo</string>
+    <string name="today_date">Nhasi, Jan 1</string>
+    <string name="weather">Vhuṱungu</string>
+    <string name="temperature_range">-3° u swika +8°</string>
+    <string name="precipitation_label">Muthu wa mvula</string>
+    <string name="precipitation_value">90%</string>
+    <string name="scheduled_outfit">Mivhungo ya Ṱhogomelo</string>
+
+    <!-- Create Outfit -->
+    <string name="save">Boloka</string>
+
+    <!-- Wardrobe -->
+    <string name="no_items">A hu na zwithu</string>
+    <string name="tap_to_add">Tshinya + u tshi ṱoḓa tshithu tsha u thoma</string>
+
+    <!-- Outfit Detail -->
+    <string name="outfit_name">Dzina la mivhungo</string>
+    <string name="delete_outfit">Bvisa mivhungo</string>
+    <string name="edit_outfit">Vhuyedzisa mivhungo</string>
+    <string name="no_outfits">A hu na mivhungo</string>
+    <string name="tap_to_add_outfit">Tshinya + u ṱoḓa mivhungo ya u thoma</string>
+
+    <!-- Weekly Weather -->
+    <string name="monday_short">Mon</string>
+    <string name="tuesday_short">Tue</string>
+    <string name="wednesday_short">Wed</string>
+    <string name="thursday_short">Thu</string>
+    <string name="friday_short">Fri</string>
+    <string name="saturday_short">Sat</string>
+    <string name="sunday_short">Sun</string>
+    <string name="weather_icon">Icon ya vhuṱungu</string>
+
+    <!-- Bottom Sheet -->
+    <string name="add_items">Ṱoḓa zwithu</string>
+    <string name="search">Funa</string>
+
+    <!-- Dialog Edit Item -->
+    <string name="edit_name_hint">Dzina la tshithu</string>
+    <string name="edit_color_hint">Mivhudzi</string>
+    <string name="edit_size_hint">Vhulalo</string>
+
+    <!-- FAB Dialog -->
+    <string name="create_new_outfit">Ṱhoḓa mivhungo mitswa</string>
+    <string name="add_new_item">Ṱoḓa tshithu tsha mutswa</string>
+
+    <!-- Save Outfit Dialog -->
+    <string name="outfit_name_hint">Dzina la mivhungo</string>
+
+    <!-- Messages -->
+    <string name="settings_loaded">Mitheo i tsireledzwile zwavhuḓi</string>
+    <string name="failed_load_settings">U ṱoḓa mitheo ho failed: %1$s</string>
+    <string name="error_loading_settings">Phoso nga u ṱoḓa mitheo: %1$s</string>
+    <string name="settings_updated">Mitheo i ṱoḓea zwavhuḓi</string>
+    <string name="failed_update_settings">U ṱoḓa mitheo ho failed: %1$s</string>
+    <string name="saving">U boloka…</string>
+    <string name="language_changed">Luvha lwa language lwafhata. Ṱhogomela app u tshi i bula.</string>
+
+
+        <!-- Navigation -->
+        <string name="my_items">Zwithu zwanga</string>
+        <string name="my_outfits">Mivhungo yanga</string>
+
+        <!-- Navigation Labels -->
+        <string name="add_item_title">Ṱoḓa Tshithu</string>
+        <string name="create_outfit_title">Ṱhoḓa Mivhungo</string>
+        <string name="outfit_detail_title">Mbuno ya Mivhungo</string>
+
+        <!-- Item Fragment Dialogs -->
+        <string name="view_details">Vona Mbuno</string>
+        <string name="edit">Vhuyedzisa</string>
+        <string name="delete">Susa</string>
+        <string name="edit_item">Vhuyedzisa Tshithu</string>
+
+        <string name="delete_item_title">Susa Tshithu</string>
+        <string name="delete_item_message">Ndi khwine u ṱoḓa u susa %1$s?</string>
+        <string name="item_deleted">Tshithu lo susiwaho</string>
+        <string name="no_changes_made">A hu na phetelo dzi dirilweng</string>
+        <string name="ok">OK</string>
+
+        <!-- Item Details -->
+        <string name="name_label">Dzina: %1$s</string>
+        <string name="category_label">Mulayo: %1$s</string>
+        <string name="subcategory_label">Mulayo wa Ṱhukhu: %1$s</string>
+        <string name="color_label">Mivhudzi: %1$s</string>
+        <string name="size_label">Vhulalo: %1$s</string>
+        <string name="weather_tag_label">Vhulalo ha Vhuṱungu: %1$s</string>
+        <string name="times_worn_label">Dinaṅwe dza apara: %1$d</string>
+        <string name="not_available">N/A</string>
+
+        <!-- Error Messages -->
+        <string name="failed_to_load_items">U ṱoḓa zwithu ho failed: %1$s</string>
+        <string name="error_message">Phoso: %1$s</string>
+        <string name="failed_to_update">U vhuyedzisa ho failed: %1$s</string>
+        <string name="failed_to_delete">U susa ho failed: %1$s</string>
+
+        <!-- Errors -->
+        <string name="navigation_error">Phoso ya u ṱalutshedza: %1$s</string>
+        <string name="logout_failed">U Buda ho failed: %1$s</string>
+
+
+
+
+</resources>

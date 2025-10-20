@@ -8,7 +8,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Item Name"
+        android:hint="@string/edit_name_hint"
         android:layout_marginBottom="8dp">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -21,7 +21,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Color"
+        android:hint="@string/edit_color_hint"
         android:layout_marginBottom="8dp">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -34,7 +34,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Size">
+        android:hint="@string/edit_size_hint">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etEditSize"
@@ -44,3 +44,4 @@
     </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>
+

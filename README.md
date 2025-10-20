@@ -32,16 +32,16 @@ Built using Kotlin and the MVVM architecture, Stylu connects to a custom REST AP
 
 ##  Demonstration
 
-https://youtu.be/3CBfyZGEFmc?si=R3Cg0n3TLWCKHB6g
+**YouTube Demo Link:** *(Coming Soon)*
 
 ---
 
 ## API Integration
 
-**Published API:**  
-`https://stylu-api-x69c.onrender.com
+**API Base URL:**  
+`private val baseUrl = "https://stylu-api-x69c.onrender.com"`
 
-**Local API code:**  
+**Backend Repository:**  
 [https://github.com/ST10252644/stylu_api.git](https://github.com/ST10252644/stylu_api.git)
 
 **Frontend Repository:**  
@@ -73,21 +73,14 @@ https://youtu.be/3CBfyZGEFmc?si=R3Cg0n3TLWCKHB6g
 
 ## Testing
 
+Stylu includes automated tests for functionality and performance.  
+See **AutomatedTest.docx** for details.
 
-![Build Pipeline](images/Picture1.png)
+- *ItemLayoutTest*  
+- *DataModelTest*  
+- *AuthValidationTest*  
 
-![ItemLayoutTest Results](images/Picture2.png)
-
- *ItemLayoutTest*
-
-![DataModelTest Results](images/Picture3.png)
-
-*DataModelTest*
-
-![AuthValidationTest Results](images/Picture4.png)
-
-*AuthValidationTest* 
-
+---
 
 ## Prerequisites
 
@@ -105,8 +98,7 @@ https://youtu.be/3CBfyZGEFmc?si=R3Cg0n3TLWCKHB6g
 - Android Developers. (2024). *Guide to app architecture*. Google. Available at: [https://developer.android.com/jetpack/guide](https://developer.android.com/jetpack/guide)  
 - JetBrains. (2024). *Kotlin Documentation*. JetBrains. Available at: [https://kotlinlang.org/docs/home.html](https://kotlinlang.org/docs/home.html)  
 - Square Inc. (2023). *Retrofit: A type-safe HTTP client for Android and Java*. GitHub. Available at: [https://github.com/square/retrofit](https://github.com/square/retrofit)  
-- Google. (2024). *Material Design 3*. Google. Available at: [https://m3.material.io](https://m3.material.io)
-- OpenAI. (2024). ChatGPT: Language m
+- Google. (2024). *Material Design 3*. Google. Available at: [https://m3.material.io](https://m3.material.io)  
 - OpenWeather. (2024). *OpenWeather API Documentation*. Available at: [https://openweathermap.org/api](https://openweathermap.org/api)  
 - Render. (2025). *Render Deployment Platform*. Available at: [https://render.com](https://render.com)  
 - Remove.bg. (2024). *AI Background Removal API Documentation*. Available at: [https://www.remove.bg/api](https://www.remove.bg/api)

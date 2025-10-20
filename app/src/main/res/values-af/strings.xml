@@ -1,0 +1,172 @@
+<resources>
+    <string name="app_name">stylu</string>
+    <string name="title_home">Tuis</string>
+    <string name="title_wardrobe">Kas</string>
+    <string name="title_profile">Profiel</string>
+    <string name="notifications">Kennisgewing</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_settings">Profiel Instellings</string>
+    <string name="system_settings">Stelsel Instellings</string>
+    <string name="biometric_login">Biometriese Aanmelding</string>
+    <string name="biometric_description">Meld aan met vingerafdruk of gesig</string>
+    <string name="logout">Teken Uit</string>
+    <string name="logout_message">Is jy seker jy wil uitteken?</string>
+    <string name="cancel">Kanselleer</string>
+
+    <!-- Profile Settings -->
+    <string name="first_name">Voornaam</string>
+    <string name="last_name">Van</string>
+    <string name="phone_number">Telefoonnommer</string>
+    <string name="email">E-pos</string>
+    <string name="password">Wagwoord</string>
+    <string name="enter_first_name">Voer Voornaam In</string>
+    <string name="enter_last_name">Voer Van In</string>
+    <string name="enter_phone_number">Voer Telefoonnommer In</string>
+    <string name="enter_email">Voer e-pos in</string>
+    <string name="enter_password">Voer Wagwoord In</string>
+    <string name="save_changes">Stoor Veranderinge</string>
+
+    <!-- System Settings -->
+    <string name="language">Taal</string>
+    <string name="temperature_unit">Temperatuur Eenheid</string>
+    <string name="reminder_time">Herinnering Tyd</string>
+    <string name="weather_sensitivity">Weer Sensitiwiteit</string>
+    <string name="notify_weather_alerts">Stel Weer Kennisgewings</string>
+    <string name="notify_outfit_reminders">Stel Uitrusting Herinneringe</string>
+
+    <string name="language_english">English</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="language_xhosa">Xhosa</string>
+    <string name="language_zulu">Zulu</string>
+    <string name="language_tswana">Tswana</string>
+    <string name="language_ndebele">Ndebele</string>
+    <string name="language_french">French</string>
+    <string name="language_italian">Italian</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_venda">Venda</string>
+
+    <!-- Temperature Units -->
+    <string name="celsius">Celsius (°C)</string>
+    <string name="fahrenheit">Fahrenheit (°F)</string>
+
+    <!-- Weather Sensitivity -->
+    <string name="sensitivity_low">Laag</string>
+    <string name="sensitivity_normal">Normaal</string>
+    <string name="sensitivity_high">Hoog</string>
+
+    <!-- Add Item -->
+    <string name="item_image">Item beeld</string>
+    <string name="select_image">Kies Beeld</string>
+    <string name="remove_background">Verwyder Agtergrond</string>
+    <string name="item_name">Item Naam</string>
+    <string name="item_name_hint">bv. Blou Denim Baadjie</string>
+    <string name="category">Kategorie</string>
+    <string name="subcategory">Subkategorie</string>
+    <string name="color">Kleur</string>
+    <string name="color_hint">bv. Blou</string>
+    <string name="size">Grootte</string>
+    <string name="size_hint">bv. M, L, XL</string>
+    <string name="price_optional">Prys (Opsioneel)</string>
+    <string name="price_hint">bv. 299.99</string>
+    <string name="weather_suitability">Weer Geskiktheid</string>
+    <string name="save_item">Stoor Item</string>
+
+    <!-- Home -->
+    <string name="outfit_calendar">Uitrusting Kalender</string>
+    <string name="today_date">Vandag, Jan 1</string>
+    <string name="weather">Weer</string>
+    <string name="temperature_range">-3° tot +8°</string>
+    <string name="precipitation_label">Waarskynlikheid van Reën</string>
+    <string name="precipitation_value">90%</string>
+    <string name="scheduled_outfit">Geskeduleerde Uitrusting</string>
+
+    <!-- Create Outfit -->
+    <string name="save">Stoor</string>
+
+    <!-- Wardrobe -->
+    <string name="no_items">Nog geen items nie</string>
+    <string name="tap_to_add">Tik + om jou eerste item by te voeg</string>
+    <string name="no_outfits">Nog geen uitrustings nie</string>
+    <string name="tap_to_add_outfit">Tik + om jou eerste uitrusting te skep</string>
+    <!-- Outfit Detail -->
+    <string name="outfit_name">Uitrusting Naam</string>
+    <string name="delete_outfit">Verwyder Uitrusting</string>
+    <string name="edit_outfit">Wysig Uitrusting</string>
+
+    <!-- Weekly Weather -->
+    <string name="monday_short">Ma</string>
+    <string name="tuesday_short">Di</string>
+    <string name="wednesday_short">Wo</string>
+    <string name="thursday_short">Do</string>
+    <string name="friday_short">Vr</string>
+    <string name="saturday_short">Sa</string>
+    <string name="sunday_short">So</string>
+    <string name="weather_icon">Weer ikoon</string>
+
+    <!-- Bottom Sheet -->
+    <string name="add_items">Voeg Items By</string>
+    <string name="search">Soek</string>
+
+    <!-- Dialog Edit Item -->
+    <string name="edit_name_hint">Item Naam</string>
+    <string name="edit_color_hint">Kleur</string>
+    <string name="edit_size_hint">Grootte</string>
+
+    <!-- FAB Dialog -->
+    <string name="create_new_outfit">Skep \'n nuwe uitrusting</string>
+    <string name="add_new_item">Voeg \'n nuwe item by</string>
+
+    <!-- Save Outfit Dialog -->
+    <string name="outfit_name_hint">Uitrusting Naam</string>
+
+    <!-- Messages -->
+    <string name="settings_loaded">Instellings suksesvol gelaai</string>
+    <string name="failed_load_settings">Kon nie instellings laai nie: %1$s</string>
+    <string name="error_loading_settings">Fout met laai van instellings: %1$s</string>
+    <string name="settings_updated">Instellings suksesvol opgedateer</string>
+    <string name="failed_update_settings">Kon nie instellings opdateer nie: %1$s</string>
+    <string name="saving">Stoor…</string>
+    <string name="language_changed">Taal verander. Herbegin app om toe te pas.</string>
+
+    <!-- Navigation -->
+
+    <string name="my_items">My Items</string>
+    <string name="my_outfits">My Uitrustings</string>
+
+    <!-- Navigation Labels -->
+    <string name="add_item_title">Voeg Item By</string>
+    <string name="create_outfit_title">Skep Uitrusting</string>
+    <string name="outfit_detail_title">Uitrusting Detail</string>
+
+    <!-- Item Fragment Dialogs -->
+    <string name="view_details">Bekyk Besonderhede</string>
+    <string name="edit">Wysig</string>
+    <string name="delete">Verwyder</string>
+    <string name="edit_item">Wysig Item</string>
+
+    <string name="delete_item_title">Verwyder Item</string>
+    <string name="delete_item_message">Is jy seker jy wil %1$s verwyder?</string>
+    <string name="item_deleted">Item verwyder</string>
+    <string name="no_changes_made">Geen veranderinge gemaak nie</string>
+    <string name="ok">OK</string>
+
+    <!-- Item Details -->
+    <string name="name_label">Naam: %1$s</string>
+    <string name="category_label">Kategorie: %1$s</string>
+    <string name="subcategory_label">Subkategorie: %1$s</string>
+    <string name="color_label">Kleur: %1$s</string>
+    <string name="size_label">Grootte: %1$s</string>
+    <string name="weather_tag_label">Weer Etiket: %1$s</string>
+    <string name="times_worn_label">Kere Gedra: %1$d</string>
+    <string name="not_available">N/B</string>
+
+    <!-- Error Messages -->
+    <string name="failed_to_load_items">Kon nie items laai nie: %1$s</string>
+    <string name="error_message">Fout: %1$s</string>
+    <string name="failed_to_update">Kon nie opdateer nie: %1$s</string>
+    <string name="failed_to_delete">Kon nie verwyder nie: %1$s</string>
+    <!-- Errors -->
+    <string name="navigation_error">Navigasie fout: %1$s</string>
+    <string name="logout_failed">Uitteken het misluk: %1$s</string>
+</resources>

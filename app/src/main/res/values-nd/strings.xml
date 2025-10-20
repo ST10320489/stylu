@@ -1,0 +1,174 @@
+<resources>
+    <string name="app_name">stylu</string>
+    <string name="title_home">Ekhaya</string>
+    <string name="title_wardrobe">Izembatho</string>
+    <string name="title_profile">Iphrofayela</string>
+    <string name="notifications">Izaziso</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_settings">Izilungiselelo zephrofayela</string>
+    <string name="system_settings">Izilungiselelo zesistimu</string>
+    <string name="biometric_login">Ngena nge-Biometric</string>
+    <string name="biometric_description">Sebenzisa iminwe noma ubuso ukungena</string>
+    <string name="logout">Phuma</string>
+    <string name="logout_message">Ufuna ngempela ukuphuma?</string>
+    <string name="cancel">Khansela</string>
+
+    <!-- Profile Settings -->
+    <string name="first_name">Igama</string>
+    <string name="last_name">Isibongo</string>
+    <string name="phone_number">Inombolo yocingo</string>
+    <string name="email">I-imeyili</string>
+    <string name="password">Iphasiwedi</string>
+    <string name="enter_first_name">Faka igama</string>
+    <string name="enter_last_name">Faka isibongo</string>
+    <string name="enter_phone_number">Faka inombolo yocingo</string>
+    <string name="enter_email">Faka i-imeyili</string>
+    <string name="enter_password">Faka iphasiwedi</string>
+    <string name="save_changes">Londoloza izinguquko</string>
+
+    <!-- System Settings -->
+    <string name="language">Ulimi</string>
+    <string name="temperature_unit">Isilinganiso sokushisa</string>
+    <string name="reminder_time">Isikhathi sesikhumbuzo</string>
+    <string name="weather_sensitivity">Ukuzwela kwesimo sezulu</string>
+    <string name="notify_weather_alerts">Xwayisa izexwayiso zezulu</string>
+    <string name="notify_outfit_reminders">Xwayisa ngezikhumbuzo zezingubo</string>
+
+    <!-- Language Options (does not change)-->
+    <string name="language_english">English</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="language_xhosa">Xhosa</string>
+    <string name="language_zulu">Zulu</string>
+    <string name="language_tswana">Tswana</string>
+    <string name="language_ndebele">Ndebele</string>
+    <string name="language_french">French</string>
+    <string name="language_italian">Italian</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_venda">Venda</string>
+
+    <!-- Temperature Units -->
+    <string name="celsius">Celsius (°C)</string>
+    <string name="fahrenheit">Fahrenheit (°F)</string>
+
+    <!-- Weather Sensitivity -->
+    <string name="sensitivity_low">Phansi</string>
+    <string name="sensitivity_normal">Ejwayelekile</string>
+    <string name="sensitivity_high">Phezulu</string>
+
+    <!-- Add Item -->
+    <string name="item_image">Isithombe sento</string>
+    <string name="select_image">Khetha isithombe</string>
+    <string name="remove_background">Susa isizinda</string>
+    <string name="item_name">Igama lento</string>
+    <string name="item_name_hint">isib. Ijakethi ye-denim eluhlaza</string>
+    <string name="category">Uhlobo</string>
+    <string name="subcategory">Uhlobo oluncane</string>
+    <string name="color">Umbala</string>
+    <string name="color_hint">isib. Oluhlaza</string>
+    <string name="size">Usayizi</string>
+    <string name="size_hint">isib. M, L, XL</string>
+    <string name="price_optional">Inani (Okukhethwayo)</string>
+    <string name="price_hint">isib. 299,99</string>
+    <string name="weather_suitability">Ifanele isimo sezulu</string>
+    <string name="save_item">Londoloza into</string>
+
+    <!-- Home -->
+    <string name="outfit_calendar">Ikhalenda lezembatho</string>
+    <string name="today_date">Namuhla, Jan 1</string>
+    <string name="weather">Isimo sezulu</string>
+    <string name="temperature_range">-3° ku +8°</string>
+    <string name="precipitation_label">Amathuba emvula</string>
+    <string name="precipitation_value">90%</string>
+    <string name="scheduled_outfit">Ingubo ehleliwe</string>
+
+    <!-- Create Outfit -->
+    <string name="save">Londoloza</string>
+
+    <!-- Wardrobe -->
+    <string name="no_items">Azikho izinto okwamanje</string>
+    <string name="tap_to_add">Thepha + ukufaka into yakho yokuqala</string>
+
+    <!-- Outfit Detail -->
+    <string name="outfit_name">Igama lengubo</string>
+    <string name="delete_outfit">Susa ingubo</string>
+    <string name="edit_outfit">Hlela ingubo</string>
+    <string name="no_outfits">Azikho izingubo okwamanje</string>
+    <string name="tap_to_add_outfit">Thepha + ukudala ingubo yakho yokuqala</string>
+
+    <!-- Weekly Weather -->
+    <string name="monday_short">Mvu</string>
+    <string name="tuesday_short">Bib</string>
+    <string name="wednesday_short">Tha</string>
+    <string name="thursday_short">Umi</string>
+    <string name="friday_short">Hla</string>
+    <string name="saturday_short">Mgq</string>
+    <string name="sunday_short">Caw</string>
+    <string name="weather_icon">Isithonjana sezulu</string>
+
+    <!-- Bottom Sheet -->
+    <string name="add_items">Faka izinto</string>
+    <string name="search">Sesha</string>
+
+    <!-- Dialog Edit Item -->
+    <string name="edit_name_hint">Igama lento</string>
+    <string name="edit_color_hint">Umbala</string>
+    <string name="edit_size_hint">Usayizi</string>
+
+    <!-- FAB Dialog -->
+    <string name="create_new_outfit">Dala ingubo entsha</string>
+    <string name="add_new_item">Faka into entsha</string>
+
+    <!-- Save Outfit Dialog -->
+    <string name="outfit_name_hint">Igama lengubo</string>
+
+    <!-- Messages -->
+    <string name="settings_loaded">Izilungiselelo zilayishwe ngempumelelo</string>
+    <string name="failed_load_settings">Ukulayisha izilungiselelo kwehlulekile: %1$s</string>
+    <string name="error_loading_settings">Iphutha ekulayisheni izilungiselelo: %1$s</string>
+    <string name="settings_updated">Izilungiselelo zibuyekeziwe ngempumelelo</string>
+    <string name="failed_update_settings">Ukubuyekeza kwehlulekile: %1$s</string>
+    <string name="saving">Kugcinwa…</string>
+    <string name="language_changed">Ulimi luguquliwe. Qala kabusha uhlelo ukuze lusebenze.</string>
+
+    <!-- Navigation -->
+    <string name="my_items">Izinto zami</string>
+    <string name="my_outfits">Izingubo zami</string>
+
+    <!-- Navigation Labels -->
+    <string name="add_item_title">Faka into</string>
+    <string name="create_outfit_title">Dala ingubo</string>
+    <string name="outfit_detail_title">Imininingwane yengubo</string>
+
+    <!-- Item Fragment Dialogs -->
+    <string name="view_details">Buka imininingwane</string>
+    <string name="edit">Hlela</string>
+    <string name="delete">Susa</string>
+    <string name="edit_item">Hlela into</string>
+
+    <string name="delete_item_title">Susa into</string>
+    <string name="delete_item_message">Ufuna ngempela ukususa %1$s?</string>
+    <string name="item_deleted">Into isusiwe</string>
+    <string name="no_changes_made">Akukho zinguquko ezenziwe</string>
+    <string name="ok">KULUNGILE</string>
+
+    <!-- Item Details -->
+    <string name="name_label">Igama: %1$s</string>
+    <string name="category_label">Uhlobo: %1$s</string>
+    <string name="subcategory_label">Uhlobo oluncane: %1$s</string>
+    <string name="color_label">Umbala: %1$s</string>
+    <string name="size_label">Usayizi: %1$s</string>
+    <string name="weather_tag_label">Ithegi yesimo sezulu: %1$s</string>
+    <string name="times_worn_label">Izikhathi ezigqokwe: %1$d</string>
+    <string name="not_available">N/A</string>
+
+    <!-- Error Messages -->
+    <string name="failed_to_load_items">Ukulayisha izinto kwehlulekile: %1$s</string>
+    <string name="error_message">Iphutha: %1$s</string>
+    <string name="failed_to_update">Ukubuyekeza kwehlulekile: %1$s</string>
+    <string name="failed_to_delete">Ukususa kwehlulekile: %1$s</string>
+
+    <!-- Errors -->
+    <string name="navigation_error">Iphutha lokuzulazula: %1$s</string>
+    <string name="logout_failed">Ukuphuma kwehlulekile: %1$s</string>
+</resources>

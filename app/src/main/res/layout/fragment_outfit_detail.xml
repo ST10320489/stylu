@@ -12,7 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="Outfit Name"
+        android:text="@string/outfit_name"
         android:textColor="#5A2E5A"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -36,9 +36,8 @@
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_margin="16dp"
-        android:layout_marginTop="157dp"
         android:background="@drawable/btn_primary_bg"
-        android:text="Delete Outfit"
+        android:text="@string/delete_outfit"
         android:textColor="#FFFFFF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -50,12 +49,11 @@
         android:layout_height="48dp"
         android:layout_margin="16dp"
         android:background="@drawable/btn_primary_bg"
-        android:text="Edit Outfit"
+        android:text="@string/edit_outfit"
         android:textColor="#FFFFFF"
-        app:layout_constraintBottom_toTopOf="@+id/btnDeleteOutfit"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/outfitCanvas"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/outfitCanvas" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

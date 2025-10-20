@@ -5,6 +5,7 @@
 
     <!-- Internet permission for Supabase API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- Network state permission -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -21,7 +22,8 @@
         android:required="false" />
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
+    <!--Biometric-->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <application
         android:allowBackup="true"

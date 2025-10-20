@@ -11,7 +11,6 @@
         android:layout_height="match_parent"
         android:layout_marginTop="70dp">
 
-        <!-- 🔥 UPDATED: Increased canvas from 0.58 to 0.65 (bigger) -->
         <FrameLayout
             android:id="@+id/canvasContainer"
             android:layout_width="0dp"
@@ -55,7 +54,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/btn_secondary_bg"
-                android:text="Cancel"
+                android:text="@string/cancel"
                 android:textColor="#5A2E5A" />
 
             <Button
@@ -65,7 +64,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/btn_primary_bg"
-                android:text="Save"
+                android:text="@string/save"
                 android:textColor="#FFFFFF" />
         </LinearLayout>
 

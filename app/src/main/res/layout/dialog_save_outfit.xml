@@ -10,7 +10,7 @@
         android:id="@+id/etOutfitName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Outfit Name"
+        android:hint="@string/outfit_name_hint"
         android:inputType="text"/>
 
     <Spinner
