@@ -1,5 +1,6 @@
 package com.iie.st10320489.stylu
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -23,6 +24,7 @@ import com.iie.st10320489.stylu.ui.auth.LoginActivity
 import kotlinx.coroutines.launch
 import android.widget.Button
 import androidx.activity.OnBackPressedCallback
+import com.iie.st10320489.stylu.utils.LanguageManager
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,6 +39,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
 
         if (!DirectSupabaseAuth.isLoggedIn()) {
             redirectToLogin()
@@ -100,6 +104,10 @@ class MainActivity : AppCompatActivity() {
         } else {
             false
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageManager.applyLanguage(newBase))
     }
 
     private fun navigateBackToHome(): Boolean {

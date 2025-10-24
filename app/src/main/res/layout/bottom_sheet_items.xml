@@ -18,7 +18,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Items"
+        android:text="@string/add_items"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="#5A2E5A"
@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="12dp"
-        android:hint="Search"
+        android:hint="@string/search"
         android:background="@drawable/btn_secondary_bg"
         android:drawableStart="@android:drawable/ic_menu_search"
         android:drawablePadding="8dp"
@@ -55,3 +55,4 @@
         android:layout_height="400dp"/>
 
 </LinearLayout>
+

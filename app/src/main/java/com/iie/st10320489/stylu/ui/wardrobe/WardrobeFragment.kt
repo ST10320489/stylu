@@ -68,26 +68,72 @@ class WardrobeFragment : Fragment() {
     }
 
     private fun loadOutfits() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 progressBar.visibility = View.VISIBLE
 
                 val result = apiService.getUserOutfits()
                 result.onSuccess { outfits ->
                     allOutfits = outfits
-                    setupCategoryButtons()
+                    setupCategoryButtonsSafe()
                     filterOutfits(selectedCategory)
                 }.onFailure { error ->
-                    Toast.makeText(requireContext(), "Failed to load outfits: ${error.message}", Toast.LENGTH_SHORT).show()
+                    context?.let {
+                        Toast.makeText(it, "Failed to load outfits: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
                     outfitAdapter.submitList(emptyList())
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                context?.let {
+                    Toast.makeText(it, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             } finally {
                 progressBar.visibility = View.GONE
             }
         }
     }
+
+    private fun setupCategoryButtonsSafe() {
+        if (!isAdded) return // Fragment not attached, skip UI updates
+
+        categoryContainer.removeAllViews()
+
+        val categoryCounts = allOutfits.groupingBy { it.category ?: "Other" }.eachCount()
+        val categories = listOf("All" to allOutfits.size) + categoryCounts.toList()
+
+        for ((category, count) in categories) {
+            val button = Button(requireContext()).apply {
+                text = "$category ($count)"
+                textSize = 16f
+                setPadding(24, 0, 24, 0)
+                isAllCaps = false
+
+                val isSelected = category == selectedCategory
+                background = ContextCompat.getDrawable(
+                    requireContext(),
+                    if (isSelected) R.drawable.btn_primary_bg else R.drawable.btn_secondary_bg
+                )
+                setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#5A2E5A"))
+
+                setOnClickListener {
+                    selectedCategory = category
+                    setupCategoryButtonsSafe()
+                    filterOutfits(category)
+                }
+            }
+
+            val layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                (33 * resources.displayMetrics.density).toInt()
+            )
+            layoutParams.setMargins(0, 0, (8 * resources.displayMetrics.density).toInt(), 0)
+            button.layoutParams = layoutParams
+
+            categoryContainer.addView(button)
+        }
+    }
+
+
 
     private fun setupCategoryButtons() {
         categoryContainer.removeAllViews()

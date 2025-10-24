@@ -1,5 +1,6 @@
 package com.iie.st10320489.stylu.ui.item
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
@@ -73,19 +74,16 @@ class ItemFragment : Fragment() {
             try {
                 showLoading(true)
 
-                // Fetch all items from API
                 val itemsResult = itemRepository.getUserItems()
                 itemsResult.onSuccess { items ->
                     allItems = items
 
-                    // Fetch category counts from API
                     val countsResult = itemRepository.getItemCountsByCategory()
                     countsResult.onSuccess { counts ->
                         categoryCounts = counts
                         setupCategoryButtons()
                         filterItems(selectedCategory)
                     }.onFailure {
-                        // If counts fail, still show items with manual count
                         categoryCounts = calculateCategoryCounts(items)
                         setupCategoryButtons()
                         filterItems(selectedCategory)
@@ -93,17 +91,16 @@ class ItemFragment : Fragment() {
                 }.onFailure { error ->
                     Toast.makeText(
                         requireContext(),
-                        "Failed to load items: ${error.message}",
+                        getString(R.string.failed_to_load_items, error.message),
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    // Show empty state
                     itemAdapter.submitList(emptyList())
                 }
             } catch (e: Exception) {
                 Toast.makeText(
                     requireContext(),
-                    "Error: ${e.message}",
+                    getString(R.string.error_message, e.message),
                     Toast.LENGTH_SHORT
                 ).show()
             } finally {
@@ -117,6 +114,7 @@ class ItemFragment : Fragment() {
             .mapValues { it.value.size }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupCategoryButtons() {
         val categoryContainer = binding.categoryContainer
         categoryContainer.removeAllViews()
@@ -169,8 +167,11 @@ class ItemFragment : Fragment() {
     }
 
     private fun showItemOptions(item: WardrobeItem) {
-        // Show dialog with options: View Details, Edit, Delete
-        val options = arrayOf("View Details", "Edit", "Delete")
+        val options = arrayOf(
+            getString(R.string.view_details),
+            getString(R.string.edit),
+            getString(R.string.delete)
+        )
 
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle(item.name ?: item.subcategory)
@@ -185,41 +186,39 @@ class ItemFragment : Fragment() {
     }
 
     private fun viewItemDetails(item: WardrobeItem) {
-        // Create a simple details dialog
+        val na = getString(R.string.not_available)
         val message = buildString {
-            append("Name: ${item.name ?: "N/A"}\n")
-            append("Category: ${item.category}\n")
-            append("Subcategory: ${item.subcategory}\n")
-            append("Color: ${item.colour ?: "N/A"}\n")
-            append("Size: ${item.size ?: "N/A"}\n")
-            append("Weather Tag: ${item.weatherTag ?: "N/A"}\n")
-            append("Times Worn: ${item.timesWorn}")
+            append(getString(R.string.name_label, item.name ?: na) + "\n")
+            append(getString(R.string.category_label, item.category) + "\n")
+            append(getString(R.string.subcategory_label, item.subcategory) + "\n")
+            append(getString(R.string.color_label, item.colour ?: na) + "\n")
+            append(getString(R.string.size_label, item.size ?: na) + "\n")
+            append(getString(R.string.weather_tag_label, item.weatherTag ?: na) + "\n")
+            append(getString(R.string.times_worn_label, item.timesWorn))
         }
 
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle(item.name ?: item.subcategory)
             .setMessage(message)
-            .setPositiveButton("OK", null)
+            .setPositiveButton(getString(R.string.ok), null)
             .show()
     }
 
     private fun editItem(item: WardrobeItem) {
-        // Create an edit dialog with editable fields
         val editView = layoutInflater.inflate(R.layout.dialog_edit_item, null)
 
         val etName = editView.findViewById<android.widget.EditText>(R.id.etEditName)
         val etColor = editView.findViewById<android.widget.EditText>(R.id.etEditColor)
         val etSize = editView.findViewById<android.widget.EditText>(R.id.etEditSize)
 
-        // Pre-fill with current values
         etName.setText(item.name)
         etColor.setText(item.colour)
         etSize.setText(item.size)
 
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Edit Item")
+            .setTitle(getString(R.string.edit_item))
             .setView(editView)
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton(getString(R.string.save)) { _, _ ->
                 val updates = mutableMapOf<String, Any>()
 
                 val name = etName.text.toString().trim()
@@ -234,10 +233,10 @@ class ItemFragment : Fragment() {
                 if (updates.isNotEmpty()) {
                     updateItem(item.itemId, updates)
                 } else {
-                    Toast.makeText(requireContext(), "No changes made", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.no_changes_made), Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
@@ -249,16 +248,16 @@ class ItemFragment : Fragment() {
                 val result = itemRepository.updateItem(itemId, updates)
                 result.onSuccess { message ->
                     Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-                    loadItemsFromAPI() // Refresh list
+                    loadItemsFromAPI()
                 }.onFailure { error ->
                     Toast.makeText(
                         requireContext(),
-                        "Failed to update: ${error.message}",
+                        getString(R.string.failed_to_update, error.message),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.error_message, e.message), Toast.LENGTH_SHORT).show()
             } finally {
                 showLoading(false)
             }
@@ -267,12 +266,12 @@ class ItemFragment : Fragment() {
 
     private fun confirmDelete(item: WardrobeItem) {
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Delete Item")
-            .setMessage("Are you sure you want to delete ${item.name ?: item.subcategory}?")
-            .setPositiveButton("Delete") { _, _ ->
+            .setTitle(getString(R.string.delete_item_title))
+            .setMessage(getString(R.string.delete_item_message, item.name ?: item.subcategory))
+            .setPositiveButton(getString(R.string.delete)) { _, _ ->
                 deleteItem(item)
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
@@ -283,17 +282,17 @@ class ItemFragment : Fragment() {
 
                 val result = itemRepository.deleteItem(item.itemId)
                 result.onSuccess {
-                    Toast.makeText(requireContext(), "Item deleted", Toast.LENGTH_SHORT).show()
-                    loadItemsFromAPI() // Refresh list
+                    Toast.makeText(requireContext(), getString(R.string.item_deleted), Toast.LENGTH_SHORT).show()
+                    loadItemsFromAPI()
                 }.onFailure { error ->
                     Toast.makeText(
                         requireContext(),
-                        "Failed to delete: ${error.message}",
+                        getString(R.string.failed_to_delete, error.message),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.error_message, e.message), Toast.LENGTH_SHORT).show()
             } finally {
                 showLoading(false)
             }
@@ -301,8 +300,9 @@ class ItemFragment : Fragment() {
     }
 
     private fun showLoading(show: Boolean) {
-        binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
+        _binding?.progressBar?.visibility = if (show) View.VISIBLE else View.GONE
     }
+
 
     // Helper function to convert dp to px
     private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()

@@ -47,19 +47,19 @@
     <fragment
         android:id="@+id/fragment_profile_settings"
         android:name="com.iie.st10320489.stylu.ui.profile.ProfileSettingsFragment"
-        android:label="Profile"
+        android:label="@string/profile_settings"
         tools:layout="@layout/fragment_profile_settings" />
 
     <fragment
         android:id="@+id/fragment_system_settings"
         android:name="com.iie.st10320489.stylu.ui.profile.SystemSettingsFragment"
-        android:label="System"
+        android:label="@string/system_settings"
         tools:layout="@layout/fragment_system_settings" />
 
     <fragment
         android:id="@+id/navigation_add_item"
         android:name="com.iie.st10320489.stylu.ui.item.AddItemFragment"
-        android:label="Add Item"
+        android:label="@string/add_item_title"
         tools:layout="@layout/fragment_add_item">
 
         <action
@@ -72,19 +72,19 @@
     <fragment
         android:id="@+id/createOutfitFragment"
         android:name="com.iie.st10320489.stylu.ui.wardrobe.CreateOutfitFragment"
-        android:label="Create Outfit"
+        android:label="@string/create_outfit_title"
         tools:layout="@layout/fragment_create_outfit"/>
 
     <fragment
         android:id="@+id/outfitDetailFragment"
         android:name="com.iie.st10320489.stylu.ui.wardrobe.OutfitDetailFragment"
-        android:label="Outfit Detail"
+        android:label="@string/outfit_detail_title"
         tools:layout="@layout/fragment_outfit_detail"/>
 
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.iie.st10320489.stylu.ui.home.HomeFragment"
-        android:label="Home">
+        android:label="@string/title_home">
 
         <action
             android:id="@+id/action_home_to_addItem"
@@ -98,7 +98,7 @@
     <fragment
         android:id="@+id/navigation_item"
         android:name="com.iie.st10320489.stylu.ui.item.ItemFragment"
-        android:label="Wardrobe">
+        android:label="@string/my_items">
 
         <action
             android:id="@+id/action_items_to_addItem"
@@ -107,7 +107,6 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
-
 
         <action
             android:id="@+id/action_items_to_createOutfit"

@@ -76,7 +76,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Outfit Calendar"
+                    android:text="@string/outfit_calendar"
                     android:textColor="@android:color/black"
                     android:textSize="34sp"
                     android:textStyle="bold"
@@ -93,7 +93,6 @@
                     android:src="@drawable/ic_forward" />
             </LinearLayout>
 
-            <!-- Outfit Card -->
             <!-- Scheduled Outfit Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -120,7 +119,7 @@
                             android:id="@+id/tvDate"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Today, Jan 1"
+                            android:text="@string/today_date"
                             android:textSize="16sp"
                             android:textColor="@color/purple_primary"
                             android:fontFamily="@font/poppinsregular"
@@ -131,7 +130,7 @@
                             android:id="@+id/tvWeatherLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Weather"
+                            android:text="@string/weather"
                             android:textSize="16sp"
                             android:textColor="@color/grey"
                             android:layout_marginTop="4dp"
@@ -143,7 +142,7 @@
                             android:id="@+id/tvTemperature"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="-3° to +8°"
+                            android:text="@string/temperature_range"
                             android:textSize="16sp"
                             android:textColor="@color/purple_primary"
                             android:fontFamily="@font/poppinsregular"
@@ -154,7 +153,7 @@
                             android:id="@+id/tvPrecipitationLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Probability of Precipitation"
+                            android:text="@string/precipitation_label"
                             android:textSize="16sp"
                             android:textColor="@color/grey"
                             android:layout_marginTop="4dp"
@@ -166,7 +165,7 @@
                             android:id="@+id/tvPrecipitation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="90%"
+                            android:text="@string/precipitation_value"
                             android:textSize="16sp"
                             android:textColor="@color/purple_primary"
                             android:fontFamily="@font/poppinsregular"
@@ -196,14 +195,11 @@
                             android:layout_gravity="center"
                             android:scaleType="centerCrop"
                             android:src="@drawable/default_outfit"
-                            android:contentDescription="Scheduled Outfit"/>
+                            android:contentDescription="@string/scheduled_outfit"/>
                     </FrameLayout>
-
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
-            <!-- Add more cards here if needed -->
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
