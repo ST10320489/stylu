@@ -169,4 +169,73 @@
     <!-- Errors -->
     <string name="navigation_error">Navigasie fout: %1$s</string>
     <string name="logout_failed">Uitteken het misluk: %1$s</string>
+
+    <!-- Search and Filter -->
+    <string name="search_items">Soek items…</string>
+    <string name="filter">Filter</string>
+    <string name="filter_items">Filter Items</string>
+    <string name="apply_filters">Pas Filters Toe</string>
+    <string name="clear_filters">Vee Filters Uit</string>
+    <string name="active_filters">Aktiewe Filters</string>
+    <string name="times_worn_filter">Aantal Kere Gedra</string>
+    <string name="all_items">Alle Items</string>
+    <string name="never_worn">Nooit Gedra (0 kere)</string>
+    <string name="least_worn">Minste Gedra (1–5 kere)</string>
+    <string name="most_worn">Meeste Gedra (6+ kere)</string>
+
+    <!-- Organize Closet -->
+    <string name="organize_closet">Organiseer Klerekas</string>
+    <string name="organize_closet_description">Swaai regs om items te hou, links om weg te gooi</string>
+    <string name="organize_all_items">Organiseer Alle Items</string>
+    <string name="organize_least_worn">Organiseer Minste Gedra Items</string>
+    <string name="swipe_instructions">Swaai links om weg te gooi, regs om te hou</string>
+    <string name="keep">Hou</string>
+    <string name="discard">Gooi Weg</string>
+
+    <!-- Organize Complete -->
+    <string name="closet_organized">Klerekas Georganiseer!</string>
+    <string name="organize_summary">Jy het suksesvol jou klerekas georganiseer</string>
+    <string name="statistics">Statistiek</string>
+    <string name="items_reviewed">Items Hersien</string>
+    <string name="items_kept">Items Gehou</string>
+    <string name="items_discarded">Items Weggegooi</string>
+    <string name="complete">Voltooi</string>
+    <string name="done">Klaar</string>
+
+    <!-- Discarded Items -->
+    <string name="discarded_items">Weggegooide Items</string>
+    <string name="view_discarded_items">Sien Weggegooide Items</string>
+    <string name="discarded_items_description">Hierdie items is gemerk vir verwydering. Jy kan dit herstel of permanent uitvee.</string>
+    <string name="no_discarded_items">Geen Weggegooide Items</string>
+    <string name="no_discarded_items_description">Jy het nog geen items weggegooi nie</string>
+    <string name="restore_all">Herstel Alles</string>
+    <string name="delete_all">Vee Alles Uit</string>
+    <string name="restore_item">Herstel Item</string>
+    <string name="delete_permanently">Vee Permanent Uit</string>
+    <string name="confirm_restore_all">Herstel al die weggegooide items na jou kas?</string>
+    <string name="confirm_delete_all">Vee al die weggegooide items permanent uit? Dit kan nie ongedaan gemaak word nie.</string>
+    <string name="confirm_delete_item">Vee hierdie item permanent uit? Dit kan nie ongedaan gemaak word nie.</string>
+    <string name="items_restored">Items suksesvol herstel</string>
+    <string name="items_deleted">Items permanent uitgevee</string>
+    <string name="item_restored">Item herstel</string>
+    <string name="item_discarded">Item weggegooi</string>
+    <string name="failed_to_restore">Kon nie herstel nie: %1$s</string>
+    <string name="failed_to_discard">Kon nie weggooi nie: %1$s</string>
+
+    <!-- Filters Applied -->
+    <string name="filter_color">Kleur: %1$s</string>
+    <string name="filter_size">Grootte: %1$s</string>
+    <string name="filter_weather">Weer: %1$s</string>
+    <string name="filter_times_worn">Aantal Kere Gedra: %1$s</string>
+
+    <!-- Messages -->
+    <string name="no_results">Geen items pas by jou filters nie</string>
+    <string name="searching">Besig om te soek…</string>
+
+    <!-- Organize Complete Additional Strings -->
+    <string name="organize_summary_kept_all">Jy het al jou items gehou!</string>
+    <string name="organize_summary_discarded_all">Jy het al die items in hierdie sessie weggegooi</string>
+    <string name="confirm_restore_item">Herstel %1$s na jou klerekas?</string>
+
+
 </resources>

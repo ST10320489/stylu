@@ -3,11 +3,10 @@ package com.iie.st10320489.stylu
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
-import android.widget.PopupMenu
+import android.widget.Button
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -16,16 +15,11 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.iie.st10320489.stylu.databinding.ActivityMainBinding
 import com.iie.st10320489.stylu.network.DirectSupabaseAuth
 import com.iie.st10320489.stylu.ui.auth.LoginActivity
-import kotlinx.coroutines.launch
-import android.widget.Button
-import androidx.activity.OnBackPressedCallback
 import com.iie.st10320489.stylu.utils.LanguageManager
-
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,8 +34,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
         if (!DirectSupabaseAuth.isLoggedIn()) {
             redirectToLogin()
             return
@@ -51,39 +43,74 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-        binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
 
         navController = findNavController(R.id.nav_host_fragment_activity_main)
 
+        // Setup navigation
         val appBarConfig = AppBarConfiguration(topLevelDestinations)
         setupActionBarWithNavController(navController, appBarConfig)
-
         binding.bottomNavigationView.setupWithNavController(navController)
 
+        // Setup FAB
         binding.fab.setImageResource(R.drawable.ic_tshirt)
         binding.fab.setOnClickListener { switchToWardrobeMenu() }
 
+        // Destination change listener
         navController.addOnDestinationChangedListener { _, destination, _ ->
             supportActionBar?.title = destination.label
 
-            if (destination.id == R.id.navigation_home) {
-                binding.toolbar.visibility = View.GONE
+            // Hide toolbar on home screen
+            binding.toolbar.visibility = if (destination.id == R.id.navigation_home) {
+                View.GONE
             } else {
-                binding.toolbar.visibility = View.VISIBLE
+                View.VISIBLE
             }
 
-            supportActionBar?.setDisplayHomeAsUpEnabled(destination.id !in topLevelDestinations)
-            binding.toolbar.navigationIcon = if (destination.id !in topLevelDestinations)
+            // Show back button for non-top-level destinations
+            val showBackButton = destination.id !in topLevelDestinations
+            supportActionBar?.setDisplayHomeAsUpEnabled(showBackButton)
+
+            binding.toolbar.navigationIcon = if (showBackButton) {
                 ContextCompat.getDrawable(this, R.drawable.ic_back)
-            else null
+            } else {
+                null
+            }
+
+            // Update menu if we're at a top-level destination
+            if (destination.id in topLevelDestinations) {
+                switchToDefaultMenu()
+            }
         }
 
         switchToDefaultMenu()
+        setupBackButtonHandling()
+    }
 
+    private fun setupBackButtonHandling() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (!navigateBackToHome()) {
-                    finish()
+                val currentDest = navController.currentDestination?.id
+
+                when {
+                    // If at top-level destination, exit app
+                    currentDest in topLevelDestinations -> {
+                        finish()
+                    }
+
+                    // Otherwise, use proper back navigation
+                    else -> {
+                        val popped = navController.navigateUp()
+
+                        // If we popped to top level, update menu
+                        if (navController.currentDestination?.id in topLevelDestinations) {
+                            switchToDefaultMenu()
+                        }
+
+                        // If couldn't pop (no back stack), exit app
+                        if (!popped) {
+                            finish()
+                        }
+                    }
                 }
             }
         })
@@ -97,28 +124,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return if (navController.currentDestination?.id !in topLevelDestinations) {
-            navController.navigate(R.id.navigation_home)
-            switchToDefaultMenu()
-            true
-        } else {
-            false
+        return when {
+            // If not at top level, use proper back navigation
+            navController.currentDestination?.id !in topLevelDestinations -> {
+                val popped = navController.navigateUp()
+
+                // If we popped back to a top-level destination, update menu
+                if (navController.currentDestination?.id in topLevelDestinations) {
+                    switchToDefaultMenu()
+                }
+
+                popped
+            }
+            // If at top level, don't navigate
+            else -> false
         }
     }
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LanguageManager.applyLanguage(newBase))
-    }
-
-    private fun navigateBackToHome(): Boolean {
-        val currentId = navController.currentDestination?.id
-        return if (currentId != null && currentId !in topLevelDestinations) {
-            navController.navigate(R.id.navigation_home)
-            switchToDefaultMenu()
-            true
-        } else {
-            false
-        }
     }
 
     private fun switchToDefaultMenu() {

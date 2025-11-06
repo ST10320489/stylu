@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-parcelize") // For Parcelable support
+    id("androidx.navigation.safeargs.kotlin") // For Safe Args
 }
 
 android {
@@ -70,12 +72,13 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-
     // Glide (image loading)
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 
+    // Gson - Already included, good for JSON serialization
     implementation("com.google.code.gson:gson:2.10.1")
+
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
     //biometric

@@ -171,4 +171,72 @@
     <!-- Errors -->
     <string name="navigation_error">Iphutha lokuzulazula: %1$s</string>
     <string name="logout_failed">Ukuphuma kwehlulekile: %1$s</string>
+
+    <!-- Search and Filter -->
+    <string name="search_items">Sesha izinto…</string>
+    <string name="filter">Hlunga</string>
+    <string name="filter_items">Hlunga Izinto</string>
+    <string name="apply_filters">Sebenzisa Izihlungi</string>
+    <string name="clear_filters">Susa Izihlungi</string>
+    <string name="active_filters">Izihlungi Ezisebenzayo</string>
+    <string name="times_worn_filter">Izikhathi Ezigeziwe</string>
+    <string name="all_items">Zonke Izinto</string>
+    <string name="never_worn">Akasikaze Agqokwe (0 izikhathi)</string>
+    <string name="least_worn">Agqokwe Kancane (1–5 izikhathi)</string>
+    <string name="most_worn">Agqokwe Kakhulu (6+ izikhathi)</string>
+
+    <!-- Organize Closet -->
+    <string name="organize_closet">Hlela Iwodrophu</string>
+    <string name="organize_closet_description">Swayipha ngasekunene ukuze ugcine, ngasekhohlo ukuze ulahle</string>
+    <string name="organize_all_items">Hlela Zonke Izinto</string>
+    <string name="organize_least_worn">Hlela Ezagqokwa Kancane</string>
+    <string name="swipe_instructions">Swayipha ekhohlo ukuze ulahle, ekunene ukuze ugcine</string>
+    <string name="keep">Gcina</string>
+    <string name="discard">Lahla</string>
+
+    <!-- Organize Complete -->
+    <string name="closet_organized">Iwodrophu Ihlanganisiwe!</string>
+    <string name="organize_summary">Uhlele kahle iwodrophu yakho</string>
+    <string name="statistics">Izibalo</string>
+    <string name="items_reviewed">Izinto Ezibukiweyo</string>
+    <string name="items_kept">Izinto Ezagcinwayo</string>
+    <string name="items_discarded">Izinto Ezilahliweyo</string>
+    <string name="complete">Qedile</string>
+    <string name="done">Kwenziwe</string>
+
+    <!-- Discarded Items -->
+    <string name="discarded_items">Izinto Ezilahliweyo</string>
+    <string name="view_discarded_items">Bona Izinto Ezilahliweyo</string>
+    <string name="discarded_items_description">Lezi izinto ziphawuliwe ukuze zisuswe. Ungazibuyisela noma uzisuse unomphela.</string>
+    <string name="no_discarded_items">Awekho Amalahle Izinto</string>
+    <string name="no_discarded_items_description">Awukakalahli lutho okwamanje</string>
+    <string name="restore_all">Buyisela Konke</string>
+    <string name="delete_all">Susa Konke</string>
+    <string name="restore_item">Buyisela Into</string>
+    <string name="delete_permanently">Susa Ngokuphakade</string>
+    <string name="confirm_restore_all">Buyisela zonke izinto ezilahliweyo kuwadrophu yakho?</string>
+    <string name="confirm_delete_all">Susa zonke izinto ezilahliweyo unomphela? Lokhu akunakuhlehliswa.</string>
+    <string name="confirm_delete_item">Susa le nto unomphela? Lokhu akunakuhlehliswa.</string>
+    <string name="items_restored">Izinto zibuyiselwe ngempumelelo</string>
+    <string name="items_deleted">Izinto zisusiwe unomphela</string>
+    <string name="item_restored">Into ibuyiselwe</string>
+    <string name="item_discarded">Into ilahliwe</string>
+    <string name="failed_to_restore">Yehlulekile ukubuyisela: %1$s</string>
+    <string name="failed_to_discard">Yehlulekile ukulahla: %1$s</string>
+
+    <!-- Filters Applied -->
+    <string name="filter_color">Umbala: %1$s</string>
+    <string name="filter_size">Usayizi: %1$s</string>
+    <string name="filter_weather">Isimo Sezulu: %1$s</string>
+    <string name="filter_times_worn">Izikhathi Ezigeziwe: %1$s</string>
+
+    <!-- Messages -->
+    <string name="no_results">Azikho izinto ezifanelana nezihlungi zakho</string>
+    <string name="searching">Kuseshwa…</string>
+
+    <!-- Organize Complete Additional Strings -->
+    <string name="organize_summary_kept_all">Ugcine zonke izinto zakho!</string>
+    <string name="organize_summary_discarded_all">Ulahle zonke izinto kulesi sesi</string>
+    <string name="confirm_restore_item">Buyisela %1$s kuwadrobhi wakho?</string>
+
 </resources>

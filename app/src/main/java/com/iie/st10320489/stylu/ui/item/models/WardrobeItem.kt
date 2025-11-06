@@ -1,5 +1,9 @@
 package com.iie.st10320489.stylu.ui.item.models
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class WardrobeItem(
     val itemId: Int,
     val name: String?,
@@ -10,4 +14,4 @@ data class WardrobeItem(
     val imageUrl: String,
     val weatherTag: String?,
     val timesWorn: Int
-)
+) : Parcelable
