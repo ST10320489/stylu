@@ -10,12 +10,14 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.repository.WeatherRepository
 import com.iie.st10320489.stylu.utils.LocationHelper
 import kotlinx.coroutines.launch
+import android.widget.ImageButton
 
 class HomeFragment : Fragment() {
 
@@ -60,11 +62,20 @@ class HomeFragment : Fragment() {
 
         locationHelper = LocationHelper(requireContext())
         return view
+
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requestLocationAndFetchWeather()
+
+
+        val notifButton = view.findViewById<ImageButton>(R.id.ivNotification)
+        notifButton.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_notifications)
+        }
+
     }
 
     private fun requestLocationAndFetchWeather() {

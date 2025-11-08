@@ -55,7 +55,8 @@ class CreateOutfitFragment : Fragment() {
     private lateinit var categoryContainer: LinearLayout
     private lateinit var etSearch: EditText
 
-    private val itemRepository = ItemRepository()
+    // ✅ FIXED: Initialize with context
+    private val itemRepository by lazy { ItemRepository(requireContext()) }
     private lateinit var apiService: ApiService
     private lateinit var itemAdapter: ItemAdapter
 
@@ -203,6 +204,7 @@ class CreateOutfitFragment : Fragment() {
             try {
                 progressBar.visibility = View.VISIBLE
 
+                // ✅ FIXED: Now properly calls getUserItems()
                 val result = itemRepository.getUserItems()
                 result.onSuccess { items ->
                     allItems = items

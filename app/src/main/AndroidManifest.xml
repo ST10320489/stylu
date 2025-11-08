@@ -21,6 +21,9 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!--Biometric-->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
@@ -47,6 +50,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".service.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- DEFAULT NOTIFICATION CHANNEL (Optional but recommended) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="stylu_general" />
+
+        <!-- DEFAULT NOTIFICATION ICON (Optional) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_launcher_foreground" />
+
+        <!-- DEFAULT NOTIFICATION COLOR (Optional) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/purple_primary" />
 
         <activity
             android:name=".ui.auth.LoginActivity"
@@ -97,5 +123,7 @@
         </provider>
 
     </application>
+
+
 
 </manifest>

@@ -173,4 +173,72 @@
     <!-- Errors -->
     <string name="navigation_error">Erreur de navigation : %1$s</string>
     <string name="logout_failed">Échec de la déconnexion : %1$s</string>
+
+    <!-- Search and Filter -->
+    <string name="search_items">Rechercher des articles…</string>
+    <string name="filter">Filtrer</string>
+    <string name="filter_items">Filtrer les articles</string>
+    <string name="apply_filters">Appliquer les filtres</string>
+    <string name="clear_filters">Effacer les filtres</string>
+    <string name="active_filters">Filtres actifs</string>
+    <string name="times_worn_filter">Nombre de fois porté</string>
+    <string name="all_items">Tous les articles</string>
+    <string name="never_worn">Jamais porté (0 fois)</string>
+    <string name="least_worn">Peu porté (1–5 fois)</string>
+    <string name="most_worn">Souvent porté (6+ fois)</string>
+
+    <!-- Organize Closet -->
+    <string name="organize_closet">Organiser la garde-robe</string>
+    <string name="organize_closet_description">Glissez vers la droite pour garder, vers la gauche pour jeter</string>
+    <string name="organize_all_items">Organiser tous les articles</string>
+    <string name="organize_least_worn">Organiser les articles peu portés</string>
+    <string name="swipe_instructions">Glissez à gauche pour jeter, à droite pour garder</string>
+    <string name="keep">Garder</string>
+    <string name="discard">Jeter</string>
+
+    <!-- Organize Complete -->
+    <string name="closet_organized">Garde-robe organisée !</string>
+    <string name="organize_summary">Vous avez organisé votre garde-robe avec succès</string>
+    <string name="statistics">Statistiques</string>
+    <string name="items_reviewed">Articles examinés</string>
+    <string name="items_kept">Articles gardés</string>
+    <string name="items_discarded">Articles jetés</string>
+    <string name="complete">Terminer</string>
+    <string name="done">Fait</string>
+
+    <!-- Discarded Items -->
+    <string name="discarded_items">Articles jetés</string>
+    <string name="view_discarded_items">Voir les articles jetés</string>
+    <string name="discarded_items_description">Ces articles ont été marqués pour suppression. Vous pouvez les restaurer ou les supprimer définitivement.</string>
+    <string name="no_discarded_items">Aucun article jeté</string>
+    <string name="no_discarded_items_description">Vous n\'avez encore jeté aucun article</string>
+    <string name="restore_all">Restaurer tout</string>
+    <string name="delete_all">Tout supprimer</string>
+    <string name="restore_item">Restaurer l’article</string>
+    <string name="delete_permanently">Supprimer définitivement</string>
+    <string name="confirm_restore_all">Restaurer tous les articles jetés dans votre garde-robe ?</string>
+    <string name="confirm_delete_all">Supprimer définitivement tous les articles jetés ? Cette action est irréversible.</string>
+    <string name="confirm_delete_item">Supprimer définitivement cet article ? Cette action est irréversible.</string>
+    <string name="items_restored">Articles restaurés avec succès</string>
+    <string name="items_deleted">Articles supprimés définitivement</string>
+    <string name="item_restored">Article restauré</string>
+    <string name="item_discarded">Article jeté</string>
+    <string name="failed_to_restore">Échec de la restauration : %1$s</string>
+    <string name="failed_to_discard">Échec du rejet : %1$s</string>
+
+    <!-- Filters Applied -->
+    <string name="filter_color">Couleur : %1$s</string>
+    <string name="filter_size">Taille : %1$s</string>
+    <string name="filter_weather">Météo : %1$s</string>
+    <string name="filter_times_worn">Nombre de fois porté : %1$s</string>
+
+    <!-- Messages -->
+    <string name="no_results">Aucun article ne correspond à vos filtres</string>
+    <string name="searching">Recherche…</string>
+
+    <!-- Organize Complete Additional Strings -->
+    <string name="organize_summary_kept_all">Vous avez gardé tous vos articles !</string>
+    <string name="organize_summary_discarded_all">Vous avez jeté tous les articles de cette session</string>
+    <string name="confirm_restore_item">Restaurer %1$s dans votre garde-robe ?</string>
+
 </resources>

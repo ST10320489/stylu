@@ -18,9 +18,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.iie.st10320489.stylu.R
+import com.iie.st10320489.stylu.auth.SessionManager
 import com.iie.st10320489.stylu.data.models.category.Category
 import com.iie.st10320489.stylu.data.models.item.ItemUploadRequest
-import com.iie.st10320489.stylu.network.DirectSupabaseAuth
 import com.iie.st10320489.stylu.repository.ItemRepository
 import com.yalantis.ucrop.UCrop
 import com.yalantis.ucrop.UCropActivity
@@ -44,7 +44,10 @@ class AddItemFragment : Fragment() {
     private lateinit var btnCancel: Button
     private lateinit var progressBar: ProgressBar
 
-    private lateinit var itemRepository: ItemRepository
+    // ✅ FIXED: Added SessionManager
+    private val sessionManager by lazy { SessionManager(requireContext()) }
+    private val itemRepository by lazy { ItemRepository(requireContext()) }
+
     private var selectedImageUri: Uri? = null
     private var processedImageUri: Uri? = null
     private var currentPhotoPath: String? = null
@@ -88,9 +91,6 @@ class AddItemFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Initialize repository with context
-        itemRepository = ItemRepository(requireContext())
 
         initializeViews(view)
         setupClickListeners()
@@ -337,11 +337,16 @@ class AddItemFragment : Fragment() {
                 progressBar.visibility = View.VISIBLE
                 btnSaveItem.isEnabled = false
 
-                val userId = DirectSupabaseAuth.getCurrentUser()?.id
+                // ✅ FIXED: Use SessionManager to get user ID and email
+                val userId = sessionManager.getCurrentUserId()
                 if (userId == null) {
                     Toast.makeText(requireContext(), "Please log in first", Toast.LENGTH_SHORT).show()
+                    btnSaveItem.isEnabled = true
+                    progressBar.visibility = View.GONE
                     return@launch
                 }
+
+                val userEmail = sessionManager.getCurrentUserEmail() ?: "unknown"
 
                 // Step 1: Upload image to Supabase Storage through repository
                 val imageUrlResult = itemRepository.uploadImage(processedImageUri!!)
@@ -358,7 +363,7 @@ class AddItemFragment : Fragment() {
                         price = etPrice.text.toString().toDoubleOrNull(),
                         imageUrl = imageUrl,
                         weatherTag = spWeatherTag.selectedItem.toString(),
-                        createdBy = "user"
+                        createdBy = userEmail // ✅ FIXED: Now uses String type
                     )
 
                     val result = itemRepository.createItem(itemRequest)

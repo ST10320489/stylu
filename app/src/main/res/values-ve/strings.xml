@@ -173,7 +173,72 @@
         <string name="navigation_error">Phoso ya u ṱalutshedza: %1$s</string>
         <string name="logout_failed">U Buda ho failed: %1$s</string>
 
+    <!-- Search and Filter -->
+    <string name="search_items">Ṱoḓa zwithu…</string>
+    <string name="filter">Fhilithara</string>
+    <string name="filter_items">Fhilithara Zwithu</string>
+    <string name="apply_filters">Shumisani Fhilithara</string>
+    <string name="clear_filters">Thuthani Fhilithara</string>
+    <string name="active_filters">Fhilithara Dzi tshi Shuma</string>
+    <string name="times_worn_filter">Nḓila Dzo Ambiwaho</string>
+    <string name="all_items">Zwithu Zwothe</string>
+    <string name="never_worn">A si athu ambiwa (0 tshifhinga)</string>
+    <string name="least_worn">Zwo ambiwa kha ṱhukhu (1–5 tshifhinga)</string>
+    <string name="most_worn">Zwo ambiwa kha nnzhi (6+ tshifhinga)</string>
 
+    <!-- Organize Closet -->
+    <string name="organize_closet">Dzudzanyani Khabinete</string>
+    <string name="organize_closet_description">Swayipani kha tsha u ima uri ni vule, kha tsha u ḽa uri ni lahle</string>
+    <string name="organize_all_items">Dzudzanyani Zwithu Zwothe</string>
+    <string name="organize_least_worn">Dzudzanyani Zwo Ambiwaho kha ṱhukhu</string>
+    <string name="swipe_instructions">Swayipani kha tsha u ḽa uri ni lahle, kha tsha u ima uri ni vule</string>
+    <string name="keep">Vhulani</string>
+    <string name="discard">Lahani</string>
+
+    <!-- Organize Complete -->
+    <string name="closet_organized">Khabinete yo dzudzanywa!</string>
+    <string name="organize_summary">No dzudzanya khabinete yaṋu nga ndila yavhuḓi</string>
+    <string name="statistics">Tshivhalo</string>
+    <string name="items_reviewed">Zwithu Zwo Sedzisiwaho</string>
+    <string name="items_kept">Zwithu Zwo Vhulwaho</string>
+    <string name="items_discarded">Zwithu Zwo Lahwiwaho</string>
+    <string name="complete">Fhedza</string>
+    <string name="done">Fhedzani</string>
+
+    <!-- Discarded Items -->
+    <string name="discarded_items">Zwithu Zwo Lahwiwaho</string>
+    <string name="view_discarded_items">Vhonani Zwithu Zwo Lahwiwaho</string>
+    <string name="discarded_items_description">Zwithu hezwi zwo tandekanywa uri zothe. Ni nga zwi dzudzanya hafhu kana na zwi thutha tshoṱhe.</string>
+    <string name="no_discarded_items">A huna zwithu zwo lahwiwaho</string>
+    <string name="no_discarded_items_description">A ni athu u lahla na tshithu</string>
+    <string name="restore_all">Vhulani Zwothe</string>
+    <string name="delete_all">Thuthani Zwothe</string>
+    <string name="restore_item">Vhulani Tshithu</string>
+    <string name="delete_permanently">Thuthani Tshoṱhe Tshilalani</string>
+    <string name="confirm_restore_all">Ni khou ṱoḓa u vhulaho zwithu zwo lahwiwaho?</string>
+    <string name="confirm_delete_all">Thuthani zwithu zwo lahwiwaho tshoṱhe? Hezwi zwi nga si kone u itiswa hafhu.</string>
+    <string name="confirm_delete_item">Thuthani tshithu hetshi tshilalani? Hezwi zwi nga si kone u itiswa hafhu.</string>
+    <string name="items_restored">Zwithu zwo vhulwa nga ndila yavhuḓi</string>
+    <string name="items_deleted">Zwithu zwo thuthwa tshoṱhe</string>
+    <string name="item_restored">Tshithu tsho vhulwa</string>
+    <string name="item_discarded">Tshithu tsho lahwiwa</string>
+    <string name="failed_to_restore">Zwo kundelwa u vhulwa: %1$s</string>
+    <string name="failed_to_discard">Zwo kundelwa u lahla: %1$s</string>
+
+    <!-- Filters Applied -->
+    <string name="filter_color">Muvhala: %1$s</string>
+    <string name="filter_size">Saizi: %1$s</string>
+    <string name="filter_weather">Maḓi kana Vhuimo ha Vhusema: %1$s</string>
+    <string name="filter_times_worn">Nḓila Dzo Ambiwaho: %1$s</string>
+
+    <!-- Messages -->
+    <string name="no_results">A huna zwithu zwi fanaho na fhilithara dzaṋu</string>
+    <string name="searching">Hu khou ṱoḓiwa…</string>
+
+    <!-- Organize Complete Additional Strings -->
+    <string name="organize_summary_kept_all">No vhulaho zwithu zwanu zwothe!</string>
+    <string name="organize_summary_discarded_all">No lahla zwithu zwothe kha hei sesheni</string>
+    <string name="confirm_restore_item">Vhulani %1$s kha khabinete yaṋu?</string>
 
 
 </resources>
