@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.iie.st10320489.stylu">
 
     <!-- Internet permission for Supabase API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- Network state permission -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -14,13 +16,17 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
-    <!-- AndroidManifest.xml -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Camera feature (optional, not required) -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!--Biometric-->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <application
         android:allowBackup="true"
@@ -44,6 +50,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".service.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- DEFAULT NOTIFICATION CHANNEL (Optional but recommended) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="stylu_general" />
+
+        <!-- DEFAULT NOTIFICATION ICON (Optional) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_launcher_foreground" />
+
+        <!-- DEFAULT NOTIFICATION COLOR (Optional) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/purple_primary" />
 
         <activity
             android:name=".ui.auth.LoginActivity"
@@ -94,5 +123,7 @@
         </provider>
 
     </application>
+
+
 
 </manifest>

@@ -1,16 +1,20 @@
 package com.iie.st10320489.stylu.ui.profile
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.iie.st10320489.stylu.MainActivity
 import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.network.ApiService
 import com.iie.st10320489.stylu.network.SystemSettings
+import com.iie.st10320489.stylu.utils.LanguageManager
 import kotlinx.coroutines.launch
 
 class SystemSettingsFragment : Fragment() {
@@ -26,14 +30,27 @@ class SystemSettingsFragment : Fragment() {
 
     private lateinit var apiService: ApiService
 
-    // Dropdown options
-    private val languages = arrayOf("English", "Afrikaans", "Zulu", "Xhosa", "French", "Spanish")
-    private val languageCodes = arrayOf("en", "af", "zu", "xh", "fr", "es")
-    private val temperatureUnits = arrayOf("Celsius (°C)", "Fahrenheit (°F)")
+    // Dropdown options - NOW ONLY 3 LANGUAGES
+    private val languageCodes = arrayOf(
+        LanguageManager.LANGUAGE_ENGLISH,
+        LanguageManager.LANGUAGE_AFRIKAANS,
+        LanguageManager.LANGUAGE_XHOSA,
+        LanguageManager.LANGUAGE_ZULU,
+        LanguageManager.LANGUAGE_TSWANA,
+        LanguageManager.LANGUAGE_NDEBELE,
+        LanguageManager.LANGUAGE_FRENCH,
+        LanguageManager.LANGUAGE_ITALIAN,
+        LanguageManager.LANGUAGE_SPANISH,
+        LanguageManager.LANGUAGE_VENDA,
+
+
+    )
+
     private val temperatureCodes = arrayOf("C", "F")
     private val reminderTimes = arrayOf("06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00")
-    private val weatherSensitivities = arrayOf("Low", "Normal", "High")
     private val sensitivityCodes = arrayOf("low", "normal", "high")
+
+    private var languageChanged = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,12 +86,26 @@ class SystemSettingsFragment : Fragment() {
     }
 
     private fun setupSpinners() {
-        // Language Spinner
-        val languageAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, languages)
+        // Language Spinner - Get language names from strings
+        val languageNames = languageCodes.map { code ->
+            LanguageManager.getLanguageDisplayName(requireContext(), code)
+        }
+        val languageAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, languageNames)
         languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spLanguage.adapter = languageAdapter
 
+        // Set current language as selected
+        val currentLanguage = LanguageManager.getLanguage(requireContext())
+        val currentIndex = languageCodes.indexOf(currentLanguage)
+        if (currentIndex >= 0) {
+            spLanguage.setSelection(currentIndex)
+        }
+
         // Temperature Unit Spinner
+        val temperatureUnits = arrayOf(
+            getString(R.string.celsius),
+            getString(R.string.fahrenheit)
+        )
         val temperatureAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, temperatureUnits)
         temperatureAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spTemperatureUnit.adapter = temperatureAdapter
@@ -85,6 +116,11 @@ class SystemSettingsFragment : Fragment() {
         spReminderTime.adapter = reminderAdapter
 
         // Weather Sensitivity Spinner
+        val weatherSensitivities = arrayOf(
+            getString(R.string.sensitivity_low),
+            getString(R.string.sensitivity_normal),
+            getString(R.string.sensitivity_high)
+        )
         val sensitivityAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, weatherSensitivities)
         sensitivityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spWeatherSensitivity.adapter = sensitivityAdapter
@@ -94,7 +130,6 @@ class SystemSettingsFragment : Fragment() {
     }
 
     private fun setDefaultValues() {
-        spLanguage.setSelection(0) // English
         spTemperatureUnit.setSelection(0) // Celsius
         spReminderTime.setSelection(2) // 07:00
         spWeatherSensitivity.setSelection(1) // Normal
@@ -122,14 +157,14 @@ class SystemSettingsFragment : Fragment() {
 
                 result.onSuccess { settings ->
                     populateSettingsFields(settings)
-                    Toast.makeText(context, "Settings loaded successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.settings_loaded), Toast.LENGTH_SHORT).show()
                 }.onFailure { error ->
-                    Toast.makeText(context, "Failed to load settings: ${error.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.failed_load_settings, error.message), Toast.LENGTH_SHORT).show()
                     // Keep defaults if loading fails
                 }
 
             } catch (e: Exception) {
-                Toast.makeText(context, "Error loading settings: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.error_loading_settings, e.message), Toast.LENGTH_SHORT).show()
             } finally {
                 showLoading(false)
             }
@@ -177,9 +212,18 @@ class SystemSettingsFragment : Fragment() {
                 val selectedTimeIndex = spReminderTime.selectedItemPosition
                 val selectedSensitivityIndex = spWeatherSensitivity.selectedItemPosition
 
+                val newLanguageCode = languageCodes[selectedLanguageIndex]
+                val currentLanguageCode = LanguageManager.getLanguage(requireContext())
+
+                // Check if language changed
+                if (newLanguageCode != currentLanguageCode) {
+                    languageChanged = true
+                    LanguageManager.setLanguage(requireContext(), newLanguageCode)
+                }
+
                 // Create settings object
                 val settings = SystemSettings(
-                    language = languageCodes[selectedLanguageIndex],
+                    language = newLanguageCode,
                     temperatureUnit = temperatureCodes[selectedTempIndex],
                     defaultReminderTime = reminderTimes[selectedTimeIndex],
                     weatherSensitivity = sensitivityCodes[selectedSensitivityIndex],
@@ -191,10 +235,14 @@ class SystemSettingsFragment : Fragment() {
                 val result = apiService.updateSystemSettings(settings)
 
                 result.onSuccess { message ->
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
+                    if (languageChanged) {
+                        showLanguageChangeDialog()
+                    } else {
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        findNavController().popBackStack()
+                    }
                 }.onFailure { error ->
-                    Toast.makeText(context, "Failed to update settings: ${error.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, getString(R.string.failed_update_settings, error.message), Toast.LENGTH_LONG).show()
                 }
 
             } catch (e: Exception) {
@@ -203,6 +251,25 @@ class SystemSettingsFragment : Fragment() {
                 showLoading(false)
             }
         }
+    }
+
+    private fun showLanguageChangeDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.language))
+            .setMessage(getString(R.string.language_changed))
+            .setPositiveButton("OK") { _, _ ->
+                // Restart the app to apply language changes
+                restartApp()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun restartApp() {
+        val intent = Intent(requireContext(), MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        requireActivity().finish()
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -216,9 +283,9 @@ class SystemSettingsFragment : Fragment() {
         cbNotifyOutfitReminders.isEnabled = !isLoading
 
         if (isLoading) {
-            btnSave.text = "Saving..."
+            btnSave.text = getString(R.string.saving)
         } else {
-            btnSave.text = "Save Changes"
+            btnSave.text = getString(R.string.save_changes)
         }
     }
 }

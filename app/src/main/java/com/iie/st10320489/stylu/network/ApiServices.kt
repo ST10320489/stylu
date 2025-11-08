@@ -11,7 +11,6 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
-// Data classes
 data class UserProfile(
     val firstName: String?,
     val lastName: String?,
@@ -44,15 +43,14 @@ data class SystemSettings(
 
 class ApiService(context: Context) {
 
-    // Use 10.0.2.2 for Android emulator to access localhost
-    private val baseUrl = "http://10.0.2.2:5038"
+   private val baseUrl = "https://stylu-api-x69c.onrender.com"
+
     private val authRepository = AuthRepository(context)
 
     companion object {
         private const val TAG = "ApiService"
     }
 
-    // ===================== CONNECTION TEST =====================
     suspend fun testConnection(): Result<String> = withContext(Dispatchers.IO) {
         return@withContext try {
             val url = URL("$baseUrl/api/test")
@@ -76,11 +74,6 @@ class ApiService(context: Context) {
         }
     }
 
-    // ===================== PROFILE ENDPOINTS =====================
-
-    /**
-     * Get current user profile
-     */
     suspend fun getCurrentProfile(): Result<UserProfile> = withContext(Dispatchers.IO) {
         return@withContext try {
             val token = authRepository.getCurrentAccessToken()
@@ -146,9 +139,6 @@ class ApiService(context: Context) {
         }
     }
 
-    /**
-     * Update user profile
-     */
     suspend fun updateProfile(request: UpdateProfileRequest): Result<String> = withContext(Dispatchers.IO) {
         return@withContext try {
             val token = authRepository.getCurrentAccessToken()
@@ -216,11 +206,6 @@ class ApiService(context: Context) {
         }
     }
 
-    // ===================== SYSTEM SETTINGS ENDPOINTS =====================
-
-    /**
-     * Get current system settings
-     */
     suspend fun getCurrentSystemSettings(): Result<SystemSettings> = withContext(Dispatchers.IO) {
         return@withContext try {
             val token = authRepository.getCurrentAccessToken()
@@ -281,9 +266,6 @@ class ApiService(context: Context) {
         }
     }
 
-    /**
-     * Update system settings
-     */
     suspend fun updateSystemSettings(settings: SystemSettings): Result<String> = withContext(Dispatchers.IO) {
         return@withContext try {
             val token = authRepository.getCurrentAccessToken()
@@ -351,9 +333,386 @@ class ApiService(context: Context) {
             Result.failure(Exception("Network error: ${e.message}"))
         }
     }
+
+    data class OutfitDetail(
+        val outfitId: Int,
+        val userId: String,
+        val name: String,
+        val category: String?,
+        val schedule: String?,
+        val items: List<OutfitItemDetail>,
+        val createdAt: String
+    )
+
+    data class OutfitItemDetail(
+        val itemId: Int,
+        val name: String?,
+        val imageUrl: String,
+        val colour: String?,
+        val subcategory: String,
+        val layoutData: ItemLayoutData? = null
+    )
+
+    data class ItemLayoutData(
+        val x: Float,
+        val y: Float,
+        val scale: Float,
+        val width: Int,
+        val height: Int
+    )
+
+    data class CreateOutfitRequest(
+        val name: String,
+        val category: String?,
+        val itemIds: List<Int>
+    )
+
+    data class CreateOutfitWithLayoutRequest(
+        val name: String,
+        val category: String?,
+        val items: List<String>
+    )
+
+    data class OutfitResponse(
+        val outfitId: Int,
+        val name: String,
+        val category: String?,
+        val createdAt: String
+    )
+
+    suspend fun createOutfit(request: CreateOutfitRequest): Result<OutfitResponse> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val token = authRepository.getCurrentAccessToken()
+                ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
+
+            val url = URL("$baseUrl/api/Outfit")
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.connectTimeout = 15000
+            connection.readTimeout = 15000
+            connection.doOutput = true
+
+            val requestBody = JSONObject().apply {
+                put("name", request.name)
+                put("category", request.category ?: "")
+                put("itemIds", org.json.JSONArray(request.itemIds))
+            }
+
+            Log.d(TAG, "POST Create Outfit - URL: $url")
+            Log.d(TAG, "POST Create Outfit - Request: $requestBody")
+
+            connection.outputStream.use { outputStream ->
+                OutputStreamWriter(outputStream, "UTF-8").use { writer ->
+                    writer.write(requestBody.toString())
+                }
+            }
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode >= 400) {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            }
+
+            Log.d(TAG, "POST Create Outfit - Response Code: $responseCode")
+            Log.d(TAG, "POST Create Outfit - Response: $responseText")
+
+            if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_OK) {
+                val jsonResponse = JSONObject(responseText)
+                val dataObject = jsonResponse.getJSONObject("data")
+
+                val outfit = OutfitResponse(
+                    outfitId = jsonResponse.getInt("outfitId"),
+                    name = dataObject.getString("outfit_name"),
+                    category = request.category,
+                    createdAt = ""
+                )
+
+                Result.success(outfit)
+            } else {
+                val errorMessage = try {
+                    val errorJson = JSONObject(responseText)
+                    errorJson.optString("error", "Failed to create outfit")
+                } catch (e: Exception) {
+                    "Failed to create outfit: $responseCode"
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating outfit", e)
+            Result.failure(Exception("Network error: ${e.message}"))
+        }
+    }
+
+    suspend fun createOutfitWithLayout(request: CreateOutfitWithLayoutRequest): Result<OutfitResponse> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val token = authRepository.getCurrentAccessToken()
+                ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
+
+            val url = URL("$baseUrl/api/Outfit")
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.connectTimeout = 15000
+            connection.readTimeout = 15000
+            connection.doOutput = true
+
+            val itemsArray = org.json.JSONArray()
+            request.items.forEach { layoutJson ->
+                itemsArray.put(JSONObject(layoutJson))
+            }
+
+            val requestBody = JSONObject().apply {
+                put("name", request.name)
+                put("category", request.category ?: "")
+                put("items", itemsArray)
+            }
+
+            Log.d(TAG, "POST Create Outfit With Layout - URL: $url")
+            Log.d(TAG, "POST Create Outfit With Layout - Request: $requestBody")
+
+            connection.outputStream.use { outputStream ->
+                OutputStreamWriter(outputStream, "UTF-8").use { writer ->
+                    writer.write(requestBody.toString())
+                }
+            }
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode >= 400) {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            }
+
+            Log.d(TAG, "POST Create Outfit With Layout - Response Code: $responseCode")
+            Log.d(TAG, "POST Create Outfit With Layout - Response: $responseText")
+
+            if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_OK) {
+                val jsonResponse = JSONObject(responseText)
+                val dataObject = jsonResponse.getJSONObject("data")
+
+                val outfit = OutfitResponse(
+                    outfitId = jsonResponse.getInt("outfitId"),
+                    name = dataObject.getString("outfit_name"),
+                    category = request.category,
+                    createdAt = ""
+                )
+
+                Result.success(outfit)
+            } else {
+                val errorMessage = try {
+                    val errorJson = JSONObject(responseText)
+                    errorJson.optString("error", "Failed to create outfit")
+                } catch (e: Exception) {
+                    "Failed to create outfit: $responseCode"
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating outfit with layout", e)
+            Result.failure(Exception("Network error: ${e.message}"))
+        }
+    }
+
+    suspend fun getUserOutfits(): Result<List<OutfitDetail>> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val token = authRepository.getCurrentAccessToken()
+                ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
+
+            val url = URL("$baseUrl/api/Outfit")
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = "GET"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.connectTimeout = 15000
+            connection.readTimeout = 15000
+
+            Log.d(TAG, "GET User Outfits - URL: $url")
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode >= 400) {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            }
+
+            Log.d(TAG, "GET User Outfits - Response Code: $responseCode")
+            Log.d(TAG, "GET User Outfits - Response: $responseText")
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val outfits = parseOutfitsResponse(responseText)
+                Result.success(outfits)
+            } else {
+                val errorMessage = when (responseCode) {
+                    HttpURLConnection.HTTP_UNAUTHORIZED -> "Authentication failed. Please login again."
+                    HttpURLConnection.HTTP_FORBIDDEN -> "Access denied."
+                    else -> {
+                        try {
+                            val errorJson = JSONObject(responseText)
+                            errorJson.optString("error", "Failed to fetch outfits")
+                        } catch (e: Exception) {
+                            "Failed to fetch outfits: $responseCode"
+                        }
+                    }
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching outfits", e)
+            Result.failure(Exception("Network error: ${e.message}"))
+        }
+    }
+
+    suspend fun getOutfitsByCategory(category: String): Result<List<OutfitDetail>> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val token = authRepository.getCurrentAccessToken()
+                ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
+
+            val url = URL("$baseUrl/api/Outfit/category/$category")
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = "GET"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.connectTimeout = 15000
+            connection.readTimeout = 15000
+
+            Log.d(TAG, "GET Outfits by Category - URL: $url")
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode >= 400) {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            }
+
+            Log.d(TAG, "GET Outfits by Category - Response Code: $responseCode")
+            Log.d(TAG, "GET Outfits by Category - Response: $responseText")
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val outfits = parseOutfitsResponse(responseText)
+                Result.success(outfits)
+            } else {
+                Result.failure(Exception("Failed to fetch outfits: $responseCode"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching outfits by category", e)
+            Result.failure(Exception("Network error: ${e.message}"))
+        }
+    }
+
+    suspend fun deleteOutfit(outfitId: Int): Result<String> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val token = authRepository.getCurrentAccessToken()
+                ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
+
+            val url = URL("$baseUrl/api/Outfit/$outfitId")
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = "DELETE"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.connectTimeout = 15000
+            connection.readTimeout = 15000
+
+            Log.d(TAG, "DELETE Outfit - URL: $url")
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode >= 400) {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() } ?: "Outfit deleted successfully"
+            }
+
+            Log.d(TAG, "DELETE Outfit - Response Code: $responseCode")
+            Log.d(TAG, "DELETE Outfit - Response: $responseText")
+
+            if (responseCode in 200..299) {
+                Result.success("Outfit deleted successfully")
+            } else {
+                val errorMessage = try {
+                    val errorJson = JSONObject(responseText)
+                    errorJson.optString("error", "Failed to delete outfit")
+                } catch (e: Exception) {
+                    "Failed to delete outfit: $responseCode"
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting outfit", e)
+            Result.failure(Exception("Network error: ${e.message}"))
+        }
+    }
+
+    private fun parseOutfitsResponse(jsonString: String): List<OutfitDetail> {
+        val outfits = mutableListOf<OutfitDetail>()
+
+        try {
+            val jsonArray = org.json.JSONArray(jsonString)
+
+            for (i in 0 until jsonArray.length()) {
+                val outfitJson = jsonArray.getJSONObject(i)
+
+                val items = mutableListOf<OutfitItemDetail>()
+
+                if (outfitJson.has("outfit_item")) {
+                    val outfitItemArray = outfitJson.getJSONArray("outfit_item")
+
+                    for (j in 0 until outfitItemArray.length()) {
+                        val outfitItemJson = outfitItemArray.getJSONObject(j)
+                        val itemJson = outfitItemJson.getJSONObject("item")
+
+                        val layoutData = if (outfitItemJson.has("layout_data") && !outfitItemJson.isNull("layout_data")) {
+                            val layoutJson = outfitItemJson.getJSONObject("layout_data")
+                            ItemLayoutData(
+                                x = layoutJson.getDouble("x").toFloat(),
+                                y = layoutJson.getDouble("y").toFloat(),
+                                scale = layoutJson.getDouble("scale").toFloat(),
+                                width = layoutJson.getInt("width"),
+                                height = layoutJson.getInt("height")
+                            )
+                        } else null
+
+                        items.add(
+                            OutfitItemDetail(
+                                itemId = itemJson.getInt("item_id"),
+                                name = itemJson.optString("name", null),
+                                imageUrl = itemJson.getString("image_url"),
+                                colour = itemJson.optString("colour", null),
+                                subcategory = itemJson.optJSONObject("sub_category")
+                                    ?.optString("name", "Unknown") ?: "Unknown",
+                                layoutData = layoutData
+                            )
+                        )
+                    }
+                }
+
+                outfits.add(
+                    OutfitDetail(
+                        outfitId = outfitJson.getInt("outfit_id"),
+                        userId = outfitJson.getString("user_id"),
+                        name = outfitJson.getString("outfit_name"),
+                        category = outfitJson.optString("schedule", null),
+                        schedule = outfitJson.optString("schedule", null),
+                        items = items,
+                        createdAt = ""
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing outfits response", e)
+        }
+
+        return outfits
+    }
 }
 
-// Extension function to handle nullable boolean from JSONObject
 private fun JSONObject.optBooleanOrNull(key: String): Boolean? {
     return if (has(key) && !isNull(key)) {
         optBoolean(key)
