@@ -20,20 +20,21 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.UUID
 
-class ItemApiService {
+class ItemApiService(private val context: Context) {
+
+    private val supabaseAuth = DirectSupabaseAuth(context)
 
     companion object {
         private const val TAG = "ItemApiService"
-        private const val SUPABASE_URL = DirectSupabaseAuth.SUPABASE_URL
-        private const val SUPABASE_ANON_KEY = DirectSupabaseAuth.SUPABASE_ANON_KEY
+        private const val SUPABASE_URL = "https://fkmhmtioehokrukqwano.supabase.co"
+        private const val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrbWhtdGlvZWhva3J1a3F3YW5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMDAzNDIsImV4cCI6MjA3Mzc3NjM0Mn0.wg5fNm5_M8CRN3uzHnqvaxovIUDLCUWDcSiFJ14WqNE"
         private const val SUPABASE_STORAGE_BUCKET = "items"
-        private const val REMOVE_BG_API_KEY = "MP6cjk1T5mfdMJrSGPk3gQUV" // Get from remove.bg
+        private const val REMOVE_BG_API_KEY = "MP6cjk1T5mfdMJrSGPk3gQUV"
     }
 
     // Get all categories with subcategories directly from Supabase
     suspend fun getCategories(): Result<List<Category>> = withContext(Dispatchers.IO) {
         try {
-            // Query categories table with subcategories
             val url = URL("$SUPABASE_URL/rest/v1/category?select=*,sub_category(*)")
             val connection = url.openConnection() as HttpURLConnection
 
@@ -63,7 +64,7 @@ class ItemApiService {
     }
 
     // Upload image to Supabase Storage
-    suspend fun uploadImage(imageUri: Uri, context: Context, accessToken: String): Result<String> = withContext(Dispatchers.IO) {
+    suspend fun uploadImage(imageUri: Uri, accessToken: String): Result<String> = withContext(Dispatchers.IO) {
         try {
             // Get bitmap from URI
             val inputStream = context.contentResolver.openInputStream(imageUri)
@@ -76,7 +77,7 @@ class ItemApiService {
             val imageBytes = byteArrayOutputStream.toByteArray()
 
             // Generate unique filename with .png extension
-            val userId = DirectSupabaseAuth.getCurrentUser()?.id ?: "unknown"
+            val userId = supabaseAuth.getCurrentUserId() ?: "unknown"
             val fileName = "${userId}_${UUID.randomUUID()}.png"
 
             // Upload to Supabase Storage
@@ -90,7 +91,6 @@ class ItemApiService {
             connection.doOutput = true
 
             connection.outputStream.use { it.write(imageBytes) }
-
 
             val responseCode = connection.responseCode
             val response = if (responseCode >= 400) {
@@ -115,7 +115,7 @@ class ItemApiService {
     }
 
     // Remove background using remove.bg API
-    suspend fun removeBackground(imageUri: Uri, context: Context): Result<Uri> = withContext(Dispatchers.IO) {
+    suspend fun removeBackground(imageUri: Uri): Result<Uri> = withContext(Dispatchers.IO) {
         try {
             // Get image bytes
             val inputStream = context.contentResolver.openInputStream(imageUri)

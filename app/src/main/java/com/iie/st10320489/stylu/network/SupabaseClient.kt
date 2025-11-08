@@ -1,5 +1,6 @@
 package com.iie.st10320489.stylu.network
 
+import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -28,13 +29,98 @@ data class UserMetadata(
     val provider: String?
 )
 
-object DirectSupabaseAuth {
-     const val SUPABASE_URL = "https://fkmhmtioehokrukqwano.supabase.co"
-     const val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrbWhtdGlvZWhva3J1a3F3YW5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMDAzNDIsImV4cCI6MjA3Mzc3NjM0Mn0.wg5fNm5_M8CRN3uzHnqvaxovIUDLCUWDcSiFJ14WqNE"
+class DirectSupabaseAuth(private val context: Context) {
+
+    companion object {
+        const val SUPABASE_URL = "https://fkmhmtioehokrukqwano.supabase.co"
+        const val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrbWhtdGlvZWhva3J1a3F3YW5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMDAzNDIsImV4cCI6MjA3Mzc3NjM0Mn0.wg5fNm5_M8CRN3uzHnqvaxovIUDLCUWDcSiFJ14WqNE"
+
+        private const val PREFS_NAME = "stylu_prefs"
+        private const val KEY_ACCESS_TOKEN = "access_token"
+        private const val KEY_REFRESH_TOKEN = "refresh_token"
+        private const val KEY_USER_ID = "user_id"
+        private const val KEY_USER_EMAIL = "user_email"
+        private const val KEY_FIRST_NAME = "first_name"
+        private const val KEY_LAST_NAME = "last_name"
+        private const val TAG = "DirectSupabaseAuth"
+    }
+
+    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     private var currentAccessToken: String? = null
     private var currentRefreshToken: String? = null
     private var currentUser: User? = null
+
+    init {
+        // Load saved session on initialization
+        loadSavedSession()
+    }
+
+    /**
+     * Load saved session from SharedPreferences
+     */
+    private fun loadSavedSession() {
+        currentAccessToken = prefs.getString(KEY_ACCESS_TOKEN, null)
+        currentRefreshToken = prefs.getString(KEY_REFRESH_TOKEN, null)
+
+        val userId = prefs.getString(KEY_USER_ID, null)
+        val userEmail = prefs.getString(KEY_USER_EMAIL, null)
+        val firstName = prefs.getString(KEY_FIRST_NAME, null)
+        val lastName = prefs.getString(KEY_LAST_NAME, null)
+
+        if (userId != null && userEmail != null) {
+            currentUser = User(
+                id = userId,
+                email = userEmail,
+                emailConfirmedAt = null,
+                userMetadata = UserMetadata(
+                    firstName = firstName,
+                    lastName = lastName,
+                    fullName = "$firstName $lastName",
+                    avatarUrl = null,
+                    provider = null
+                )
+            )
+            android.util.Log.d(TAG, "Session restored for user: $userEmail")
+        }
+    }
+
+    /**
+     * Save session to SharedPreferences
+     */
+    private fun saveSession(accessToken: String, refreshToken: String?, user: User?) {
+        prefs.edit().apply {
+            putString(KEY_ACCESS_TOKEN, accessToken)
+            putString(KEY_REFRESH_TOKEN, refreshToken)
+            if (user != null) {
+                putString(KEY_USER_ID, user.id)
+                putString(KEY_USER_EMAIL, user.email)
+                putString(KEY_FIRST_NAME, user.userMetadata?.firstName)
+                putString(KEY_LAST_NAME, user.userMetadata?.lastName)
+            }
+            apply()
+        }
+        android.util.Log.d(TAG, "Session saved for user: ${user?.email}")
+    }
+
+    /**
+     * Clear session from SharedPreferences
+     */
+    private fun clearSession() {
+        prefs.edit().apply {
+            remove(KEY_ACCESS_TOKEN)
+            remove(KEY_REFRESH_TOKEN)
+            remove(KEY_USER_ID)
+            remove(KEY_USER_EMAIL)
+            remove(KEY_FIRST_NAME)
+            remove(KEY_LAST_NAME)
+            apply()
+        }
+        currentAccessToken = null
+        currentRefreshToken = null
+        currentUser = null
+        android.util.Log.d(TAG, "Session cleared")
+    }
 
     suspend fun signUp(email: String, password: String, firstName: String, lastName: String): Result<String> = withContext(Dispatchers.IO) {
         try {
@@ -115,8 +201,6 @@ object DirectSupabaseAuth {
                 currentAccessToken = responseJson.optString("access_token")
                 currentRefreshToken = responseJson.optString("refresh_token")
 
-                android.util.Log.d("DirectSupabaseAuth", "User $email logged in. Access Token: $currentAccessToken")
-
                 val userJson = responseJson.optJSONObject("user")
                 if (userJson != null) {
                     val userMetadataJson = userJson.optJSONObject("user_metadata")
@@ -138,6 +222,11 @@ object DirectSupabaseAuth {
                     )
                 }
 
+                // Save session persistently
+                saveSession(currentAccessToken!!, currentRefreshToken, currentUser)
+
+                android.util.Log.d(TAG, "User $email logged in successfully")
+
                 Result.success(currentAccessToken ?: "")
             } else {
                 val errorJson = JSONObject(response)
@@ -152,8 +241,6 @@ object DirectSupabaseAuth {
     fun setSession(accessToken: String, refreshToken: String?) {
         currentAccessToken = accessToken
         currentRefreshToken = refreshToken
-
-        android.util.Log.d("DirectSupabaseAuth", "Session manually set. Access Token: $currentAccessToken")
 
         try {
             val parts = accessToken.split(".")
@@ -180,16 +267,18 @@ object DirectSupabaseAuth {
                     userMetadata = userMetadata
                 )
 
-                android.util.Log.d("DirectSupabaseAuth", "Session set for user: $email")
+                // Save session persistently
+                saveSession(accessToken, refreshToken, currentUser)
+
+                android.util.Log.d(TAG, "OAuth session set for user: $email")
             }
         } catch (e: Exception) {
-            android.util.Log.e("DirectSupabaseAuth", "Failed to parse JWT", e)
+            android.util.Log.e(TAG, "Failed to parse JWT", e)
         }
     }
 
     suspend fun getOAuthUrl(provider: String, redirectUrl: String): Result<String> = withContext(Dispatchers.IO) {
         try {
-            // Properly encode the redirect URL
             val encodedRedirect = java.net.URLEncoder.encode(redirectUrl, "UTF-8")
             val url = "$SUPABASE_URL/auth/v1/authorize?provider=$provider&redirect_to=$encodedRedirect"
             Result.success(url)
@@ -252,6 +341,9 @@ object DirectSupabaseAuth {
                     )
                 }
 
+                // Save session persistently
+                saveSession(currentAccessToken!!, currentRefreshToken, currentUser)
+
                 Result.success(currentAccessToken ?: "")
             } else {
                 val errorJson = JSONObject(response)
@@ -275,12 +367,13 @@ object DirectSupabaseAuth {
             connection.setRequestProperty("apikey", SUPABASE_ANON_KEY)
             connection.setRequestProperty("Authorization", "Bearer $token")
 
-            currentAccessToken = null
-            currentRefreshToken = null
-            currentUser = null
+            // Clear session
+            clearSession()
 
             Result.success(Unit)
         } catch (e: Exception) {
+            // Even if API call fails, clear local session
+            clearSession()
             Result.failure(e)
         }
     }
@@ -292,4 +385,6 @@ object DirectSupabaseAuth {
     fun getCurrentUserEmail(): String? = currentUser?.email
 
     fun getCurrentUser(): User? = currentUser
+
+    fun getCurrentUserId(): String? = currentUser?.id
 }

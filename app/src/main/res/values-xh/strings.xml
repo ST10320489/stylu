@@ -173,4 +173,68 @@
     <!-- Errors -->
     <string name="navigation_error">Impazamo yokukhangela: %1$s</string>
     <string name="logout_failed">Ukuphuma akuphumelelanga: %1$s</string>
+
+    <string name="search_items">Khangela izinto…</string>
+    <string name="filter">Isihluzo</string>
+    <string name="filter_items">Hluza Izinto</string>
+    <string name="apply_filters">Sebenzisa Izihluzi</string>
+    <string name="clear_filters">Cima Izihluzi</string>
+    <string name="active_filters">Izihluzi Ezisebenzayo</string>
+    <string name="times_worn_filter">Amaxesha anxityiwe</string>
+    <string name="all_items">Zonke Izinto</string>
+    <string name="never_worn">Ayikaze inxitywe (0 amaxesha)</string>
+    <string name="least_worn">Inxitywe kancinci (1–5 amaxesha)</string>
+    <string name="most_worn">Inxitywe kakhulu (6+ amaxesha)</string>
+
+    <string name="organize_closet">Cwangcisa iKhabhathi</string>
+    <string name="organize_closet_description">Swayipa ekunene ukugcina, ekhohlo ukulahla</string>
+    <string name="organize_all_items">Cwangcisa Zonke Izinto</string>
+    <string name="organize_least_worn">Cwangcisa Ezinxitywe Kancinci</string>
+    <string name="swipe_instructions">Swayipa ekhohlo ukulahla, ekunene ukugcina</string>
+    <string name="keep">Gcina</string>
+    <string name="discard">Lahla</string>
+
+    <string name="closet_organized">IKhabhathi Iqhutywe!</string>
+    <string name="organize_summary">Uhlele ngokuphumelelayo ikhabhathi yakho</string>
+    <string name="statistics">Iingxelo-manani</string>
+    <string name="items_reviewed">Izinto Ezijongiweyo</string>
+    <string name="items_kept">Izinto Ezibekiweyo</string>
+    <string name="items_discarded">Izinto Ezilahliweyo</string>
+    <string name="complete">Gqiba</string>
+    <string name="done">Kugqityiwe</string>
+
+    <string name="discarded_items">Izinto Ezilahliweyo</string>
+    <string name="view_discarded_items">Jonga Izinto Ezilahliweyo</string>
+    <string name="discarded_items_description">Ezi zinto ziphawuliwe ukuba zisuswe. Ungazibuyisela okanye uzisuse ngokupheleleyo.</string>
+    <string name="no_discarded_items">Akukho Zinto Ezilahliweyo</string>
+    <string name="no_discarded_items_description">Awukakhuphi nto okwangoku</string>
+    <string name="restore_all">Buyisela Zonke</string>
+    <string name="delete_all">Cima Zonke</string>
+    <string name="restore_item">Buyisela Into</string>
+    <string name="delete_permanently">Cima Ngokupheleleyo</string>
+    <string name="confirm_restore_all">Buyisela zonke izinto ezilahliweyo?</string>
+    <string name="confirm_delete_all">Cima ngokupheleleyo zonke izinto ezilahliweyo? Oku akunakuhlaziywa.</string>
+    <string name="confirm_delete_item">Cima ngokupheleleyo le nto? Oku akunakuhlaziywa.</string>
+    <string name="items_restored">Izinto zibuyiselwe ngempumelelo</string>
+    <string name="items_deleted">Izinto zicinywe ngokupheleleyo</string>
+    <string name="item_restored">Into ibuyiselwe</string>
+    <string name="item_discarded">Into ilahliwe</string>
+    <string name="failed_to_restore">Ayikwazanga ukubuyisela: %1$s</string>
+    <string name="failed_to_discard">Ayikwazanga ukulahla: %1$s</string>
+
+    <string name="filter_color">Umbala: %1$s</string>
+    <string name="filter_size">Ubungakanani: %1$s</string>
+    <string name="filter_weather">Imozulu: %1$s</string>
+    <string name="filter_times_worn">Amaxesha anxityiwe: %1$s</string>
+
+    <string name="no_results">Akukho zinto ezifana nezihluzi zakho</string>
+    <string name="searching">Kukhangelwa…</string>
+
+    <!-- Organize Complete Additional Strings -->
+    <string name="organize_summary_kept_all">Ugcinile zonke izinto zakho!</string>
+    <string name="organize_summary_discarded_all">Ulahle zonke izinto kweli sesi</string>
+    <string name="confirm_restore_item">Buyisela %1$s kwikhabhathi yakho?</string>
+
+    <!-- Organize Complete Additional Strings -->
+
 </resources>

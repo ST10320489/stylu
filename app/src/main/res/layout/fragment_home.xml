@@ -20,7 +20,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:paddingBottom="34dp"/>
 
-    <ImageView
+    <ImageButton
         android:id="@+id/ivNotification"
         android:layout_width="30dp"
         android:layout_height="30dp"

@@ -171,4 +171,66 @@
     <!-- Errors -->
     <string name="navigation_error">Phoso mo go tsamaiseng: %1$s</string>
     <string name="logout_failed">Tswela ntle go paletse: %1$s</string>
+
+    <string name="search_items">Batla dilo…</string>
+    <string name="filter">Fithara</string>
+    <string name="filter_items">Fithara Dilo</string>
+    <string name="apply_filters">Dirisa Difithara</string>
+    <string name="clear_filters">Phimola Difithara</string>
+    <string name="active_filters">Difithara Tse Di Dirisiwang</string>
+    <string name="times_worn_filter">Dikgafetsa Tsa Go Aperega</string>
+    <string name="all_items">Dilo Tsotlhe</string>
+    <string name="never_worn">Ga e ise e aparawe (0 dikgafetsa)</string>
+    <string name="least_worn">E aperwe Gonyenyane (1–5 dikgafetsa)</string>
+    <string name="most_worn">E aperwe Gantsi (6+ dikgafetsa)</string>
+
+    <string name="organize_closet">Rulaganya Khabinete</string>
+    <string name="organize_closet_description">Swipa go ja go boloka, go molema go lahla</string>
+    <string name="organize_all_items">Rulaganya Dilo Tsotlhe</string>
+    <string name="organize_least_worn">Rulaganya Tse Di Aperweng Gonyenyane</string>
+    <string name="swipe_instructions">Swipa go molema go lahla, go ja go boloka</string>
+    <string name="keep">Boloka</string>
+    <string name="discard">Lahla</string>
+
+    <string name="closet_organized">Khabinete E Rulagantswe!</string>
+    <string name="organize_summary">O atlegile go rulaganya khabinete ya gago</string>
+    <string name="statistics">Dipalo</string>
+    <string name="items_reviewed">Dilo Tse Di Lekolotsweng</string>
+    <string name="items_kept">Dilo Tse Di Bolokilweng</string>
+    <string name="items_discarded">Dilo Tse Di Lahilweng</string>
+    <string name="complete">Fetsa</string>
+    <string name="done">Dirilwe</string>
+
+    <string name="discarded_items">Dilo Tse Di Lahilweng</string>
+    <string name="view_discarded_items">Leba Dilo Tse Di Lahilweng</string>
+    <string name="discarded_items_description">Dilo tseno di beilwe go tlosiwa. O ka di busetsa kgotsa wa di phimola ruri.</string>
+    <string name="no_discarded_items">Ga gona dilo tse di lahilweng</string>
+    <string name="no_discarded_items_description">Ga o ise o lahle sepe</string>
+    <string name="restore_all">Busetsa Tsotlhe</string>
+    <string name="delete_all">Phimola Tsotlhe</string>
+    <string name="restore_item">Busetsa Ntho</string>
+    <string name="delete_permanently">Phimola Ruri</string>
+    <string name="confirm_restore_all">Busetsa dilo tsotlhe tse di lahilweng mo khabineteng?</string>
+    <string name="confirm_delete_all">Phimola dilo tsotlhe ruri? Se se ka se khutlisiwe.</string>
+    <string name="confirm_delete_item">Phimola ntho eno ruri? Se se ka se khutlisiwe.</string>
+    <string name="items_restored">Dilo di busetswe ka katlego</string>
+    <string name="items_deleted">Dilo di phimotswe ruri</string>
+    <string name="item_restored">Ntho e busetswe</string>
+    <string name="item_discarded">Ntho e lahilwe</string>
+    <string name="failed_to_restore">Go retetse go busetsa: %1$s</string>
+    <string name="failed_to_discard">Go retetse go lahla: %1$s</string>
+
+    <string name="filter_color">Mala: %1$s</string>
+    <string name="filter_size">Bogolo: %1$s</string>
+    <string name="filter_weather">Bosa/Borai: %1$s</string>
+    <string name="filter_times_worn">Dikgafetsa Tsa Go Aperega: %1$s</string>
+
+    <string name="no_results">Ga gona dilo tse di tshwanelang difithara tsa gago</string>
+    <string name="searching">Go a batlwa…</string>
+
+    <!-- Organize Complete Additional Strings -->
+    <string name="organize_summary_kept_all">O bolokile dilo tsotlhe!</string>
+    <string name="organize_summary_discarded_all">O latlhile dilo tsotlhe mo kgaolong eno</string>
+    <string name="confirm_restore_item">Busetsa %1$s mo kabeteng ya gago?</string>
+
 </resources>
