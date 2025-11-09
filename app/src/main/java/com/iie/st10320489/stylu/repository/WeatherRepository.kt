@@ -1,7 +1,7 @@
 package com.iie.st10320489.stylu.repository
 
 import android.util.Log
-import com.iie.st10320489.stylu.network.WeatherApiService
+import com.iie.st10320489.stylu.service.WeatherApiService
 import com.iie.st10320489.stylu.ui.home.models.DailyWeather
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

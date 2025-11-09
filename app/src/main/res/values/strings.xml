@@ -30,7 +30,7 @@
     <!-- System Settings -->
     <string name="language">Language</string>
     <string name="temperature_unit">Temperature Unit</string>
-    <string name="reminder_time">Reminder Time</string>
+    <string name="reminder_time">Weather Reminder Time</string>
     <string name="weather_sensitivity">Weather Sensitivity</string>
     <string name="notify_weather_alerts">Notify Weather Alerts</string>
     <string name="notify_outfit_reminders">Notify Outfit Reminders</string>

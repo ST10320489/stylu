@@ -21,6 +21,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -116,6 +119,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         remoteMessage.notification?.let {
             Log.d(TAG, "Notification Title: ${it.title}")
             Log.d(TAG, "Notification Body: ${it.body}")
+
+            // ✅ Save to database and show notification
+            saveNotificationToDatabase(
+                title = it.title ?: "Stylu",
+                message = it.body ?: "",
+                type = remoteMessage.data["type"] ?: "general"
+            )
+
             showNotification(it.title, it.body)
         }
 
@@ -129,9 +140,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     private fun handleDataPayload(data: Map<String, String>) {
         val type = data["type"]
         val message = data["message"]
+        val title = data["title"]
 
         when (type) {
             "new_drop" -> {
+                saveNotificationToDatabase(
+                    title = "New Drop Available! 🔥",
+                    message = message ?: "Check out the latest styles",
+                    type = "new_drop"
+                )
                 showNotification(
                     title = "New Drop Available! 🔥",
                     body = message ?: "Check out the latest styles",
@@ -139,6 +156,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 )
             }
             "outfit_liked" -> {
+                saveNotificationToDatabase(
+                    title = "Someone liked your outfit! ❤️",
+                    message = message ?: "Your style is inspiring others",
+                    type = "outfit_liked"
+                )
                 showNotification(
                     title = "Someone liked your outfit! ❤️",
                     body = message ?: "Your style is inspiring others",
@@ -146,18 +168,86 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 )
             }
             "reminder" -> {
+                saveNotificationToDatabase(
+                    title = title ?: "Outfit Reminder",
+                    message = message ?: "Time to plan your outfit!",
+                    type = "reminder"
+                )
                 showNotification(
-                    title = data["title"] ?: "Outfit Reminder",
+                    title = title ?: "Outfit Reminder",
                     body = message ?: "Time to plan your outfit!",
                     channelId = "stylu_reminders"
                 )
             }
             else -> {
+                saveNotificationToDatabase(
+                    title = title ?: "Stylu",
+                    message = message ?: "New notification",
+                    type = type ?: "general"
+                )
                 showNotification(
-                    title = data["title"] ?: "Stylu",
+                    title = title ?: "Stylu",
                     body = message ?: "New notification",
                     channelId = "stylu_general"
                 )
+            }
+        }
+    }
+
+    // ✅ NEW METHOD: Save notification to Supabase database
+    private fun saveNotificationToDatabase(title: String, message: String, type: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val prefs = getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
+                val accessToken = prefs.getString("access_token", null)
+                val userId = prefs.getString("user_id", null)
+
+                if (accessToken == null || userId == null) {
+                    Log.w(TAG, "No auth token or user ID, cannot save notification")
+                    return@launch
+                }
+
+                // Get current timestamp in ISO 8601 format
+                val timestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                    timeZone = java.util.TimeZone.getTimeZone("UTC")
+                }.format(Date())
+
+                val json = JSONObject().apply {
+                    put("user_id", userId.toInt())
+                    put("title", title)
+                    put("message", message)
+                    put("type", type)
+                    put("scheduled_at", timestamp)
+                    put("sent_at", timestamp)
+                    put("status", "sent")
+                }
+
+                val client = OkHttpClient()
+                val body = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
+
+                val request = Request.Builder()
+                    .url("$SUPABASE_URL/rest/v1/notifications")
+                    .post(body)
+                    .addHeader("apikey", SUPABASE_ANON_KEY)
+                    .addHeader("Authorization", "Bearer $accessToken")
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Prefer", "return=representation")
+                    .build()
+
+                val response = client.newCall(request).execute()
+
+                if (response.isSuccessful) {
+                    Log.d(TAG, "✅ Notification saved to database")
+
+                    // ✅ Send broadcast to refresh NotificationsFragment
+                    sendBroadcast(Intent("com.iie.st10320489.stylu.NEW_NOTIFICATION"))
+                } else {
+                    Log.e(TAG, "❌ Failed to save notification: ${response.code} - ${response.body?.string()}")
+                }
+
+                response.close()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error saving notification to database", e)
             }
         }
     }
@@ -251,12 +341,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val prefs = context.getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
-                    // ✅ FIXED: Changed from "auth_token" to "access_token"
                     val authToken = prefs.getString("access_token", null) ?: return@launch
 
                     val client = OkHttpClient()
                     val request = Request.Builder()
-                        // ✅ FIXED: Updated URL
                         .url("https://stylu-api-x69c.onrender.com/api/PushNotification/unregister")
                         .post("{}".toRequestBody("application/json".toMediaTypeOrNull()))
                         .addHeader("Authorization", "Bearer $authToken")
@@ -280,7 +368,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 try {
                     val prefs = context.getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
                     val fcmToken = prefs.getString("fcm_token", null)
-                    // ✅ FIXED: Changed from "auth_token" to "access_token"
                     val authToken = prefs.getString("access_token", null)
 
                     if (fcmToken == null || authToken == null) {
@@ -298,7 +385,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
                     val client = OkHttpClient()
                     val request = Request.Builder()
-                        // ✅ FIXED: Updated URL
                         .url("https://stylu-api-x69c.onrender.com/api/PushNotification/register")
                         .post(body)
                         .addHeader("Authorization", "Bearer $authToken")

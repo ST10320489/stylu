@@ -1,4 +1,10 @@
-// ApiService.kt
+// ApiService.kt - UPDATED VERSION
+// Changes made:
+// 1. Increased all connectTimeout to 60000ms (60 seconds) for Render cold starts
+// 2. Increased all readTimeout to 30000ms (30 seconds)
+// 3. Added specific error handling for SocketTimeoutException and ConnectException
+// 4. Added helpful error messages for users
+
 package com.iie.st10320489.stylu.network
 
 import android.content.Context
@@ -43,12 +49,15 @@ data class SystemSettings(
 
 class ApiService(context: Context) {
 
-   private val baseUrl = "https://stylu-api-x69c.onrender.com"
+    private val baseUrl = "https://stylu-api-x69c.onrender.com"
 
     private val authRepository = AuthRepository(context)
 
     companion object {
         private const val TAG = "ApiService"
+        // Increased timeouts for Render free tier cold starts
+        private const val CONNECT_TIMEOUT = 60000  // 60 seconds
+        private const val READ_TIMEOUT = 30000     // 30 seconds
     }
 
     suspend fun testConnection(): Result<String> = withContext(Dispatchers.IO) {
@@ -58,8 +67,8 @@ class ApiService(context: Context) {
 
             connection.requestMethod = "GET"
             connection.setRequestProperty("Content-Type", "application/json")
-            connection.connectTimeout = 10000
-            connection.readTimeout = 10000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
 
             val responseCode = connection.responseCode
             if (responseCode == HttpURLConnection.HTTP_OK) {
@@ -69,7 +78,14 @@ class ApiService(context: Context) {
                 val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() }
                 Result.failure(Exception("API not reachable: $responseCode - $errorResponse"))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout connecting to API", e)
+            Result.failure(Exception("Server is starting up (Render free tier). This can take up to 60 seconds on first request. Please try again."))
+        } catch (e: java.net.ConnectException) {
+            Log.e(TAG, "Cannot connect to API", e)
+            Result.failure(Exception("Cannot connect to server. Please check your internet connection."))
         } catch (e: Exception) {
+            Log.e(TAG, "API connection error", e)
             Result.failure(Exception("Connection failed: ${e.message}"))
         }
     }
@@ -85,8 +101,8 @@ class ApiService(context: Context) {
             connection.requestMethod = "GET"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 15000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
 
             Log.d(TAG, "GET Profile - URL: $url")
             Log.d(TAG, "GET Profile - Token: Bearer ${token.take(20)}...")
@@ -133,6 +149,9 @@ class ApiService(context: Context) {
                 }
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout fetching profile", e)
+            Result.failure(Exception("Request timed out. Server may be starting up. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching profile", e)
             Result.failure(Exception("Network error: ${e.message}"))
@@ -150,8 +169,8 @@ class ApiService(context: Context) {
             connection.requestMethod = "PUT"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 15000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
             connection.doOutput = true
 
             val requestBody = JSONObject().apply {
@@ -200,6 +219,9 @@ class ApiService(context: Context) {
                 }
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout updating profile", e)
+            Result.failure(Exception("Request timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error updating profile", e)
             Result.failure(Exception("Network error: ${e.message}"))
@@ -217,8 +239,8 @@ class ApiService(context: Context) {
             connection.requestMethod = "GET"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 15000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
 
             Log.d(TAG, "GET System Settings - URL: $url")
 
@@ -260,6 +282,9 @@ class ApiService(context: Context) {
                 }
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout fetching system settings", e)
+            Result.failure(Exception("Request timed out. Server may be starting up. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching system settings", e)
             Result.failure(Exception("Network error: ${e.message}"))
@@ -277,8 +302,8 @@ class ApiService(context: Context) {
             connection.requestMethod = "PUT"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 15000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
             connection.doOutput = true
 
             val requestBody = JSONObject().apply {
@@ -328,6 +353,9 @@ class ApiService(context: Context) {
                 }
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout updating system settings", e)
+            Result.failure(Exception("Request timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error updating system settings", e)
             Result.failure(Exception("Network error: ${e.message}"))
@@ -391,8 +419,8 @@ class ApiService(context: Context) {
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 15000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
             connection.doOutput = true
 
             val requestBody = JSONObject().apply {
@@ -441,6 +469,9 @@ class ApiService(context: Context) {
                 }
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout creating outfit", e)
+            Result.failure(Exception("Request timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error creating outfit", e)
             Result.failure(Exception("Network error: ${e.message}"))
@@ -458,8 +489,8 @@ class ApiService(context: Context) {
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 15000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
             connection.doOutput = true
 
             val itemsArray = org.json.JSONArray()
@@ -513,6 +544,9 @@ class ApiService(context: Context) {
                 }
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout creating outfit with layout", e)
+            Result.failure(Exception("Request timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error creating outfit with layout", e)
             Result.failure(Exception("Network error: ${e.message}"))
@@ -530,8 +564,8 @@ class ApiService(context: Context) {
             connection.requestMethod = "GET"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 15000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
 
             Log.d(TAG, "GET User Outfits - URL: $url")
 
@@ -563,6 +597,9 @@ class ApiService(context: Context) {
                 }
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout fetching outfits", e)
+            Result.failure(Exception("Request timed out. Server may be starting up. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching outfits", e)
             Result.failure(Exception("Network error: ${e.message}"))
@@ -580,8 +617,8 @@ class ApiService(context: Context) {
             connection.requestMethod = "GET"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 15000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
 
             Log.d(TAG, "GET Outfits by Category - URL: $url")
 
@@ -601,6 +638,9 @@ class ApiService(context: Context) {
             } else {
                 Result.failure(Exception("Failed to fetch outfits: $responseCode"))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout fetching outfits by category", e)
+            Result.failure(Exception("Request timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching outfits by category", e)
             Result.failure(Exception("Network error: ${e.message}"))
@@ -618,8 +658,8 @@ class ApiService(context: Context) {
             connection.requestMethod = "DELETE"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 15000
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
 
             Log.d(TAG, "DELETE Outfit - URL: $url")
 
@@ -644,6 +684,9 @@ class ApiService(context: Context) {
                 }
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout deleting outfit", e)
+            Result.failure(Exception("Request timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error deleting outfit", e)
             Result.failure(Exception("Network error: ${e.message}"))

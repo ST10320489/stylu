@@ -50,6 +50,9 @@ class ItemFragment : Fragment() {
     private var searchQuery: String = ""
     private var searchJob: Job? = null
 
+    // ✅ NEW: Track if this is the first load
+    private var isFirstLoad = true
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -122,7 +125,16 @@ class ItemFragment : Fragment() {
     private fun loadItemsFromAPI() {
         lifecycleScope.launch {
             try {
-                showLoading(true)
+                // ✅ NEW: Show different loading messages for first load vs refresh
+                if (isFirstLoad) {
+                    showLoadingWithMessage(
+                        show = true,
+                        message = "Loading your wardrobe...\n\n" +
+                                "First load may take up to 60 seconds if the server is starting up."
+                    )
+                } else {
+                    showLoading(true)
+                }
 
                 val itemsResult = itemRepository.getUserItems()
                 itemsResult.onSuccess { items ->
@@ -139,11 +151,32 @@ class ItemFragment : Fragment() {
                         setupCategoryButtons()
                         applyFiltersAndSearch()
                     }
+
+                    // ✅ NEW: Mark first load as complete
+                    isFirstLoad = false
+
                 }.onFailure { error ->
+                    // ✅ NEW: Better error handling with specific messages
+                    val errorMessage = when {
+                        error.message?.contains("timed out", ignoreCase = true) == true -> {
+                            "Server is starting up. This can take up to 60 seconds on first request.\n\n" +
+                                    "Please try again in a moment."
+                        }
+                        error.message?.contains("starting up", ignoreCase = true) == true -> {
+                            error.message ?: "Server is starting..."
+                        }
+                        error.message?.contains("authentication", ignoreCase = true) == true -> {
+                            "Authentication failed. Please log in again."
+                        }
+                        else -> {
+                            "Failed to load items: ${error.message}"
+                        }
+                    }
+
                     Toast.makeText(
                         requireContext(),
-                        getString(R.string.failed_to_load_items, error.message),
-                        Toast.LENGTH_SHORT
+                        errorMessage,
+                        Toast.LENGTH_LONG
                     ).show()
 
                     itemAdapter.submitList(emptyList())
@@ -153,10 +186,11 @@ class ItemFragment : Fragment() {
                 Toast.makeText(
                     requireContext(),
                     getString(R.string.error_message, e.message),
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
             } finally {
                 showLoading(false)
+                showLoadingWithMessage(show = false, message = "")
             }
         }
     }
@@ -706,13 +740,32 @@ class ItemFragment : Fragment() {
                     Toast.makeText(
                         requireContext(),
                         getString(R.string.failed_to_delete, error.message),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                        Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), getString(R.string.error_message, e.message), Toast.LENGTH_SHORT).show()
             } finally {
                 showLoading(false)
+            }
+        }
+    }
+
+    // ✅ NEW: Show loading with a custom message (for first load with cold start warning)
+    private fun showLoadingWithMessage(show: Boolean, message: String) {
+        _binding?.let { binding ->
+            if (show) {
+                binding.progressBar.visibility = View.VISIBLE
+                // If you have a loading text view in your layout, update it:
+                // binding.loadingText?.text = message
+                // binding.loadingText?.visibility = View.VISIBLE
+
+                // For now, show in a toast
+                if (message.isNotEmpty()) {
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                }
+            } else {
+                binding.progressBar.visibility = View.GONE
+                // binding.loadingText?.visibility = View.GONE
             }
         }
     }
@@ -762,6 +815,8 @@ class ItemFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         // Refresh items when returning to fragment (e.g., after adding new item or organizing)
+        // But don't show the "first load" message anymore
+        isFirstLoad = false
         loadItemsFromAPI()
     }
 

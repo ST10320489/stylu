@@ -1,90 +1,209 @@
 package com.iie.st10320489.stylu.ui.notifications
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.data.models.notifications.Notification
-
 import com.iie.st10320489.stylu.repository.NotificationRepository
 import kotlinx.coroutines.launch
 
 class NotificationsFragment : Fragment() {
 
-    private lateinit var rvNotifications: RecyclerView
+    private var rvNotifications: RecyclerView? = null
+    private var tvEmptyState: TextView? = null
+    private var progressBar: ProgressBar? = null
     private lateinit var adapter: NotificationsAdapter
     private val notificationsList = mutableListOf<Notification>()
-    private lateinit var repository: NotificationRepository
+    private var repository: NotificationRepository? = null
+
+    companion object {
+        private const val TAG = "NotificationsFragment"
+    }
+
+    // BroadcastReceiver to listen for new notifications
+    private val notificationReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "com.iie.st10320489.stylu.NEW_NOTIFICATION") {
+                Log.d(TAG, "📬 Received broadcast: NEW_NOTIFICATION")
+                fetchNotifications()
+            }
+        }
+    }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_notifications, container, false)
-        rvNotifications = view.findViewById(R.id.rvNotifications)
-        rvNotifications.layoutManager = LinearLayoutManager(requireContext())
-        adapter = NotificationsAdapter(notificationsList)
-        rvNotifications.adapter = adapter
+        Log.d(TAG, "onCreateView called")
 
-        repository = NotificationRepository(requireContext())
+        return try {
+            val view = inflater.inflate(R.layout.fragment_notifications, container, false)
 
-        fetchNotifications()
+            // Initialize views
+            rvNotifications = view.findViewById(R.id.rvNotifications)
+            tvEmptyState = view.findViewById(R.id.tvEmptyState)
+            progressBar = view.findViewById(R.id.progressBar)
 
-        return view
+            // Setup RecyclerView
+            rvNotifications?.layoutManager = LinearLayoutManager(requireContext())
+            adapter = NotificationsAdapter(notificationsList)
+            rvNotifications?.adapter = adapter
+
+            // Initialize repository
+            repository = NotificationRepository(requireContext())
+
+            Log.d(TAG, "✅ Views initialized successfully")
+
+            // Load notifications
+            fetchNotifications()
+
+            view
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error in onCreateView: ${e.message}", e)
+            Toast.makeText(context, "Error loading notifications", Toast.LENGTH_SHORT).show()
+            inflater.inflate(R.layout.fragment_notifications, container, false)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume called")
+
+        try {
+            // Register broadcast receiver
+            val filter = IntentFilter("com.iie.st10320489.stylu.NEW_NOTIFICATION")
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requireContext().registerReceiver(
+                    notificationReceiver,
+                    filter,
+                    Context.RECEIVER_NOT_EXPORTED
+                )
+            } else {
+                ContextCompat.registerReceiver(
+                    requireContext(),
+                    notificationReceiver,
+                    filter,
+                    ContextCompat.RECEIVER_NOT_EXPORTED
+                )
+            }
+
+            Log.d(TAG, "✅ Broadcast receiver registered")
+
+            // Refresh when returning to fragment
+            fetchNotifications()
+
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error in onResume: ${e.message}", e)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "onPause called")
+
+        // Unregister broadcast receiver
+        try {
+            requireContext().unregisterReceiver(notificationReceiver)
+            Log.d(TAG, "✅ Broadcast receiver unregistered")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error unregistering receiver: ${e.message}")
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.d(TAG, "onDestroyView called")
+
+        // Clean up references
+        rvNotifications = null
+        tvEmptyState = null
+        progressBar = null
+        repository = null
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun fetchNotifications() {
         lifecycleScope.launch {
             try {
+                Log.d(TAG, "📥 Fetching notifications...")
+                showLoading(true)
 
-                val prefs = requireContext().getSharedPreferences("stylu_prefs", 0)
-                val accessToken = prefs.getString("access_token", null) ?: return@launch
-
-                val client = okhttp3.OkHttpClient()
-                val request = okhttp3.Request.Builder()
-                    .url("https://fkmhmtioehokrukqwano.supabase.co/rest/v1/notifications?user_id=eq.${prefs.getInt("user_id",0)}&order=scheduled_at.desc")
-                    .get()
-                    .addHeader("apikey", repository.SUPABASE_ANON_KEY)
-                    .addHeader("Authorization", "Bearer $accessToken")
-                    .addHeader("Content-Type", "application/json")
-                    .build()
-
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val body = response.body?.string()
-                    val jsonArray = org.json.JSONArray(body ?: "[]")
-                    notificationsList.clear()
-                    for (i in 0 until jsonArray.length()) {
-                        val obj = jsonArray.getJSONObject(i)
-                        notificationsList.add(
-                            Notification(
-                                id = obj.getInt("notifications_id"),
-                                userId = obj.getInt("user_id"),
-                                title = obj.getString("title"),
-                                message = obj.getString("message"),
-                                type = obj.optString("type", "general"),
-                                scheduledAt = obj.getString("scheduled_at"),
-                                sentAt = obj.optString("sent_at", null),
-                                status = obj.optString("status", "queued")
-                            )
-                        )
-                    }
-                    adapter.notifyDataSetChanged()
-                } else {
-                    Toast.makeText(requireContext(), "Failed to fetch notifications", Toast.LENGTH_SHORT).show()
+                // Check if repository is initialized
+                val repo = repository
+                if (repo == null) {
+                    Log.e(TAG, "Repository is null")
+                    showLoading(false)
+                    return@launch
                 }
-                response.close()
+
+                val notifications = repo.getUserNotifications()
+
+                notificationsList.clear()
+                notificationsList.addAll(notifications)
+                adapter.notifyDataSetChanged()
+
+                Log.d(TAG, "✅ Loaded ${notifications.size} notifications")
+
+                // Show empty state if no notifications
+                if (notifications.isEmpty()) {
+                    showEmptyState(true)
+                    Log.d(TAG, "📭 No notifications found")
+                } else {
+                    showEmptyState(false)
+                    Log.d(TAG, "📬 ${notifications.size} notifications displayed")
+                }
+
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e(TAG, "❌ Error fetching notifications: ${e.message}", e)
+
+                // Show error to user only if fragment is still attached
+                if (isAdded && context != null) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Error loading notifications: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } finally {
+                showLoading(false)
             }
+        }
+    }
+
+    private fun showLoading(isLoading: Boolean) {
+        try {
+            progressBar?.visibility = if (isLoading) View.VISIBLE else View.GONE
+            rvNotifications?.visibility = if (isLoading) View.GONE else View.VISIBLE
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in showLoading: ${e.message}")
+        }
+    }
+
+    private fun showEmptyState(isEmpty: Boolean) {
+        try {
+            tvEmptyState?.visibility = if (isEmpty) View.VISIBLE else View.GONE
+            rvNotifications?.visibility = if (isEmpty) View.GONE else View.VISIBLE
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in showEmptyState: ${e.message}")
         }
     }
 }

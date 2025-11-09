@@ -1,12 +1,19 @@
 package com.iie.st10320489.stylu.ui.profile
 
+import android.Manifest
+import android.app.TimePickerDialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -15,13 +22,15 @@ import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.network.ApiService
 import com.iie.st10320489.stylu.network.SystemSettings
 import com.iie.st10320489.stylu.utils.LanguageManager
+import com.iie.st10320489.stylu.utils.NotificationPreferences
+import com.iie.st10320489.stylu.utils.WorkManagerScheduler
 import kotlinx.coroutines.launch
 
 class SystemSettingsFragment : Fragment() {
 
     private lateinit var spLanguage: Spinner
     private lateinit var spTemperatureUnit: Spinner
-    private lateinit var spReminderTime: Spinner
+    private lateinit var tvReminderTime: TextView
     private lateinit var spWeatherSensitivity: Spinner
     private lateinit var cbNotifyWeather: CheckBox
     private lateinit var cbNotifyOutfitReminders: CheckBox
@@ -29,8 +38,13 @@ class SystemSettingsFragment : Fragment() {
     private lateinit var btnCancel: Button
 
     private lateinit var apiService: ApiService
+    private lateinit var notificationPrefs: NotificationPreferences
+    private lateinit var workManagerScheduler: WorkManagerScheduler
 
-    // Dropdown options - NOW ONLY 3 LANGUAGES
+    companion object {
+        private const val TAG = "SystemSettingsFragment"
+    }
+
     private val languageCodes = arrayOf(
         LanguageManager.LANGUAGE_ENGLISH,
         LanguageManager.LANGUAGE_AFRIKAANS,
@@ -42,14 +56,10 @@ class SystemSettingsFragment : Fragment() {
         LanguageManager.LANGUAGE_ITALIAN,
         LanguageManager.LANGUAGE_SPANISH,
         LanguageManager.LANGUAGE_VENDA,
-
-
     )
 
     private val temperatureCodes = arrayOf("C", "F")
-    private val reminderTimes = arrayOf("06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00")
     private val sensitivityCodes = arrayOf("low", "normal", "high")
-
     private var languageChanged = false
 
     override fun onCreateView(
@@ -59,8 +69,9 @@ class SystemSettingsFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_system_settings, container, false)
 
-        // Initialize API Service
         apiService = ApiService(requireContext())
+        notificationPrefs = NotificationPreferences(requireContext())
+        workManagerScheduler = WorkManagerScheduler(requireContext())
 
         return view
     }
@@ -70,14 +81,14 @@ class SystemSettingsFragment : Fragment() {
 
         initializeViews(view)
         setupSpinners()
-        setupClickListeners()
+        setupClicks()
         loadCurrentSystemSettings()
     }
 
     private fun initializeViews(view: View) {
         spLanguage = view.findViewById(R.id.spLanguage)
         spTemperatureUnit = view.findViewById(R.id.spTemperatureUnit)
-        spReminderTime = view.findViewById(R.id.spReminderTime)
+        tvReminderTime = view.findViewById(R.id.tvReminderTime)
         spWeatherSensitivity = view.findViewById(R.id.spWeatherSensitivity)
         cbNotifyWeather = view.findViewById(R.id.cbNotifyWeather)
         cbNotifyOutfitReminders = view.findViewById(R.id.cbNotifyOutfitReminders)
@@ -86,65 +97,100 @@ class SystemSettingsFragment : Fragment() {
     }
 
     private fun setupSpinners() {
-        // Language Spinner - Get language names from strings
-        val languageNames = languageCodes.map { code ->
-            LanguageManager.getLanguageDisplayName(requireContext(), code)
+        val languageNames = languageCodes.map {
+            LanguageManager.getLanguageDisplayName(requireContext(), it)
         }
-        val languageAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, languageNames)
-        languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spLanguage.adapter = languageAdapter
 
-        // Set current language as selected
+        spLanguage.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            languageNames
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
         val currentLanguage = LanguageManager.getLanguage(requireContext())
         val currentIndex = languageCodes.indexOf(currentLanguage)
         if (currentIndex >= 0) {
             spLanguage.setSelection(currentIndex)
         }
 
-        // Temperature Unit Spinner
-        val temperatureUnits = arrayOf(
-            getString(R.string.celsius),
-            getString(R.string.fahrenheit)
-        )
-        val temperatureAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, temperatureUnits)
-        temperatureAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spTemperatureUnit.adapter = temperatureAdapter
+        spTemperatureUnit.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            arrayOf(getString(R.string.celsius), getString(R.string.fahrenheit))
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
 
-        // Reminder Time Spinner
-        val reminderAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, reminderTimes)
-        reminderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spReminderTime.adapter = reminderAdapter
+        spWeatherSensitivity.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            arrayOf(
+                getString(R.string.sensitivity_low),
+                getString(R.string.sensitivity_normal),
+                getString(R.string.sensitivity_high)
+            )
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
 
-        // Weather Sensitivity Spinner
-        val weatherSensitivities = arrayOf(
-            getString(R.string.sensitivity_low),
-            getString(R.string.sensitivity_normal),
-            getString(R.string.sensitivity_high)
-        )
-        val sensitivityAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, weatherSensitivities)
-        sensitivityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spWeatherSensitivity.adapter = sensitivityAdapter
-
-        // Set default values
-        setDefaultValues()
+        setDefaults()
     }
 
-    private fun setDefaultValues() {
-        spTemperatureUnit.setSelection(0) // Celsius
-        spReminderTime.setSelection(2) // 07:00
-        spWeatherSensitivity.setSelection(1) // Normal
-        cbNotifyWeather.isChecked = true
+    private fun setDefaults() {
+        spTemperatureUnit.setSelection(0)
+        spWeatherSensitivity.setSelection(1)
+
+        // Load saved time FIRST
+        val savedTime = notificationPrefs.getReminderTime()
+        tvReminderTime.text = savedTime
+        Log.d(TAG, "Loaded saved time: $savedTime")
+
+        // Then load saved checkbox state
+        val isWeatherEnabled = notificationPrefs.isWeatherNotificationEnabled()
+        cbNotifyWeather.isChecked = isWeatherEnabled
         cbNotifyOutfitReminders.isChecked = true
+
+        Log.d(TAG, "Loaded weather enabled state: $isWeatherEnabled")
+
+        // Enable/disable time picker based on checkbox
+        updateTimePickerState()
     }
 
-    private fun setupClickListeners() {
-        btnSave.setOnClickListener {
-            saveSystemSettings()
+    private fun setupClicks() {
+        // Time picker click listener
+        tvReminderTime.setOnClickListener {
+            if (!cbNotifyWeather.isChecked) {
+                Toast.makeText(requireContext(), "Enable weather notifications first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val currentTime = tvReminderTime.text.toString().split(":")
+            val hour = currentTime[0].toInt()
+            val minute = currentTime[1].toInt()
+
+            TimePickerDialog(requireContext(), { _, h, m ->
+                val formatted = String.format("%02d:%02d", h, m)
+                tvReminderTime.text = formatted
+                Log.d(TAG, "Time selected: $formatted")
+            }, hour, minute, true).show()
         }
 
-        btnCancel.setOnClickListener {
-            findNavController().popBackStack()
+        // Checkbox listener - update time picker enabled state
+        cbNotifyWeather.setOnCheckedChangeListener { _, isChecked ->
+            updateTimePickerState()
+            Log.d(TAG, "Weather notifications checkbox changed: $isChecked")
         }
+
+        btnSave.setOnClickListener { saveSystemSettings() }
+        btnCancel.setOnClickListener { findNavController().popBackStack() }
+    }
+
+    private fun updateTimePickerState() {
+        val isEnabled = cbNotifyWeather.isChecked
+        tvReminderTime.isEnabled = isEnabled
+        tvReminderTime.alpha = if (isEnabled) 1.0f else 0.5f
     }
 
     private fun loadCurrentSystemSettings() {
@@ -152,18 +198,19 @@ class SystemSettingsFragment : Fragment() {
             try {
                 showLoading(true)
 
-                // Fetch system settings from API
                 val result = apiService.getCurrentSystemSettings()
 
                 result.onSuccess { settings ->
                     populateSettingsFields(settings)
                     Toast.makeText(context, getString(R.string.settings_loaded), Toast.LENGTH_SHORT).show()
                 }.onFailure { error ->
+                    Log.w(TAG, "Failed to load API settings: ${error.message}")
                     Toast.makeText(context, getString(R.string.failed_load_settings, error.message), Toast.LENGTH_SHORT).show()
-                    // Keep defaults if loading fails
+                    // Keep using local preferences on API failure
                 }
 
             } catch (e: Exception) {
+                Log.e(TAG, "Error loading settings", e)
                 Toast.makeText(context, getString(R.string.error_loading_settings, e.message), Toast.LENGTH_SHORT).show()
             } finally {
                 showLoading(false)
@@ -172,69 +219,116 @@ class SystemSettingsFragment : Fragment() {
     }
 
     private fun populateSettingsFields(settings: SystemSettings) {
-        // Set language selection
         val languageIndex = languageCodes.indexOf(settings.language)
         if (languageIndex >= 0) {
             spLanguage.setSelection(languageIndex)
         }
 
-        // Set temperature unit selection
         val tempIndex = temperatureCodes.indexOf(settings.temperatureUnit)
         if (tempIndex >= 0) {
             spTemperatureUnit.setSelection(tempIndex)
         }
 
-        // Set reminder time selection
-        val timeIndex = reminderTimes.indexOf(settings.defaultReminderTime)
-        if (timeIndex >= 0) {
-            spReminderTime.setSelection(timeIndex)
+        // Only update time if it's different from what's saved locally
+        val currentSavedTime = notificationPrefs.getReminderTime()
+        if (settings.defaultReminderTime != currentSavedTime) {
+            tvReminderTime.text = settings.defaultReminderTime
+            notificationPrefs.setReminderTime(settings.defaultReminderTime)
+            Log.d(TAG, "Updated time from API: ${settings.defaultReminderTime}")
+        } else {
+            Log.d(TAG, "Keeping existing local time: $currentSavedTime")
         }
 
-        // Set weather sensitivity selection
         val sensitivityIndex = sensitivityCodes.indexOf(settings.weatherSensitivity)
         if (sensitivityIndex >= 0) {
             spWeatherSensitivity.setSelection(sensitivityIndex)
         }
 
-        // Set notification checkboxes
-        cbNotifyWeather.isChecked = settings.notifyWeather
+        // Only update checkbox if different from local preference
+        val currentEnabled = notificationPrefs.isWeatherNotificationEnabled()
+        if (settings.notifyWeather != currentEnabled) {
+            cbNotifyWeather.isChecked = settings.notifyWeather
+            notificationPrefs.setWeatherNotificationEnabled(settings.notifyWeather)
+            Log.d(TAG, "Updated weather enabled from API: ${settings.notifyWeather}")
+        } else {
+            Log.d(TAG, "Keeping existing enabled state: $currentEnabled")
+        }
+
         cbNotifyOutfitReminders.isChecked = settings.notifyOutfitReminders
+
+        updateTimePickerState()
     }
 
     private fun saveSystemSettings() {
         lifecycleScope.launch {
+            showLoading(true)
             try {
-                showLoading(true)
+                Log.d(TAG, "=== SAVING SETTINGS ===")
 
-                // Get selected values
-                val selectedLanguageIndex = spLanguage.selectedItemPosition
-                val selectedTempIndex = spTemperatureUnit.selectedItemPosition
-                val selectedTimeIndex = spReminderTime.selectedItemPosition
-                val selectedSensitivityIndex = spWeatherSensitivity.selectedItemPosition
-
-                val newLanguageCode = languageCodes[selectedLanguageIndex]
+                val selectedLanguageCode = languageCodes[spLanguage.selectedItemPosition]
                 val currentLanguageCode = LanguageManager.getLanguage(requireContext())
 
-                // Check if language changed
-                if (newLanguageCode != currentLanguageCode) {
+                if (selectedLanguageCode != currentLanguageCode) {
                     languageChanged = true
-                    LanguageManager.setLanguage(requireContext(), newLanguageCode)
+                    LanguageManager.setLanguage(requireContext(), selectedLanguageCode)
                 }
 
-                // Create settings object
+                val selectedTempUnit = temperatureCodes[spTemperatureUnit.selectedItemPosition]
+                val selectedSensitivity = sensitivityCodes[spWeatherSensitivity.selectedItemPosition]
+                val reminderTime = tvReminderTime.text.toString()
+                val weatherEnabled = cbNotifyWeather.isChecked
+
+                Log.d(TAG, "Weather enabled: $weatherEnabled")
+                Log.d(TAG, "Reminder time: $reminderTime")
+
+                // Validate time format
+                if (reminderTime.isEmpty() || !reminderTime.contains(":")) {
+                    Toast.makeText(context, "Invalid time format", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                // Save notification preferences FIRST
+                notificationPrefs.setWeatherNotificationEnabled(weatherEnabled)
+                notificationPrefs.setReminderTime(reminderTime)
+                Log.d(TAG, "Preferences saved to SharedPreferences")
+
+                // Verify saved values
+                val verifyEnabled = notificationPrefs.isWeatherNotificationEnabled()
+                val verifyTime = notificationPrefs.getReminderTime()
+                Log.d(TAG, "Verified saved values - Enabled: $verifyEnabled, Time: $verifyTime")
+
+                // Handle WorkManager scheduling
+                if (weatherEnabled) {
+                    Log.d(TAG, "Requesting notification permission...")
+                    checkAndRequestNotificationPermission()
+
+                    Log.d(TAG, "Scheduling weather notification for $reminderTime")
+                    workManagerScheduler.scheduleWeatherNotification(reminderTime)
+
+                    // Verify scheduling worked
+                    val isScheduled = workManagerScheduler.isWorkScheduled()
+                    Log.d(TAG, "Work scheduled verification: $isScheduled")
+
+                    Toast.makeText(context, "Weather notifications scheduled for $reminderTime", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.d(TAG, "Cancelling weather notifications")
+                    workManagerScheduler.cancelWeatherNotification()
+                    Toast.makeText(context, "Weather notifications disabled", Toast.LENGTH_SHORT).show()
+                }
+
+                // Update API settings
                 val settings = SystemSettings(
-                    language = newLanguageCode,
-                    temperatureUnit = temperatureCodes[selectedTempIndex],
-                    defaultReminderTime = reminderTimes[selectedTimeIndex],
-                    weatherSensitivity = sensitivityCodes[selectedSensitivityIndex],
-                    notifyWeather = cbNotifyWeather.isChecked,
+                    language = selectedLanguageCode,
+                    temperatureUnit = selectedTempUnit,
+                    defaultReminderTime = reminderTime,
+                    weatherSensitivity = selectedSensitivity,
+                    notifyWeather = weatherEnabled,
                     notifyOutfitReminders = cbNotifyOutfitReminders.isChecked
                 )
 
-                // Update settings through API
-                val result = apiService.updateSystemSettings(settings)
-
-                result.onSuccess { message ->
+                Log.d(TAG, "Updating API settings...")
+                apiService.updateSystemSettings(settings).onSuccess { message ->
+                    Log.d(TAG, "API settings updated successfully")
                     if (languageChanged) {
                         showLanguageChangeDialog()
                     } else {
@@ -242,14 +336,56 @@ class SystemSettingsFragment : Fragment() {
                         findNavController().popBackStack()
                     }
                 }.onFailure { error ->
+                    Log.e(TAG, "Failed to update API settings: ${error.message}", error)
                     Toast.makeText(context, getString(R.string.failed_update_settings, error.message), Toast.LENGTH_LONG).show()
                 }
 
             } catch (e: Exception) {
+                Log.e(TAG, "Error saving settings", e)
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
                 showLoading(false)
             }
+        }
+    }
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Toast.makeText(requireContext(), "Notification permission granted", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Notification permission granted")
+        } else {
+            Toast.makeText(requireContext(), "Notification permission denied. You won't receive weather updates.", Toast.LENGTH_LONG).show()
+            Log.w(TAG, "Notification permission denied")
+        }
+    }
+
+    private fun checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    Log.d(TAG, "Notification permission already granted")
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                    AlertDialog.Builder(requireContext())
+                        .setTitle("Notification Permission")
+                        .setMessage("This app needs notification permission to send you daily weather updates.")
+                        .setPositiveButton("OK") { _, _ ->
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
+                else -> {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        } else {
+            Log.d(TAG, "POST_NOTIFICATIONS not needed for API < 33")
         }
     }
 
@@ -258,7 +394,6 @@ class SystemSettingsFragment : Fragment() {
             .setTitle(getString(R.string.language))
             .setMessage(getString(R.string.language_changed))
             .setPositiveButton("OK") { _, _ ->
-                // Restart the app to apply language changes
                 restartApp()
             }
             .setCancelable(false)
@@ -277,10 +412,14 @@ class SystemSettingsFragment : Fragment() {
         btnCancel.isEnabled = !isLoading
         spLanguage.isEnabled = !isLoading
         spTemperatureUnit.isEnabled = !isLoading
-        spReminderTime.isEnabled = !isLoading
         spWeatherSensitivity.isEnabled = !isLoading
         cbNotifyWeather.isEnabled = !isLoading
         cbNotifyOutfitReminders.isEnabled = !isLoading
+
+        // Keep time picker state based on checkbox
+        if (!isLoading) {
+            updateTimePickerState()
+        }
 
         if (isLoading) {
             btnSave.text = getString(R.string.saving)
