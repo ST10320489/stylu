@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -24,6 +25,10 @@ import com.iie.st10320489.stylu.utils.LanguageManager
 import com.iie.st10320489.stylu.utils.PermissionHelper
 import kotlinx.coroutines.launch
 import com.google.firebase.messaging.FirebaseMessaging
+import com.iie.st10320489.stylu.utils.WorkManagerScheduler
+
+import com.iie.st10320489.stylu.utils.NotificationPreferences
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,11 +43,14 @@ class MainActivity : AppCompatActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
+
 
         sessionManager = SessionManager(this)
 
-        // ✅ Initialize PermissionHelper
+        // Initialize PermissionHelper
         permissionHelper = PermissionHelper(this)
 
         // Only redirect if truly not authenticated (no session at all)
@@ -52,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // ✅ Register permission launchers BEFORE any requests
+        // Register permission launchers BEFORE any requests
         permissionHelper.registerLaunchers(
             onLocationResult = { granted ->
                 if (granted) {
@@ -118,13 +126,13 @@ class MainActivity : AppCompatActivity() {
 
         switchToDefaultMenu()
         setupBackButtonHandling()
-
-        // ✅ Request permissions on first launch
+        initializeWeatherNotifications()
+        // Request permissions on first launch
         requestPermissionsIfNeeded()
     }
 
     /**
-     * ✅ Request permissions if this is first launch
+     * Request permissions if this is first launch
      */
     private fun requestPermissionsIfNeeded() {
         if (permissionHelper.isFirstLaunch()) {
@@ -144,6 +152,24 @@ class MainActivity : AppCompatActivity() {
             Log.d("MainActivity", "Notifications: ${permissionHelper.hasNotificationPermission()}")
         }
     }
+
+    //weather notifications
+    private fun initializeWeatherNotifications() {
+        val notificationPrefs = NotificationPreferences(this)
+        val workManagerScheduler = WorkManagerScheduler(this)
+
+        // If weather notifications are enabled but work is not scheduled, reschedule it
+        if (notificationPrefs.isWeatherNotificationEnabled()) {
+            if (!workManagerScheduler.isWorkScheduled()) {
+                val reminderTime = notificationPrefs.getReminderTime()
+                workManagerScheduler.scheduleWeatherNotification(reminderTime)
+                Log.d("MainActivity", "Weather notifications rescheduled at startup")
+            }
+        }
+    }
+
+
+
 
     private fun setupBackButtonHandling() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -169,6 +195,8 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
+
 
     private fun redirectToLogin() {
         val intent = Intent(this, LoginActivity::class.java)

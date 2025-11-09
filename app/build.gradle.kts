@@ -105,4 +105,7 @@ dependencies {
 
     // Test dependencies
     testImplementation("junit:junit:4.13.2")
+
+    //notifications weather
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
 }
