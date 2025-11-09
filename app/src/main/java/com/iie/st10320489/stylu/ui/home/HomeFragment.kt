@@ -6,6 +6,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -13,11 +16,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.iie.st10320489.stylu.R
+import com.iie.st10320489.stylu.data.models.calendar.ScheduledOutfit
+import com.iie.st10320489.stylu.repository.CalendarRepository
 import com.iie.st10320489.stylu.repository.WeatherRepository
 import com.iie.st10320489.stylu.utils.LocationHelper
 import kotlinx.coroutines.launch
-import android.widget.ImageButton
+import java.util.*
 
 class HomeFragment : Fragment() {
 
@@ -25,6 +31,7 @@ class HomeFragment : Fragment() {
     private lateinit var rvWeeklyWeather: RecyclerView
     private val weatherRepository = WeatherRepository()
     private lateinit var locationHelper: LocationHelper
+    private lateinit var calendarRepository: CalendarRepository
 
     companion object {
         private const val TAG = "HomeFragment"
@@ -61,21 +68,49 @@ class HomeFragment : Fragment() {
             LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
         locationHelper = LocationHelper(requireContext())
+        calendarRepository = CalendarRepository(requireContext())
+
         return view
-
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         requestLocationAndFetchWeather()
+        setupCalendarButton(view)
+        setupNotificationButton(view)
+        loadTodayScheduledOutfit()
+    }
 
+    private fun setupCalendarButton(view: View) {
+        view.findViewById<ImageView>(R.id.calendarBtn)?.setOnClickListener {
+            try {
+                findNavController().navigate(R.id.action_home_to_calendar)
+            } catch (e: Exception) {
+                Log.e(TAG, "Navigation error: ${e.message}", e)
+                Toast.makeText(
+                    requireContext(),
+                    "Unable to open calendar",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
 
+    private fun setupNotificationButton(view: View) {
         val notifButton = view.findViewById<ImageButton>(R.id.ivNotification)
         notifButton.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_notifications)
+            try {
+                findNavController().navigate(R.id.action_home_to_notifications)
+            } catch (e: Exception) {
+                Log.e(TAG, "Navigation error: ${e.message}", e)
+                Toast.makeText(
+                    requireContext(),
+                    "Unable to open notifications",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
-
     }
 
     private fun requestLocationAndFetchWeather() {
@@ -120,5 +155,108 @@ class HomeFragment : Fragment() {
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    /**
+     * Load today's scheduled outfit and display it in the card
+     */
+    private fun loadTodayScheduledOutfit() {
+        lifecycleScope.launch {
+            try {
+                // Get today's date range (00:00 to 23:59)
+                val calendar = Calendar.getInstance()
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                val startDate = calendar.time
+
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                val endDate = calendar.time
+
+                Log.d(TAG, "Loading scheduled outfit for today: ${startDate}")
+
+                val result = calendarRepository.getScheduledOutfits(startDate, endDate)
+
+                result.onSuccess { outfits ->
+                    if (outfits.isNotEmpty()) {
+                        Log.d(TAG, "Found scheduled outfit: ${outfits.first().outfit.name}")
+                        displayScheduledOutfit(outfits.first())
+                    } else {
+                        Log.d(TAG, "No scheduled outfit for today")
+                        displayDefaultOutfit()
+                    }
+                }.onFailure { error ->
+                    Log.e(TAG, "Failed to load scheduled outfit: ${error.message}", error)
+                    displayDefaultOutfit()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading scheduled outfit: ${e.message}", e)
+                displayDefaultOutfit()
+            }
+        }
+    }
+
+    /**
+     * Display the scheduled outfit in the home card
+     */
+    private fun displayScheduledOutfit(scheduledOutfit: ScheduledOutfit) {
+        view?.let { fragmentView ->
+            // Update outfit image
+            fragmentView.findViewById<ImageView>(R.id.ivScheduledOutfit)?.let { imageView ->
+                if (scheduledOutfit.outfit.items.isNotEmpty()) {
+                    // Load the first item's image as outfit preview
+                    val firstItemUrl = scheduledOutfit.outfit.items.first().imageUrl
+
+                    Glide.with(this)
+                        .load(firstItemUrl)
+                        .placeholder(R.drawable.default_outfit)
+                        .error(R.drawable.default_outfit)
+                        .centerCrop()
+                        .into(imageView)
+
+                    Log.d(TAG, "Displaying outfit image: $firstItemUrl")
+                } else {
+                    imageView.setImageResource(R.drawable.default_outfit)
+                }
+            }
+
+            // Update weather information if available
+            scheduledOutfit.weatherForecast?.let { weather ->
+                fragmentView.findViewById<TextView>(R.id.tvTemperature)?.text =
+                    "${weather.minTemp}°C - ${weather.maxTemp}°C"
+
+                fragmentView.findViewById<TextView>(R.id.tvPrecipitation)?.text =
+                    "${weather.precipitation}%"
+
+                Log.d(TAG, "Weather updated: ${weather.minTemp}°-${weather.maxTemp}°, ${weather.precipitation}%")
+            }
+        }
+    }
+
+    /**
+     * Display default outfit when no outfit is scheduled
+     */
+    private fun displayDefaultOutfit() {
+        view?.let { fragmentView ->
+            fragmentView.findViewById<ImageView>(R.id.ivScheduledOutfit)?.let { imageView ->
+                imageView.setImageResource(R.drawable.default_outfit)
+            }
+
+            // Reset to placeholder weather data
+            fragmentView.findViewById<TextView>(R.id.tvTemperature)?.text =
+                getString(R.string.temperature_range)
+
+            fragmentView.findViewById<TextView>(R.id.tvPrecipitation)?.text =
+                getString(R.string.precipitation_value)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh scheduled outfit when user returns to home
+        loadTodayScheduledOutfit()
     }
 }

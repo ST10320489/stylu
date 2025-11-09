@@ -5,6 +5,35 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/navigation_home">
 
+    <!-- HOME FRAGMENT -->
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.iie.st10320489.stylu.ui.home.HomeFragment"
+        android:label="@string/title_home">
+
+        <action
+            android:id="@+id/action_home_to_notifications"
+            app:destination="@id/navigation_notifications" />
+
+        <action
+            android:id="@+id/action_home_to_addItem"
+            app:destination="@id/navigation_add_item"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <!-- NEW: Calendar Navigation -->
+        <action
+            android:id="@+id/action_home_to_calendar"
+            app:destination="@id/navigation_calendar"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <!-- WARDROBE FRAGMENT -->
     <fragment
         android:id="@+id/navigation_wardrobe"
         android:name="com.iie.st10320489.stylu.ui.wardrobe.WardrobeFragment"
@@ -27,14 +56,22 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
 
+        <!-- NEW: Schedule Outfit from Wardrobe -->
+        <action
+            android:id="@+id/action_wardrobe_to_scheduleOutfit"
+            app:destination="@id/scheduleOutfitDialog"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"/>
     </fragment>
 
+    <!-- NOTIFICATIONS FRAGMENT -->
     <fragment
         android:id="@+id/navigation_notifications"
         android:name="com.iie.st10320489.stylu.ui.notifications.NotificationsFragment"
         android:label="Notifications"
         tools:layout="@layout/fragment_notifications"/>
 
+    <!-- PROFILE FRAGMENT -->
     <fragment
         android:id="@+id/navigation_profile"
         android:name="com.iie.st10320489.stylu.ui.profile.ProfileFragment"
@@ -50,18 +87,21 @@
             app:destination="@id/fragment_system_settings" />
     </fragment>
 
+    <!-- PROFILE SETTINGS -->
     <fragment
         android:id="@+id/fragment_profile_settings"
         android:name="com.iie.st10320489.stylu.ui.profile.ProfileSettingsFragment"
         android:label="@string/profile_settings"
         tools:layout="@layout/fragment_profile_settings" />
 
+    <!-- SYSTEM SETTINGS -->
     <fragment
         android:id="@+id/fragment_system_settings"
         android:name="com.iie.st10320489.stylu.ui.profile.SystemSettingsFragment"
         android:label="@string/system_settings"
         tools:layout="@layout/fragment_system_settings" />
 
+    <!-- ADD ITEM FRAGMENT -->
     <fragment
         android:id="@+id/navigation_add_item"
         android:name="com.iie.st10320489.stylu.ui.item.AddItemFragment"
@@ -75,36 +115,37 @@
             app:popUpToInclusive="false" />
     </fragment>
 
+    <!-- CREATE OUTFIT FRAGMENT -->
     <fragment
         android:id="@+id/createOutfitFragment"
         android:name="com.iie.st10320489.stylu.ui.wardrobe.CreateOutfitFragment"
         android:label="@string/create_outfit_title"
-        tools:layout="@layout/fragment_create_outfit"/>
+        tools:layout="@layout/fragment_create_outfit">
 
+        <!-- NEW: Schedule after creating outfit -->
+        <action
+            android:id="@+id/action_createOutfit_to_scheduleDialog"
+            app:destination="@id/scheduleOutfitDialog"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"/>
+    </fragment>
+
+    <!-- OUTFIT DETAIL FRAGMENT -->
     <fragment
         android:id="@+id/outfitDetailFragment"
         android:name="com.iie.st10320489.stylu.ui.wardrobe.OutfitDetailFragment"
         android:label="@string/outfit_detail_title"
-        tools:layout="@layout/fragment_outfit_detail"/>
+        tools:layout="@layout/fragment_outfit_detail">
 
-    <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.iie.st10320489.stylu.ui.home.HomeFragment"
-        android:label="@string/title_home">
-
+        <!-- NEW: Schedule from outfit detail -->
         <action
-            android:id="@+id/action_home_to_notifications"
-            app:destination="@id/navigation_notifications" />
-
-        <action
-            android:id="@+id/action_home_to_addItem"
-            app:destination="@id/navigation_add_item"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
+            android:id="@+id/action_outfitDetail_to_scheduleDialog"
+            app:destination="@id/scheduleOutfitDialog"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"/>
     </fragment>
 
+    <!-- ITEMS FRAGMENT -->
     <fragment
         android:id="@+id/navigation_item"
         android:name="com.iie.st10320489.stylu.ui.item.ItemFragment"
@@ -126,7 +167,6 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
 
-        <!-- NEW: Organize Closet Action -->
         <action
             android:id="@+id/action_items_to_organizeCloset"
             app:destination="@id/organizeClosetFragment"
@@ -135,7 +175,6 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
 
-        <!-- NEW: Discarded Items Action -->
         <action
             android:id="@+id/action_items_to_discardedItems"
             app:destination="@id/discardedItemsFragment"
@@ -145,7 +184,7 @@
             app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
-    <!-- NEW: Organize Closet Fragment -->
+    <!-- ORGANIZE CLOSET FRAGMENT -->
     <fragment
         android:id="@+id/organizeClosetFragment"
         android:name="com.iie.st10320489.stylu.ui.item.OrganizeClosetFragment"
@@ -156,7 +195,6 @@
             android:name="items"
             app:argType="com.iie.st10320489.stylu.ui.item.models.WardrobeItem[]" />
 
-        <!-- Navigate to Complete Screen -->
         <action
             android:id="@+id/action_organizeCloset_to_complete"
             app:destination="@id/organizeCompleteFragment"
@@ -164,7 +202,7 @@
             app:popUpToInclusive="false" />
     </fragment>
 
-    <!-- NEW: Organize Complete Fragment -->
+    <!-- ORGANIZE COMPLETE FRAGMENT -->
     <fragment
         android:id="@+id/organizeCompleteFragment"
         android:name="com.iie.st10320489.stylu.ui.item.OrganizeCompleteFragment"
@@ -186,7 +224,6 @@
             app:argType="integer"
             android:defaultValue="0" />
 
-        <!-- Navigate to Discarded Items -->
         <action
             android:id="@+id/action_complete_to_discardedItems"
             app:destination="@id/discardedItemsFragment"
@@ -196,11 +233,57 @@
             app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
-    <!-- NEW: Discarded Items Fragment -->
+    <!-- DISCARDED ITEMS FRAGMENT -->
     <fragment
         android:id="@+id/discardedItemsFragment"
         android:name="com.iie.st10320489.stylu.ui.item.DiscardedItemsFragment"
         android:label="@string/discarded_items"
         tools:layout="@layout/fragment_discarded_items" />
+
+    <!-- ==================== CALENDAR FEATURE ==================== -->
+
+    <!-- CALENDAR FRAGMENT -->
+    <fragment
+        android:id="@+id/navigation_calendar"
+        android:name="com.iie.st10320489.stylu.ui.calendar.CalendarFragment"
+        android:label="@string/outfit_calendar"
+        tools:layout="@layout/fragment_calendar">
+
+        <!-- Navigate to outfit detail from calendar -->
+        <action
+            android:id="@+id/action_calendar_to_outfitDetail"
+            app:destination="@id/outfitDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <!-- Navigate to wardrobe to select outfit -->
+        <action
+            android:id="@+id/action_calendar_to_wardrobe"
+            app:destination="@id/navigation_wardrobe"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
+
+    <!-- SCHEDULE OUTFIT DIALOG -->
+    <dialog
+        android:id="@+id/scheduleOutfitDialog"
+        android:name="com.iie.st10320489.stylu.ui.calendar.ScheduleOutfitDialog"
+        android:label="Schedule Outfit"
+        tools:layout="@layout/dialog_schedule_outfit">
+
+        <argument
+            android:name="outfitId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+
+        <argument
+            android:name="outfitName"
+            app:argType="string"
+            android:defaultValue="" />
+    </dialog>
 
 </navigation>
