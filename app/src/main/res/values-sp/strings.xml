@@ -1,0 +1,236 @@
+<resources>
+    <string name="app_name">stylu</string>
+    <string name="title_home">Inicio</string>
+    <string name="title_wardrobe">Armario</string>
+    <string name="title_profile">Perfil</string>
+    <string name="notifications">Notificaciones</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_settings">Configuración de perfil</string>
+    <string name="system_settings">Configuración del sistema</string>
+    <string name="biometric_login">Inicio biométrico</string>
+    <string name="biometric_description">Inicia sesión con huella o rostro</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="logout_message">¿Seguro que quieres cerrar sesión?</string>
+    <string name="cancel">Cancelar</string>
+    <string name="back">Atrás</string>
+    <!-- Profile Settings -->
+    <string name="first_name">Nombre</string>
+    <string name="last_name">Apellido</string>
+    <string name="phone_number">Número de teléfono</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="enter_first_name">Ingrese nombre</string>
+    <string name="enter_last_name">Ingrese apellido</string>
+    <string name="enter_phone_number">Ingrese número de teléfono</string>
+    <string name="enter_email">Ingrese correo electrónico</string>
+    <string name="enter_password">Ingrese contraseña</string>
+    <string name="save_changes">Guardar cambios</string>
+
+    <!-- System Settings -->
+    <string name="language">Idioma</string>
+    <string name="temperature_unit">Unidad de temperatura</string>
+    <string name="reminder_time">Hora del recordatorio</string>
+    <string name="weather_sensitivity">Sensibilidad al clima</string>
+    <string name="notify_weather_alerts">Notificar alertas climáticas</string>
+    <string name="notify_outfit_reminders">Notificar recordatorios de atuendo</string>
+
+    <!-- Language Options (does not change)-->
+    <string name="language_english">English</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="language_xhosa">Xhosa</string>
+    <string name="language_zulu">Zulu</string>
+    <string name="language_tswana">Tswana</string>
+    <string name="language_ndebele">Ndebele</string>
+    <string name="language_french">French</string>
+    <string name="language_italian">Italian</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_venda">Venda</string>
+
+    <!-- Temperature Units -->
+    <string name="celsius">Celsius (°C)</string>
+    <string name="fahrenheit">Fahrenheit (°F)</string>
+
+    <!-- Weather Sensitivity -->
+    <string name="sensitivity_low">Baja</string>
+    <string name="sensitivity_normal">Normal</string>
+    <string name="sensitivity_high">Alta</string>
+
+    <!-- Add Item -->
+    <string name="item_image">Imagen del artículo</string>
+    <string name="select_image">Seleccionar imagen</string>
+    <string name="remove_background">Eliminar fondo</string>
+    <string name="item_name">Nombre del artículo</string>
+    <string name="item_name_hint">ej. Chaqueta de mezclilla azul</string>
+    <string name="category">Categoría</string>
+    <string name="subcategory">Subcategoría</string>
+    <string name="color">Color</string>
+    <string name="color_hint">ej. Azul</string>
+    <string name="size">Talla</string>
+    <string name="size_hint">ej. M, L, XL</string>
+    <string name="price_optional">Precio (Opcional)</string>
+    <string name="price_hint">ej. 299,99</string>
+    <string name="weather_suitability">Apto para clima</string>
+    <string name="save_item">Guardar artículo</string>
+
+    <!-- Home -->
+    <string name="outfit_calendar">Calendario de atuendos</string>
+    <string name="today_date">Hoy, 1 Ene</string>
+    <string name="weather">Clima</string>
+    <string name="temperature_range">-3° a +8°</string>
+    <string name="precipitation_label">Probabilidad de precipitación</string>
+    <string name="precipitation_value">90%</string>
+    <string name="scheduled_outfit">Atuendo programado</string>
+
+    <!-- Create Outfit -->
+    <string name="save">Guardar</string>
+
+    <!-- Wardrobe -->
+    <string name="no_items">Aún no hay artículos</string>
+    <string name="tap_to_add">Toca + para agregar tu primer artículo</string>
+
+    <!-- Outfit Detail -->
+    <string name="outfit_name">Nombre del atuendo</string>
+    <string name="delete_outfit">Eliminar atuendo</string>
+    <string name="edit_outfit">Editar atuendo</string>
+    <string name="no_outfits">Aún no hay atuendos</string>
+    <string name="tap_to_add_outfit">Toca + para crear tu primer atuendo</string>
+
+    <!-- Weekly Weather -->
+    <string name="monday_short">Lun</string>
+    <string name="tuesday_short">Mar</string>
+    <string name="wednesday_short">Mié</string>
+    <string name="thursday_short">Jue</string>
+    <string name="friday_short">Vie</string>
+    <string name="saturday_short">Sáb</string>
+    <string name="sunday_short">Dom</string>
+    <string name="weather_icon">Ícono del clima</string>
+
+    <!-- Bottom Sheet -->
+    <string name="add_items">Agregar artículos</string>
+    <string name="search">Buscar</string>
+
+    <!-- Dialog Edit Item -->
+    <string name="edit_name_hint">Nombre del artículo</string>
+    <string name="edit_color_hint">Color</string>
+    <string name="edit_size_hint">Talla</string>
+
+    <!-- FAB Dialog -->
+    <string name="create_new_outfit">Crear nuevo atuendo</string>
+    <string name="add_new_item">Agregar nuevo artículo</string>
+
+    <!-- Save Outfit Dialog -->
+    <string name="outfit_name_hint">Nombre del atuendo</string>
+
+    <!-- Messages -->
+    <string name="settings_loaded">Configuración cargada con éxito</string>
+    <string name="failed_load_settings">Error al cargar la configuración: %1$s</string>
+    <string name="error_loading_settings">Error cargando configuración: %1$s</string>
+    <string name="settings_updated">Configuración actualizada con éxito</string>
+    <string name="failed_update_settings">Error al actualizar la configuración: %1$s</string>
+    <string name="saving">Guardando…</string>
+    <string name="language_changed">Idioma cambiado. Reinicia la app para aplicar.</string>
+
+    <!-- Navigation -->
+    <string name="my_items">Mis artículos</string>
+    <string name="my_outfits">Mis atuendos</string>
+
+    <!-- Navigation Labels -->
+    <string name="add_item_title">Agregar artículo</string>
+    <string name="create_outfit_title">Crear atuendo</string>
+    <string name="outfit_detail_title">Detalles del atuendo</string>
+
+    <!-- Item Fragment Dialogs -->
+    <string name="view_details">Ver detalles</string>
+    <string name="edit">Editar</string>
+    <string name="delete">Eliminar</string>
+    <string name="edit_item">Editar artículo</string>
+
+    <string name="delete_item_title">Eliminar artículo</string>
+    <string name="delete_item_message">¿Seguro que quieres eliminar %1$s?</string>
+    <string name="item_deleted">Artículo eliminado</string>
+    <string name="no_changes_made">No se realizaron cambios</string>
+    <string name="ok">OK</string>
+
+    <!-- Item Details -->
+    <string name="name_label">Nombre: %1$s</string>
+    <string name="category_label">Categoría: %1$s</string>
+    <string name="subcategory_label">Subcategoría: %1$s</string>
+    <string name="color_label">Color: %1$s</string>
+    <string name="size_label">Talla: %1$s</string>
+    <string name="weather_tag_label">Etiqueta clima: %1$s</string>
+    <string name="times_worn_label">Veces usado: %1$d</string>
+    <string name="not_available">N/D</string>
+
+    <!-- Error Messages -->
+    <string name="failed_to_load_items">Error al cargar artículos: %1$s</string>
+    <string name="error_message">Error: %1$s</string>
+    <string name="failed_to_update">Error al actualizar: %1$s</string>
+    <string name="failed_to_delete">Error al eliminar: %1$s</string>
+
+    <!-- Errors -->
+    <string name="navigation_error">Error de navegación: %1$s</string>
+    <string name="logout_failed">Error al cerrar sesión: %1$s</string>
+
+    <string name="search_items">Buscar artículos…</string>
+    <string name="filter">Filtrar</string>
+    <string name="filter_items">Filtrar artículos</string>
+    <string name="apply_filters">Aplicar filtros</string>
+    <string name="clear_filters">Borrar filtros</string>
+    <string name="active_filters">Filtros activos</string>
+    <string name="times_worn_filter">Veces usado</string>
+    <string name="all_items">Todos los artículos</string>
+    <string name="never_worn">Nunca usado (0 veces)</string>
+    <string name="least_worn">Poco usado (1–5 veces)</string>
+    <string name="most_worn">Muy usado (6+ veces)</string>
+
+    <string name="organize_closet">Organizar armario</string>
+    <string name="organize_closet_description">Desliza a la derecha para guardar, a la izquierda para descartar</string>
+    <string name="organize_all_items">Organizar todos los artículos</string>
+    <string name="organize_least_worn">Organizar los menos usados</string>
+    <string name="swipe_instructions">Desliza a la izquierda para descartar, a la derecha para guardar</string>
+    <string name="keep">Guardar</string>
+    <string name="discard">Descartar</string>
+
+    <string name="closet_organized">¡Armario organizado!</string>
+    <string name="organize_summary">Has organizado tu armario con éxito</string>
+    <string name="statistics">Estadísticas</string>
+    <string name="items_reviewed">Artículos revisados</string>
+    <string name="items_kept">Artículos guardados</string>
+    <string name="items_discarded">Artículos descartados</string>
+    <string name="complete">Completo</string>
+    <string name="done">Hecho</string>
+
+    <string name="discarded_items">Artículos descartados</string>
+    <string name="view_discarded_items">Ver artículos descartados</string>
+    <string name="discarded_items_description">Estos artículos están marcados para eliminación. Puedes restaurarlos o eliminarlos permanentemente.</string>
+    <string name="no_discarded_items">No hay artículos descartados</string>
+    <string name="no_discarded_items_description">Aún no has descartado ningún artículo</string>
+    <string name="restore_all">Restaurar todo</string>
+    <string name="delete_all">Eliminar todo</string>
+    <string name="restore_item">Restaurar artículo</string>
+    <string name="delete_permanently">Eliminar permanentemente</string>
+    <string name="confirm_restore_all">¿Restaurar todos los artículos descartados a tu armario?</string>
+    <string name="confirm_delete_all">¿Eliminar permanentemente todos los artículos descartados? Esta acción no se puede deshacer.</string>
+    <string name="confirm_delete_item">¿Eliminar permanentemente este artículo? Esta acción no se puede deshacer.</string>
+    <string name="items_restored">Artículos restaurados con éxito</string>
+    <string name="items_deleted">Artículos eliminados permanentemente</string>
+    <string name="item_restored">Artículo restaurado</string>
+    <string name="item_discarded">Artículo descartado</string>
+    <string name="failed_to_restore">No se pudo restaurar: %1$s</string>
+    <string name="failed_to_discard">No se pudo descartar: %1$s</string>
+
+    <string name="filter_color">Color: %1$s</string>
+    <string name="filter_size">Tamaño: %1$s</string>
+    <string name="filter_weather">Clima: %1$s</string>
+    <string name="filter_times_worn">Veces usado: %1$s</string>
+
+    <string name="no_results">Ningún artículo coincide con tus filtros</string>
+    <string name="searching">Buscando…</string>
+
+    <!-- Organize Complete Additional Strings -->
+    <string name="organize_summary_kept_all">¡Has conservado todos tus artículos!</string>
+    <string name="organize_summary_discarded_all">Has descartado todos los artículos en esta sesión</string>
+    <string name="confirm_restore_item">¿Restaurar %1$s a tu armario?</string>
+
+</resources>

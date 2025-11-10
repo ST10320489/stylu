@@ -43,11 +43,12 @@ class ItemAdapter(
             // Load image from Supabase using Glide
             Glide.with(itemView.context)
                 .load(item.imageUrl)
-                .placeholder(R.drawable.cloudy) // placeholder
-                .error(R.drawable.sunny) // error image
+                .placeholder(R.drawable.default_img)
+                .error(R.drawable.default_img)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .centerCrop()
+                .fitCenter() // ✅ shows full image
                 .into(imageView)
+
         }
 
     }

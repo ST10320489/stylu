@@ -18,12 +18,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.iie.st10320489.stylu.R
-import com.iie.st10320489.stylu.data.models.*
+import com.iie.st10320489.stylu.auth.SessionManager
 import com.iie.st10320489.stylu.data.models.category.Category
 import com.iie.st10320489.stylu.data.models.item.ItemUploadRequest
-import com.iie.st10320489.stylu.network.DirectSupabaseAuth
-import com.iie.st10320489.stylu.network.ItemApiService
+import com.iie.st10320489.stylu.repository.ItemRepository
 import com.yalantis.ucrop.UCrop
+import com.yalantis.ucrop.UCropActivity
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
@@ -44,7 +44,10 @@ class AddItemFragment : Fragment() {
     private lateinit var btnCancel: Button
     private lateinit var progressBar: ProgressBar
 
-    private val itemApiService = ItemApiService()
+    // ✅ FIXED: Added SessionManager
+    private val sessionManager by lazy { SessionManager(requireContext()) }
+    private val itemRepository by lazy { ItemRepository(requireContext()) }
+
     private var selectedImageUri: Uri? = null
     private var processedImageUri: Uri? = null
     private var currentPhotoPath: String? = null
@@ -201,10 +204,19 @@ class AddItemFragment : Fragment() {
     private fun startImageCrop(sourceUri: Uri) {
         val destinationUri = Uri.fromFile(File(requireContext().cacheDir, "cropped_${System.currentTimeMillis()}.jpg"))
 
+        val options = UCrop.Options().apply {
+            setAllowedGestures(
+                UCropActivity.SCALE,  // scale
+                UCropActivity.ROTATE, // rotate
+                UCropActivity.ALL     // both in crop
+            )
+            setHideBottomControls(false) // show ratio controls
+        }
+
         UCrop.of(sourceUri, destinationUri)
-            .withAspectRatio(1f, 1f)
-            .withMaxResultSize(1080, 1080)
+            .withOptions(options)
             .start(requireContext(), this)
+
     }
 
     @Deprecated("Deprecated in Java")
@@ -230,7 +242,7 @@ class AddItemFragment : Fragment() {
                 progressBar.visibility = View.VISIBLE
                 btnRemoveBackground.isEnabled = false
 
-                val result = itemApiService.removeBackground(imageUri, requireContext())
+                val result = itemRepository.removeBackground(imageUri)
                 result.onSuccess { removedBgUri ->
                     processedImageUri = removedBgUri
                     ivItemImage.setImageURI(removedBgUri)
@@ -250,7 +262,9 @@ class AddItemFragment : Fragment() {
     private fun loadCategories() {
         lifecycleScope.launch {
             try {
-                val result = itemApiService.getCategories()
+                progressBar.visibility = View.VISIBLE
+
+                val result = itemRepository.getCategories()
                 result.onSuccess { loadedCategories ->
                     categories = loadedCategories
                     val categoryNames = loadedCategories.map { it.name }
@@ -262,10 +276,12 @@ class AddItemFragment : Fragment() {
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spCategory.adapter = adapter
                 }.onFailure { error ->
-                    Toast.makeText(requireContext(), "Failed to load categories", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Failed to load categories: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error loading categories", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Error loading categories: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                progressBar.visibility = View.GONE
             }
         }
     }
@@ -321,39 +337,37 @@ class AddItemFragment : Fragment() {
                 progressBar.visibility = View.VISIBLE
                 btnSaveItem.isEnabled = false
 
-                val accessToken = DirectSupabaseAuth.getCurrentAccessToken()
-                if (accessToken == null) {
-                    Toast.makeText(requireContext(), "Please log in first", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-
-                val userId = DirectSupabaseAuth.getCurrentUser()?.id
+                // ✅ FIXED: Use SessionManager to get user ID and email
+                val userId = sessionManager.getCurrentUserId()
                 if (userId == null) {
-                    Toast.makeText(requireContext(), "User ID not found", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Please log in first", Toast.LENGTH_SHORT).show()
+                    btnSaveItem.isEnabled = true
+                    progressBar.visibility = View.GONE
                     return@launch
                 }
 
-                // Upload image to Supabase Storage
-                val imageUrl = itemApiService.uploadImage(processedImageUri!!, requireContext(), accessToken)
+                val userEmail = sessionManager.getCurrentUserEmail() ?: "unknown"
 
-                imageUrl.onSuccess { url ->
-                    // Create item record in database
+                // Step 1: Upload image to Supabase Storage through repository
+                val imageUrlResult = itemRepository.uploadImage(processedImageUri!!)
+
+                imageUrlResult.onSuccess { imageUrl ->
+                    // Step 2: Create item record through API
                     val itemRequest = ItemUploadRequest(
                         userId = userId,
                         subcategoryId = getSelectedSubcategoryId(),
-                        name = etItemName.text.toString().trim(),   // <-- set name
+                        name = etItemName.text.toString().trim(),
                         colour = etColor.text.toString().trim().takeIf { it.isNotEmpty() },
                         material = null,
                         size = etSize.text.toString().trim().takeIf { it.isNotEmpty() },
                         price = etPrice.text.toString().toDoubleOrNull(),
-                        imageUrl = url,
+                        imageUrl = imageUrl,
                         weatherTag = spWeatherTag.selectedItem.toString(),
-                        createdBy = "user"
+                        createdBy = userEmail // ✅ FIXED: Now uses String type
                     )
 
-
-                    val result = itemApiService.createItem(accessToken, itemRequest)
-                    result.onSuccess { response ->
+                    val result = itemRepository.createItem(itemRequest)
+                    result.onSuccess {
                         Toast.makeText(requireContext(), "Item added successfully!", Toast.LENGTH_SHORT).show()
                         findNavController().navigateUp()
                     }.onFailure { error ->

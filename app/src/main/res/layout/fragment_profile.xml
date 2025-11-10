@@ -1,91 +1,191 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
-    android:orientation="vertical"
-    android:layout_marginTop="70dp"
-    android:paddingHorizontal="16dp">
+    android:background="@color/background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivLogo"
-        android:paddingHorizontal="16dp"
-        android:layout_marginTop="70dp">
+        android:orientation="vertical"
+        android:layout_marginTop="70dp"
+        android:paddingHorizontal="16dp">
 
-        <TextView
-            android:id="@+id/tvProfileTitle"
-            android:layout_width="0dp"
+        <!-- Profile Settings -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Profile Settings"
-            android:textColor="@android:color/black"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:gravity="start|center_vertical"
-            android:fontFamily="@font/tanmeringue"
-            android:letterSpacing="0.05"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:layout_marginTop="70dp">
 
-        <ImageView
-            android:id="@+id/profileBtn"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginStart="8dp"
-            android:contentDescription="@string/notifications"
-            android:src="@drawable/ic_forward" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tvProfileTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/profile_settings"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="start|center_vertical"
+                android:fontFamily="@font/tanmeringue"
+                android:letterSpacing="0.05"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/grey"
-        android:layout_marginTop="15dp"
-        android:layout_marginBottom="24dp" />
+            <ImageView
+                android:id="@+id/profileBtn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="8dp"
+                android:contentDescription="@string/notifications"
+                android:src="@drawable/ic_forward" />
+        </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivLogo"
-        android:paddingHorizontal="16dp"
-        android:layout_marginTop="70dp">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/grey"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="24dp" />
 
-        <TextView
-            android:id="@+id/tvSystemTitle"
-            android:layout_width="0dp"
+        <!-- System Settings -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="System Settings"
-            android:textColor="@android:color/black"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:gravity="start|center_vertical"
-            android:fontFamily="@font/tanmeringue"
-            android:letterSpacing="0.05"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp">
 
-        <ImageView
-            android:id="@+id/systemBtn"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginStart="8dp"
-            android:contentDescription="@string/notifications"
-            android:src="@drawable/ic_forward" />
+            <TextView
+                android:id="@+id/tvSystemTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/system_settings"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="start|center_vertical"
+                android:fontFamily="@font/tanmeringue"
+                android:letterSpacing="0.05"/>
+
+            <ImageView
+                android:id="@+id/systemBtn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="8dp"
+                android:contentDescription="@string/notifications"
+                android:src="@drawable/ic_forward" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/grey"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Biometric Authentication Toggle -->
+        <LinearLayout
+            android:id="@+id/biometricContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_fingerprint"
+                android:contentDescription="@string/biometric_login"
+                app:tint="@android:color/black" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/biometric_login"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/tanmeringue"
+                    android:letterSpacing="0.05"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/biometric_description"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppinsregular"/>
+            </LinearLayout>
+
+            <Switch
+                android:id="@+id/biometricSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/biometricDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/grey"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone" />
+
+        <!-- Logout Button -->
+        <LinearLayout
+            android:id="@+id/logoutBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_logout"
+                android:contentDescription="@string/logout"
+                app:tint="@color/orange_secondary" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/logout"
+                android:textColor="@color/orange_secondary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="start|center_vertical"
+                android:fontFamily="@font/tanmeringue"
+                android:letterSpacing="0.05"
+                android:layout_marginStart="12dp"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/grey"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="40dp" />
+
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/grey"
-        android:layout_marginTop="15dp"
-        android:layout_marginBottom="24dp" />
-
-</LinearLayout>
-
+</ScrollView>

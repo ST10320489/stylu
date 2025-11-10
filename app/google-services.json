@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "399505122649",
+    "project_id": "stylu-1f948",
+    "storage_bucket": "stylu-1f948.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:399505122649:android:ba8f76376829ce397b1848",
+        "android_client_info": {
+          "package_name": "com.iie.st10320489.stylu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5ZV-m58ooQ-Y8GOQExMARHptjdDeNcyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

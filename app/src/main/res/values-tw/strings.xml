@@ -1,0 +1,236 @@
+<resources>
+    <string name="app_name">stylu</string>
+    <string name="title_home">Legae</string>
+    <string name="title_wardrobe">Dikapelo</string>
+    <string name="title_profile">Profaili</string>
+    <string name="notifications">Ditlhagiso</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_settings">Dikgokagano tsa Profaili</string>
+    <string name="system_settings">Dikgokagano tsa System</string>
+    <string name="biometric_login">Kena ka Biometric</string>
+    <string name="biometric_description">Kena ka monyane wa menwe kgotsa sefahlego</string>
+    <string name="logout">Tswela ntle</string>
+    <string name="logout_message">A o netefatsa gore o batla go tswela ntle?</string>
+    <string name="cancel">Kgansela</string>
+    <string name="back">Boela morago</string>
+    <!-- Profile Settings -->
+    <string name="first_name">Leina</string>
+    <string name="last_name">Surname</string>
+    <string name="phone_number">Nomoro ya mogala</string>
+    <string name="email">Imeile</string>
+    <string name="password">Phasewete</string>
+    <string name="enter_first_name">Tlatsa leina</string>
+    <string name="enter_last_name">Tlatsa surname</string>
+    <string name="enter_phone_number">Tlatsa nomoro ya mogala</string>
+    <string name="enter_email">Tlatsa imeile</string>
+    <string name="enter_password">Tlatsa phasewete</string>
+    <string name="save_changes">Boloka diphetogo</string>
+
+    <!-- System Settings -->
+    <string name="language">Puo</string>
+    <string name="temperature_unit">Uniti ya temperecha</string>
+    <string name="reminder_time">Nako ya gopotso</string>
+    <string name="weather_sensitivity">Kutlwelobotlhoko ya bosa</string>
+    <string name="notify_weather_alerts">Itsise ditlhagiso tsa bosa</string>
+    <string name="notify_outfit_reminders">Itsise gopotso ya diaparo</string>
+
+    <!-- Language Options (does not change)-->
+    <string name="language_english">English</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="language_xhosa">Xhosa</string>
+    <string name="language_zulu">Zulu</string>
+    <string name="language_tswana">Tswana</string>
+    <string name="language_ndebele">Ndebele</string>
+    <string name="language_french">French</string>
+    <string name="language_italian">Italian</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_venda">Venda</string>
+
+    <!-- Temperature Units -->
+    <string name="celsius">Celsius (°C)</string>
+    <string name="fahrenheit">Fahrenheit (°F)</string>
+
+    <!-- Weather Sensitivity -->
+    <string name="sensitivity_low">Fase</string>
+    <string name="sensitivity_normal">Sefate</string>
+    <string name="sensitivity_high">Godimo</string>
+
+    <!-- Add Item -->
+    <string name="item_image">Setshwantsho sa ntho</string>
+    <string name="select_image">Kgetha setshwantsho</string>
+    <string name="remove_background">Tlosa morago</string>
+    <string name="item_name">Leina la ntho</string>
+    <string name="item_name_hint">e.g. Jaka ya Denim e Botala</string>
+    <string name="category">Setlhopha</string>
+    <string name="subcategory">Sub-setlhopha</string>
+    <string name="color">Mmala</string>
+    <string name="color_hint">e.g. Botala</string>
+    <string name="size">Bokete</string>
+    <string name="size_hint">e.g. M, L, XL</string>
+    <string name="price_optional">Theko (E kgethegileng)</string>
+    <string name="price_hint">e.g. 299.99</string>
+    <string name="weather_suitability">E tshwanelang bosa</string>
+    <string name="save_item">Boloka ntho</string>
+
+    <!-- Home -->
+    <string name="outfit_calendar">Kalendara ya diaparo</string>
+    <string name="today_date">Gompieno, Jan 1</string>
+    <string name="weather">Bosa</string>
+    <string name="temperature_range">-3° go ya +8°</string>
+    <string name="precipitation_label">Matshelo a dipula</string>
+    <string name="precipitation_value">90%</string>
+    <string name="scheduled_outfit">Diaparo tse rulagantsweng</string>
+
+    <!-- Create Outfit -->
+    <string name="save">Boloka</string>
+
+    <!-- Wardrobe -->
+    <string name="no_items">Ga go na dintlha</string>
+    <string name="tap_to_add">Tobetsa + go oketsa ntho ya ntlha</string>
+
+    <!-- Outfit Detail -->
+    <string name="outfit_name">Leina la diaparo</string>
+    <string name="delete_outfit">Susa diaparo</string>
+    <string name="edit_outfit">Hlophisa diaparo</string>
+    <string name="no_outfits">Ga go na diaparo</string>
+    <string name="tap_to_add_outfit">Tobetsa + go tlhama diaparo tsa ntlha</string>
+
+    <!-- Weekly Weather -->
+    <string name="monday_short">Mo</string>
+    <string name="tuesday_short">Tu</string>
+    <string name="wednesday_short">We</string>
+    <string name="thursday_short">Th</string>
+    <string name="friday_short">Fr</string>
+    <string name="saturday_short">Sa</string>
+    <string name="sunday_short">Su</string>
+    <string name="weather_icon">Setshwantsho sa bosa</string>
+
+    <!-- Bottom Sheet -->
+    <string name="add_items">Oketsa dintlha</string>
+    <string name="search">Batla</string>
+
+    <!-- Dialog Edit Item -->
+    <string name="edit_name_hint">Leina la ntho</string>
+    <string name="edit_color_hint">Mmala</string>
+    <string name="edit_size_hint">Bokete</string>
+
+    <!-- FAB Dialog -->
+    <string name="create_new_outfit">Tlhama diaparo tse disha</string>
+    <string name="add_new_item">Oketsa ntho e ntšhwa</string>
+
+    <!-- Save Outfit Dialog -->
+    <string name="outfit_name_hint">Leina la diaparo</string>
+
+    <!-- Messages -->
+    <string name="settings_loaded">Dikgokagano di latelotswe ka katlego</string>
+    <string name="failed_load_settings">Go latelotsa dikgokagano go paletse: %1$s</string>
+    <string name="error_loading_settings">Phoso mo go latelotseng dikgokagano: %1$s</string>
+    <string name="settings_updated">Dikgokagano di ntšhiwa ka katlego</string>
+    <string name="failed_update_settings">Go ntšha dikgokagano go paletse: %1$s</string>
+    <string name="saving">Go boloka…</string>
+    <string name="language_changed">Puo e fetogile. Tlhopha app go dira tshwanelo.</string>
+
+    <!-- Navigation -->
+    <string name="my_items">Dintho tsa me</string>
+    <string name="my_outfits">Diaparo tsa me</string>
+
+    <!-- Navigation Labels -->
+    <string name="add_item_title">Oketsa ntho</string>
+    <string name="create_outfit_title">Tlhama diaparo</string>
+    <string name="outfit_detail_title">Tlhaloso ya diaparo</string>
+
+    <!-- Item Fragment Dialogs -->
+    <string name="view_details">Bona dintlha</string>
+    <string name="edit">Hlophisa</string>
+    <string name="delete">Susa</string>
+    <string name="edit_item">Hlophisa ntho</string>
+
+    <string name="delete_item_title">Susa ntho</string>
+    <string name="delete_item_message">A o netefatsa go batla go susa %1$s?</string>
+    <string name="item_deleted">Ntho e susitswe</string>
+    <string name="no_changes_made">Ga go diphetogo tse di dirilweng</string>
+    <string name="ok">OK</string>
+
+    <!-- Item Details -->
+    <string name="name_label">Leina: %1$s</string>
+    <string name="category_label">Setlhopha: %1$s</string>
+    <string name="subcategory_label">Sub-setlhopha: %1$s</string>
+    <string name="color_label">Mmala: %1$s</string>
+    <string name="size_label">Bokete: %1$s</string>
+    <string name="weather_tag_label">Tag ya bosa: %1$s</string>
+    <string name="times_worn_label">Dinako tse di apara: %1$d</string>
+    <string name="not_available">N/A</string>
+
+    <!-- Error Messages -->
+    <string name="failed_to_load_items">Go latelotsa dintlha go paletse: %1$s</string>
+    <string name="error_message">Phoso: %1$s</string>
+    <string name="failed_to_update">Go ntšha go paletse: %1$s</string>
+    <string name="failed_to_delete">Go susa go paletse: %1$s</string>
+
+    <!-- Errors -->
+    <string name="navigation_error">Phoso mo go tsamaiseng: %1$s</string>
+    <string name="logout_failed">Tswela ntle go paletse: %1$s</string>
+
+    <string name="search_items">Batla dilo…</string>
+    <string name="filter">Fithara</string>
+    <string name="filter_items">Fithara Dilo</string>
+    <string name="apply_filters">Dirisa Difithara</string>
+    <string name="clear_filters">Phimola Difithara</string>
+    <string name="active_filters">Difithara Tse Di Dirisiwang</string>
+    <string name="times_worn_filter">Dikgafetsa Tsa Go Aperega</string>
+    <string name="all_items">Dilo Tsotlhe</string>
+    <string name="never_worn">Ga e ise e aparawe (0 dikgafetsa)</string>
+    <string name="least_worn">E aperwe Gonyenyane (1–5 dikgafetsa)</string>
+    <string name="most_worn">E aperwe Gantsi (6+ dikgafetsa)</string>
+
+    <string name="organize_closet">Rulaganya Khabinete</string>
+    <string name="organize_closet_description">Swipa go ja go boloka, go molema go lahla</string>
+    <string name="organize_all_items">Rulaganya Dilo Tsotlhe</string>
+    <string name="organize_least_worn">Rulaganya Tse Di Aperweng Gonyenyane</string>
+    <string name="swipe_instructions">Swipa go molema go lahla, go ja go boloka</string>
+    <string name="keep">Boloka</string>
+    <string name="discard">Lahla</string>
+
+    <string name="closet_organized">Khabinete E Rulagantswe!</string>
+    <string name="organize_summary">O atlegile go rulaganya khabinete ya gago</string>
+    <string name="statistics">Dipalo</string>
+    <string name="items_reviewed">Dilo Tse Di Lekolotsweng</string>
+    <string name="items_kept">Dilo Tse Di Bolokilweng</string>
+    <string name="items_discarded">Dilo Tse Di Lahilweng</string>
+    <string name="complete">Fetsa</string>
+    <string name="done">Dirilwe</string>
+
+    <string name="discarded_items">Dilo Tse Di Lahilweng</string>
+    <string name="view_discarded_items">Leba Dilo Tse Di Lahilweng</string>
+    <string name="discarded_items_description">Dilo tseno di beilwe go tlosiwa. O ka di busetsa kgotsa wa di phimola ruri.</string>
+    <string name="no_discarded_items">Ga gona dilo tse di lahilweng</string>
+    <string name="no_discarded_items_description">Ga o ise o lahle sepe</string>
+    <string name="restore_all">Busetsa Tsotlhe</string>
+    <string name="delete_all">Phimola Tsotlhe</string>
+    <string name="restore_item">Busetsa Ntho</string>
+    <string name="delete_permanently">Phimola Ruri</string>
+    <string name="confirm_restore_all">Busetsa dilo tsotlhe tse di lahilweng mo khabineteng?</string>
+    <string name="confirm_delete_all">Phimola dilo tsotlhe ruri? Se se ka se khutlisiwe.</string>
+    <string name="confirm_delete_item">Phimola ntho eno ruri? Se se ka se khutlisiwe.</string>
+    <string name="items_restored">Dilo di busetswe ka katlego</string>
+    <string name="items_deleted">Dilo di phimotswe ruri</string>
+    <string name="item_restored">Ntho e busetswe</string>
+    <string name="item_discarded">Ntho e lahilwe</string>
+    <string name="failed_to_restore">Go retetse go busetsa: %1$s</string>
+    <string name="failed_to_discard">Go retetse go lahla: %1$s</string>
+
+    <string name="filter_color">Mala: %1$s</string>
+    <string name="filter_size">Bogolo: %1$s</string>
+    <string name="filter_weather">Bosa/Borai: %1$s</string>
+    <string name="filter_times_worn">Dikgafetsa Tsa Go Aperega: %1$s</string>
+
+    <string name="no_results">Ga gona dilo tse di tshwanelang difithara tsa gago</string>
+    <string name="searching">Go a batlwa…</string>
+
+    <!-- Organize Complete Additional Strings -->
+    <string name="organize_summary_kept_all">O bolokile dilo tsotlhe!</string>
+    <string name="organize_summary_discarded_all">O latlhile dilo tsotlhe mo kgaolong eno</string>
+    <string name="confirm_restore_item">Busetsa %1$s mo kabeteng ya gago?</string>
+
+</resources>
