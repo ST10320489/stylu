@@ -57,6 +57,7 @@ class WardrobeFragment : Fragment() {
     private fun setupRecyclerView() {
         rvOutfits.layoutManager = GridLayoutManager(requireContext(), 2)
 
+        // FIXED: Explicitly name the parameter
         outfitAdapter = OutfitAdapter(
             onOutfitClick = { outfit ->
                 val bundle = Bundle().apply {
@@ -120,46 +121,6 @@ class WardrobeFragment : Fragment() {
                 setOnClickListener {
                     selectedCategory = category
                     setupCategoryButtonsSafe()
-                    filterOutfits(category)
-                }
-            }
-
-            val layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                (33 * resources.displayMetrics.density).toInt()
-            )
-            layoutParams.setMargins(0, 0, (8 * resources.displayMetrics.density).toInt(), 0)
-            button.layoutParams = layoutParams
-
-            categoryContainer.addView(button)
-        }
-    }
-
-
-
-    private fun setupCategoryButtons() {
-        categoryContainer.removeAllViews()
-
-        val categoryCounts = allOutfits.groupingBy { it.category ?: "Other" }.eachCount()
-        val categories = listOf("All" to allOutfits.size) + categoryCounts.toList()
-
-        for ((category, count) in categories) {
-            val button = Button(requireContext()).apply {
-                text = "$category ($count)"
-                textSize = 16f
-                setPadding(24, 0, 24, 0)
-                isAllCaps = false
-
-                val isSelected = category == selectedCategory
-                background = ContextCompat.getDrawable(
-                    requireContext(),
-                    if (isSelected) R.drawable.btn_primary_bg else R.drawable.btn_secondary_bg
-                )
-                setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#5A2E5A"))
-
-                setOnClickListener {
-                    selectedCategory = category
-                    setupCategoryButtons()
                     filterOutfits(category)
                 }
             }

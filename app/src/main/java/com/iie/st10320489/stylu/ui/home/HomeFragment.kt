@@ -168,21 +168,37 @@ class HomeFragment : Fragment() {
             try {
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
+                // Try to get outfit scheduled for today
                 val result = apiService.getOutfitForDate(today)
                 result.onSuccess { outfit ->
                     if (outfit != null) {
+                        Log.d(TAG, "Found outfit for today: ${outfit.name}")
                         displayScheduledOutfit(outfit)
                     } else {
+                        Log.d(TAG, "No outfit scheduled for today")
                         // Show default outfit image
                         ivScheduledOutfit.setImageResource(R.drawable.default_outfit)
+                        // Make it clickable to navigate to calendar
+                        ivScheduledOutfit.setOnClickListener {
+                            findNavController().navigate(R.id.action_home_to_calendar)
+                        }
                     }
                 }.onFailure { error ->
-                    Log.e(TAG, "Failed to load today's outfit: ${error.message}", error)
+                    // API error (404 or other)
+                    Log.w(TAG, "No outfit found for today or API error: ${error.message}")
                     ivScheduledOutfit.setImageResource(R.drawable.default_outfit)
+                    // Make it clickable to navigate to calendar
+                    ivScheduledOutfit.setOnClickListener {
+                        findNavController().navigate(R.id.action_home_to_calendar)
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading today's outfit: ${e.message}", e)
                 ivScheduledOutfit.setImageResource(R.drawable.default_outfit)
+                // Make it clickable to navigate to calendar
+                ivScheduledOutfit.setOnClickListener {
+                    findNavController().navigate(R.id.action_home_to_calendar)
+                }
             }
         }
     }
@@ -197,6 +213,8 @@ class HomeFragment : Fragment() {
                 .error(R.drawable.default_outfit)
                 .into(ivScheduledOutfit)
         } else {
+            // If no saved image, show default but log that outfit exists
+            Log.d(TAG, "Outfit exists but no saved image found")
             ivScheduledOutfit.setImageResource(R.drawable.default_outfit)
         }
 
