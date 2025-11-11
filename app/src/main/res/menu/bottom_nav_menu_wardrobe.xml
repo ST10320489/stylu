@@ -4,16 +4,16 @@
     <item
         android:id="@+id/navigation_my_items"
         android:icon="@drawable/ic_tshirt"
-        android:title="My Items" />
+        android:title="@string/my_items" />
 
     <item
         android:id="@+id/navigation_wardrobe"
         android:icon="@drawable/ic_add"
-        android:title="Wardrobe" />
+        android:title="@string/title_wardrobe" />
 
     <item
         android:id="@+id/navigation_my_outfits"
         android:icon="@drawable/ic_tshirt"
-        android:title="My Outfits" />
+        android:title="@string/my_outfits" />
 
 </menu>

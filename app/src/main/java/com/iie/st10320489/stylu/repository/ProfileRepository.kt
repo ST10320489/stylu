@@ -1,67 +1,64 @@
-// ProfileRepository.kt
 package com.iie.st10320489.stylu.repository
 
-import com.iie.st10320489.stylu.network.DirectSupabaseAuth
+import android.content.Context
+import com.iie.st10320489.stylu.auth.SessionManager
+import com.iie.st10320489.stylu.network.ApiService
+import com.iie.st10320489.stylu.network.SystemSettings
+import com.iie.st10320489.stylu.network.UpdateProfileRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.io.OutputStreamWriter
-import java.net.HttpURLConnection
-import java.net.URL
-import kotlin.apply
-import kotlin.io.bufferedReader
-import kotlin.io.readText
-import kotlin.io.use
 
-class ProfileRepository {
+class ProfileRepository(private val context: Context) {
 
-    suspend fun createUserProfile(
-        userId: String,
-        email: String,
-        firstName: String,
-        lastName: String
-    ): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            val token = DirectSupabaseAuth.getCurrentAccessToken()
-                ?: return@withContext Result.failure(kotlin.Exception("No access token found"))
+    private val sessionManager = SessionManager(context)
+    private val apiService = ApiService(context)
 
-            val url = URL("${DirectSupabaseAuth.SUPABASE_URL}/rest/v1/user_profiles")
-            val connection = url.openConnection() as HttpURLConnection
-
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.setRequestProperty("apikey", DirectSupabaseAuth.SUPABASE_ANON_KEY)
-            connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.doOutput = true
-
-            val requestBody = JSONObject().apply {
-                put("user_id", userId)        // must match auth.uid()
-                put("first_name", firstName)
-                put("last_name", lastName)
-                put("phone_number", "")
-                put("language", "en")
-            }
-
-            connection.outputStream.use { os ->
-                OutputStreamWriter(os, "UTF-8").use { writer ->
-                    writer.write(requestBody.toString())
-                }
-            }
-
-            val responseCode = connection.responseCode
-            val response = if (responseCode >= 400) {
-                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-            } else {
-                connection.inputStream.bufferedReader().use { it.readText() }
-            }
-
-            if (responseCode in 200..299) {
-                Result.success(Unit)
-            } else {
-                Result.failure(kotlin.Exception("Profile creation failed: $response"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    /**
+     * Get access token helper
+     */
+    private fun getAccessToken(): String? {
+        return sessionManager.getCurrentAccessToken()
     }
+
+    /**
+     * Get current user profile
+     */
+    suspend fun getCurrentProfile() = withContext(Dispatchers.IO) {
+        apiService.getCurrentProfile()
+    }
+
+    /**
+     * Update user profile
+     */
+    suspend fun updateProfile(
+        firstName: String,
+        lastName: String,
+        phoneNumber: String?,
+        email: String,
+        password: String? = null
+    ) = withContext(Dispatchers.IO) {
+        val request = UpdateProfileRequest(
+            firstName = firstName,
+            lastName = lastName,
+            phoneNumber = phoneNumber,
+            email = email,
+            password = password
+        )
+        apiService.updateProfile(request)
+    }
+
+    /**
+     * Get system settings
+     */
+    suspend fun getSystemSettings() = withContext(Dispatchers.IO) {
+        apiService.getCurrentSystemSettings()
+    }
+
+    /**
+     * Update system settings
+     */
+    suspend fun updateSystemSettings(settings: SystemSettings) = withContext(Dispatchers.IO) {
+        apiService.updateSystemSettings(settings)
+    }
+
 }

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:foreground="?attr/selectableItemBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <!-- Outfit Preview Container -->
+        <FrameLayout
+            android:id="@+id/outfitPreviewContainer"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/bg_dialog"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Outfit Name -->
+        <TextView
+            android:id="@+id/tvOutfitName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="40dp"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppinssemibold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/outfitPreviewContainer"
+            app:layout_constraintTop_toTopOf="@id/outfitPreviewContainer"
+            tools:text="Summer Casual" />
+
+        <!-- Scheduled Date -->
+        <TextView
+            android:id="@+id/tvScheduledDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp"
+            android:fontFamily="@font/poppinsregular"
+            app:layout_constraintEnd_toEndOf="@id/tvOutfitName"
+            app:layout_constraintStart_toEndOf="@id/outfitPreviewContainer"
+            app:layout_constraintTop_toBottomOf="@id/tvOutfitName"
+            tools:text="Mon, Nov 11" />
+
+        <!-- Weather Info -->
+        <TextView
+            android:id="@+id/tvWeatherInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/orange_secondary"
+            android:textSize="12sp"
+            android:fontFamily="@font/poppinsregular"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@id/tvOutfitName"
+            app:layout_constraintStart_toEndOf="@id/outfitPreviewContainer"
+            app:layout_constraintTop_toBottomOf="@id/tvScheduledDate"
+            tools:text="14°-19° • Thunder"
+            tools:visibility="visible" />
+
+        <!-- Color Dots Container -->
+        <LinearLayout
+            android:id="@+id/colorDotsContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toEndOf="@id/outfitPreviewContainer"
+            app:layout_constraintTop_toBottomOf="@id/tvWeatherInfo"
+            app:layout_constraintBottom_toBottomOf="@id/outfitPreviewContainer" />
+
+        <!-- Delete Button -->
+        <ImageButton
+            android:id="@+id/btnDeleteSchedule"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete schedule"
+            android:src="@drawable/ic_delete"
+            app:tint="@color/orange_secondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

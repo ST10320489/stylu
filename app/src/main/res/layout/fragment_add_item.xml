@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:paddingTop="70dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,8 +26,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@drawable/gradient_cloud"
-                android:contentDescription="Item image" />
+                android:src="@drawable/default_img"
+                android:contentDescription="@string/item_image" />
 
         </androidx.cardview.widget.CardView>
 
@@ -35,7 +36,7 @@
             android:id="@+id/btnSelectImage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Select Image"
+            android:text="@string/select_image"
             android:textColor="@android:color/white"
             android:background="@drawable/btn_primary_bg"
             android:paddingVertical="12dp"
@@ -48,7 +49,7 @@
             android:id="@+id/btnRemoveBackground"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Remove Background"
+            android:text="@string/remove_background"
             android:textColor="@color/purple_text"
             android:background="@drawable/btn_secondary_bg"
             android:paddingVertical="12dp"
@@ -61,7 +62,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Item Name"
+            android:text="@string/item_name"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsmedium"
@@ -73,7 +74,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="@drawable/edittext_background"
-            android:hint="e.g. Blue Denim Jacket"
+            android:hint="@string/item_name_hint"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsregular"
@@ -85,7 +86,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Category"
+            android:text="@string/category"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsmedium"
@@ -105,7 +106,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Subcategory"
+            android:text="@string/subcategory"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsmedium"
@@ -125,7 +126,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Color"
+            android:text="@string/color"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsmedium"
@@ -137,7 +138,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="@drawable/edittext_background"
-            android:hint="e.g. Blue"
+            android:hint="@string/color_hint"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsregular"
@@ -149,7 +150,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Size"
+            android:text="@string/size"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsmedium"
@@ -161,7 +162,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="@drawable/edittext_background"
-            android:hint="e.g. M, L, XL"
+            android:hint="@string/size_hint"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsregular"
@@ -173,7 +174,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Price (Optional)"
+            android:text="@string/price_optional"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsmedium"
@@ -185,7 +186,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="@drawable/edittext_background"
-            android:hint="e.g. 299.99"
+            android:hint="@string/price_hint"
             android:inputType="numberDecimal"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
@@ -198,7 +199,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Weather Suitability"
+            android:text="@string/weather_suitability"
             android:textColor="@color/purple_primary"
             android:textSize="16sp"
             android:fontFamily="@font/poppinsmedium"
@@ -228,7 +229,7 @@
             android:id="@+id/btnSaveItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Save Item"
+            android:text="@string/save_item"
             android:textColor="@android:color/white"
             android:background="@drawable/btn_primary_bg"
             android:paddingVertical="12dp"
@@ -242,7 +243,7 @@
             android:id="@+id/btnCancel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Cancel"
+            android:text="@string/cancel"
             android:textColor="@color/purple_text"
             android:background="@drawable/btn_secondary_bg"
             android:paddingVertical="12dp"
@@ -253,3 +254,4 @@
     </LinearLayout>
 
 </ScrollView>
+
