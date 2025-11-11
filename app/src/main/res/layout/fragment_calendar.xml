@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical"
+            android:background="@color/white"
+            android:layout_marginTop="70dp">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_back"
+                android:contentDescription="Back"
+                app:tint="#5A2E5A" />
+
+            <TextView
+                android:id="@+id/tvMonthYear"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="November 2025"
+                android:textSize="20sp"
+                android:textColor="#5A2E5A"
+                android:fontFamily="@font/poppinssemibold"
+                android:layout_marginStart="16dp" />
+
+            <ImageButton
+                android:id="@+id/btnPrevMonth"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_back"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Previous month"
+                app:tint="#5A2E5A" />
+
+            <ImageButton
+                android:id="@+id/btnNextMonth"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_forward"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Next month"
+                app:tint="#5A2E5A"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Day Labels -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="S"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textColor="#999999"
+                android:fontFamily="@font/poppinsmedium" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="M"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textColor="#999999"
+                android:fontFamily="@font/poppinsmedium" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="T"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textColor="#999999"
+                android:fontFamily="@font/poppinsmedium" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="W"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textColor="#999999"
+                android:fontFamily="@font/poppinsmedium" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="T"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textColor="#999999"
+                android:fontFamily="@font/poppinsmedium" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="F"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textColor="#999999"
+                android:fontFamily="@font/poppinsmedium" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="S"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textColor="#999999"
+                android:fontFamily="@font/poppinsmedium" />
+        </LinearLayout>
+
+        <!-- Calendar Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCalendar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginHorizontal="16dp" />
+
+        <!-- Selected Date Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvSelectedDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Today, November 10"
+                android:textSize="18sp"
+                android:textColor="#5A2E5A"
+                android:fontFamily="@font/poppinssemibold" />
+
+            <Button
+                android:id="@+id/btnScheduleForDate"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="+ Schedule"
+                android:textSize="12sp"
+                android:paddingHorizontal="12dp"
+                android:background="@drawable/btn_secondary_bg"
+                android:textColor="@color/purple_primary"
+                android:fontFamily="@font/poppinsmedium" />
+        </LinearLayout>
+
+        <!-- Outfits List -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvOutfits"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="16dp"
+                android:clipToPadding="false" />
+
+            <!-- No outfits message -->
+            <LinearLayout
+                android:id="@+id/llEmptyState"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="32dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/ic_empty_calendar"
+                    android:alpha="0.5"
+                    app:tint="#999999" />
+
+                <TextView
+                    android:id="@+id/tvNoOutfits"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No outfits scheduled for this day"
+                    android:textSize="16sp"
+                    android:textColor="#999999"
+                    android:fontFamily="@font/poppinsregular"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center" />
+
+                <Button
+                    android:id="@+id/btnCreateOutfitEmpty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Create Outfit"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/btn_primary_bg"
+                    android:textColor="@android:color/white"
+                    android:fontFamily="@font/poppinsmedium"
+                    android:paddingHorizontal="24dp" />
+            </LinearLayout>
+
+            <!-- Progress bar -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Floating Action Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabScheduleOutfit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_calendar_add"
+        android:contentDescription="Schedule outfit"
+        app:backgroundTint="#5A2E5A"
+        app:tint="@android:color/white"
+        app:fabSize="normal" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

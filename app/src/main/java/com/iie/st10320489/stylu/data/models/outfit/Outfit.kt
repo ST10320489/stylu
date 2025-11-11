@@ -1,7 +1,7 @@
 package com.iie.st10320489.stylu.data.models.outfit
 
 data class Outfit(
-    val outfitId: Int,
+    val outfitId: Int,  // ✅ Changed from String to Int
     val userId: String,
     val name: String,
     val category: String?,
