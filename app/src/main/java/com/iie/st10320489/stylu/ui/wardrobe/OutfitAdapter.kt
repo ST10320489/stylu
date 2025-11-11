@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -15,15 +16,23 @@ import com.bumptech.glide.Glide
 import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.network.ApiService
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class OutfitAdapter(
-    private val onOutfitClick: (ApiService.OutfitDetail) -> Unit
+    private val onOutfitClick: (ApiService.OutfitDetail) -> Unit,
+    private val onScheduleClick: ((ApiService.OutfitDetail) -> Unit)? = null
 ) : ListAdapter<ApiService.OutfitDetail, OutfitAdapter.OutfitViewHolder>(OutfitDiffCallback()) {
 
     inner class OutfitViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvOutfitName: TextView = itemView.findViewById(R.id.tvOutfitName)
         private val outfitPreviewContainer: FrameLayout = itemView.findViewById(R.id.outfitPreviewContainer)
         private val colorDotsContainer: LinearLayout = itemView.findViewById(R.id.colorDotsContainer)
+
+        // Schedule-related views (optional - may not exist in all layouts)
+        private val btnSchedule: Button? = itemView.findViewById(R.id.btnSchedule)
+        private val tvScheduledDate: TextView? = itemView.findViewById(R.id.tvScheduledDate)
+        private val ivScheduledIndicator: ImageView? = itemView.findViewById(R.id.ivScheduledIndicator)
 
         init {
             itemView.setOnClickListener {
@@ -32,10 +41,21 @@ class OutfitAdapter(
                     onOutfitClick(getItem(position))
                 }
             }
+
+            // Setup schedule button click listener if it exists
+            btnSchedule?.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onScheduleClick?.invoke(getItem(position))
+                }
+            }
         }
 
         fun bind(outfit: ApiService.OutfitDetail) {
             tvOutfitName.text = outfit.name
+
+            // Handle schedule status if views exist
+            handleScheduleStatus(outfit)
 
             outfitPreviewContainer.removeAllViews()
 
@@ -118,12 +138,39 @@ class OutfitAdapter(
             }
         }
 
+        private fun handleScheduleStatus(outfit: ApiService.OutfitDetail) {
+            val schedule = outfit.schedule
 
-        fun getSavedOutfitImagePath(outfitId: Int, context: Context): String {
+            // Only update schedule views if they exist in the layout
+            if (btnSchedule != null || tvScheduledDate != null || ivScheduledIndicator != null) {
+                if (schedule != null && schedule.isNotEmpty()) {
+                    ivScheduledIndicator?.visibility = View.VISIBLE
+                    tvScheduledDate?.visibility = View.VISIBLE
+                    tvScheduledDate?.text = "Scheduled: ${formatDate(schedule)}"
+                    btnSchedule?.text = "Reschedule"
+                } else {
+                    ivScheduledIndicator?.visibility = View.GONE
+                    tvScheduledDate?.visibility = View.GONE
+                    btnSchedule?.text = "Schedule"
+                }
+            }
+        }
+
+        private fun formatDate(dateString: String): String {
+            return try {
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val outputFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
+                val date = inputFormat.parse(dateString)
+                if (date != null) outputFormat.format(date) else dateString
+            } catch (e: Exception) {
+                dateString
+            }
+        }
+
+        private fun getSavedOutfitImagePath(outfitId: Int, context: Context): String {
             val file = File(context.filesDir, "outfit_$outfitId.png")
             return if (file.exists()) file.absolutePath else ""
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OutfitViewHolder {

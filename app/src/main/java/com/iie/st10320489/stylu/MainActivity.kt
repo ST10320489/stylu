@@ -43,22 +43,22 @@ class MainActivity : AppCompatActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
 
-
         sessionManager = SessionManager(this)
+
+        // ✅ CHECK LOGIN FIRST - BEFORE ANYTHING ELSE
+        if (!sessionManager.isAuthenticated()) {
+            Log.d("MainActivity", "Not authenticated - redirecting to login")
+            redirectToLogin()
+            return  // ✅ EXIT IMMEDIATELY - Don't continue setup
+        }
+
+        Log.d("MainActivity", "✅ User authenticated: ${sessionManager.getCurrentUserEmail()}")
 
         // Initialize PermissionHelper
         permissionHelper = PermissionHelper(this)
-
-        // Only redirect if truly not authenticated (no session at all)
-        if (!sessionManager.isAuthenticated()) {
-            Log.d("MainActivity", "No active session, redirecting to login")
-            redirectToLogin()
-            return
-        }
 
         // Register permission launchers BEFORE any requests
         permissionHelper.registerLaunchers(
@@ -129,6 +129,7 @@ class MainActivity : AppCompatActivity() {
         initializeWeatherNotifications()
         // Request permissions on first launch
         requestPermissionsIfNeeded()
+        handleNotificationIntent(intent)
     }
 
     /**
@@ -315,5 +316,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         dialog.show()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra("open_notifications", false) == true) {
+            Log.d("MainActivity", "Opening notifications from notification tap")
+            // Navigate to notifications fragment
+            navController.navigate(R.id.navigation_notifications)
+        }
     }
 }

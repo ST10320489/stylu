@@ -32,7 +32,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     //  TALK DIRECTLY TO SUPABASE
     private val SUPABASE_URL = "https://fkmhmtioehokrukqwano.supabase.co"
-    private val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    private val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrbWhtdGlvZWhva3J1a3F3YW5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMDAzNDIsImV4cCI6MjA3Mzc3NjM0Mn0.wg5fNm5_M8CRN3uzHnqvaxovIUDLCUWDcSiFJ14WqNE"
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
@@ -200,7 +200,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             try {
                 val prefs = getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
                 val accessToken = prefs.getString("access_token", null)
-                val userId = prefs.getString("user_id", null)
+                val userId = prefs.getString("user_id", null)  // ✅ UUID string
 
                 if (accessToken == null || userId == null) {
                     Log.w(TAG, "No auth token or user ID, cannot save notification")
@@ -208,12 +208,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
 
                 // Get current timestamp in ISO 8601 format
-                val timestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                val timestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
                     timeZone = java.util.TimeZone.getTimeZone("UTC")
                 }.format(Date())
 
                 val json = JSONObject().apply {
-                    put("user_id", userId.toInt())
+                    put("user_id", userId)  // ✅ Send UUID string
                     put("title", title)
                     put("message", message)
                     put("type", type)
@@ -238,8 +238,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
                 if (response.isSuccessful) {
                     Log.d(TAG, "✅ Notification saved to database")
-
-                    // ✅ Send broadcast to refresh NotificationsFragment
                     sendBroadcast(Intent("com.iie.st10320489.stylu.NEW_NOTIFICATION"))
                 } else {
                     Log.e(TAG, "❌ Failed to save notification: ${response.code} - ${response.body?.string()}")
@@ -251,7 +249,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             }
         }
     }
-
     private fun showNotification(
         title: String?,
         body: String?,

@@ -50,7 +50,7 @@ class ItemFragment : Fragment() {
     private var searchQuery: String = ""
     private var searchJob: Job? = null
 
-    // ✅ NEW: Track if this is the first load
+    // Track if this is the first load
     private var isFirstLoad = true
 
     override fun onCreateView(
@@ -73,18 +73,18 @@ class ItemFragment : Fragment() {
         setupSearchBar()
         setupFilterButton()
         setupOrganizeButton()
-        loadItemsFromAPI()
+        setupSwipeRefresh() // ✅ NEW: Setup pull-to-refresh
+        loadItemsWithCaching() // ✅ CHANGED: Now uses Flow-based caching
     }
 
     private fun setupRecyclerView() {
-        val spanCount = 2 // 2 columns
-        val spacing = 16.dpToPx() // 16dp spacing
+        val spanCount = 2
+        val spacing = 16.dpToPx()
         val includeEdge = true
 
         binding.rvItems.layoutManager = GridLayoutManager(requireContext(), spanCount)
         binding.rvItems.addItemDecoration(GridSpacingItemDecoration(spanCount, spacing, includeEdge))
 
-        // Initialize adapter with click listener
         itemAdapter = ItemAdapter { item ->
             showItemOptions(item)
         }
@@ -99,11 +99,9 @@ class ItemFragment : Fragment() {
 
             override fun afterTextChanged(s: Editable?) {
                 searchQuery = s?.toString() ?: ""
-
-                // Debounce search
                 searchJob?.cancel()
                 searchJob = lifecycleScope.launch {
-                    delay(300) // Wait 300ms before searching
+                    delay(300)
                     applyFiltersAndSearch()
                 }
             }
@@ -122,11 +120,26 @@ class ItemFragment : Fragment() {
         }
     }
 
-    private fun loadItemsFromAPI() {
+    // ✅ NEW: Setup SwipeRefreshLayout
+    private fun setupSwipeRefresh() {
+        binding.swipeRefresh?.setOnRefreshListener {
+            // Force refresh from API
+            loadItemsWithCaching(forceRefresh = true)
+        }
+
+        // Set color scheme for refresh indicator
+        binding.swipeRefresh?.setColorSchemeResources(
+            R.color.purple_primary,
+            R.color.orange_secondary
+        )
+    }
+
+    // ✅ NEW: Load items using Flow-based caching
+    private fun loadItemsWithCaching(forceRefresh: Boolean = false) {
         lifecycleScope.launch {
             try {
-                // ✅ NEW: Show different loading messages for first load vs refresh
-                if (isFirstLoad) {
+                // Show loading message only on first load
+                if (isFirstLoad && !forceRefresh) {
                     showLoadingWithMessage(
                         show = true,
                         message = "Loading your wardrobe...\n\n" +
@@ -136,62 +149,68 @@ class ItemFragment : Fragment() {
                     showLoading(true)
                 }
 
-                val itemsResult = itemRepository.getUserItems()
-                itemsResult.onSuccess { items ->
-                    // Filter out discarded items
-                    allItems = items.filter { !discardedItemsManager.isItemDiscarded(it.itemId) }
+                // ✅ NEW: Use Flow-based API from repository
+                itemRepository.getUserItems(forceRefresh = forceRefresh)
+                    .collect { result ->
+                        result.onSuccess { items ->
+                            // Filter out discarded items
+                            allItems = items.filter { !discardedItemsManager.isItemDiscarded(it.itemId) }
 
-                    val countsResult = itemRepository.getItemCountsByCategory()
-                    countsResult.onSuccess { counts ->
-                        categoryCounts = counts
-                        setupCategoryButtons()
-                        applyFiltersAndSearch()
-                    }.onFailure {
-                        categoryCounts = calculateCategoryCounts(allItems)
-                        setupCategoryButtons()
-                        applyFiltersAndSearch()
+                            // Calculate category counts from items
+                            categoryCounts = calculateCategoryCounts(allItems)
+                            setupCategoryButtons()
+                            applyFiltersAndSearch()
+
+                            // Mark first load as complete
+                            isFirstLoad = false
+
+                        }.onFailure { error ->
+                            handleLoadError(error)
+                        }
+
+                        // Hide loading indicators
+                        showLoading(false)
+                        showLoadingWithMessage(show = false, message = "")
+                        binding.swipeRefresh?.isRefreshing = false
                     }
 
-                    // ✅ NEW: Mark first load as complete
-                    isFirstLoad = false
-
-                }.onFailure { error ->
-                    // ✅ NEW: Better error handling with specific messages
-                    val errorMessage = when {
-                        error.message?.contains("timed out", ignoreCase = true) == true -> {
-                            "Server is starting up. This can take up to 60 seconds on first request.\n\n" +
-                                    "Please try again in a moment."
-                        }
-                        error.message?.contains("starting up", ignoreCase = true) == true -> {
-                            error.message ?: "Server is starting..."
-                        }
-                        error.message?.contains("authentication", ignoreCase = true) == true -> {
-                            "Authentication failed. Please log in again."
-                        }
-                        else -> {
-                            "Failed to load items: ${error.message}"
-                        }
-                    }
-
-                    Toast.makeText(
-                        requireContext(),
-                        errorMessage,
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    itemAdapter.submitList(emptyList())
-                    showEmptyState(true)
-                }
             } catch (e: Exception) {
                 Toast.makeText(
                     requireContext(),
                     getString(R.string.error_message, e.message),
                     Toast.LENGTH_LONG
                 ).show()
-            } finally {
                 showLoading(false)
                 showLoadingWithMessage(show = false, message = "")
+                binding.swipeRefresh?.isRefreshing = false
             }
+        }
+    }
+
+    // ✅ NEW: Better error handling
+    private fun handleLoadError(error: Throwable) {
+        val errorMessage = when {
+            error.message?.contains("timed out", ignoreCase = true) == true -> {
+                "Server is starting up. This can take up to 60 seconds on first request.\n\n" +
+                        "Please try again in a moment."
+            }
+            error.message?.contains("starting up", ignoreCase = true) == true -> {
+                error.message ?: "Server is starting..."
+            }
+            error.message?.contains("authentication", ignoreCase = true) == true -> {
+                "Authentication failed. Please log in again."
+            }
+            else -> {
+                "Failed to load items: ${error.message}"
+            }
+        }
+
+        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
+
+        // Only show empty state if we have no cached items
+        if (allItems.isEmpty()) {
+            itemAdapter.submitList(emptyList())
+            showEmptyState(true)
         }
     }
 
@@ -205,7 +224,6 @@ class ItemFragment : Fragment() {
         val categoryContainer = binding.categoryContainer
         categoryContainer.removeAllViews()
 
-        // Get unique categories from items
         val categories = mutableListOf("All" to allItems.size)
         categories.addAll(categoryCounts.map { it.key to it.value })
 
@@ -244,14 +262,12 @@ class ItemFragment : Fragment() {
     }
 
     private fun applyFiltersAndSearch() {
-        // Step 1: Filter by category
         var items = if (selectedCategory == "All") {
             allItems
         } else {
             allItems.filter { it.category == selectedCategory }
         }
 
-        // Step 2: Apply search query
         if (searchQuery.isNotEmpty()) {
             val query = searchQuery.lowercase()
             items = items.filter { item ->
@@ -262,13 +278,10 @@ class ItemFragment : Fragment() {
             }
         }
 
-        // Step 3: Apply filters
         items = applyFilters(items)
 
         filteredItems = items
         itemAdapter.submitList(filteredItems)
-
-        // Update UI
         showEmptyState(filteredItems.isEmpty())
         updateActiveFiltersChips()
     }
@@ -276,7 +289,6 @@ class ItemFragment : Fragment() {
     private fun applyFilters(items: List<WardrobeItem>): List<WardrobeItem> {
         var filtered = items
 
-        // Filter by colors
         if (currentFilters.colors.isNotEmpty()) {
             filtered = filtered.filter { item ->
                 item.colour?.let { color ->
@@ -287,7 +299,6 @@ class ItemFragment : Fragment() {
             }
         }
 
-        // Filter by sizes
         if (currentFilters.sizes.isNotEmpty()) {
             filtered = filtered.filter { item ->
                 item.size?.let { size ->
@@ -296,7 +307,6 @@ class ItemFragment : Fragment() {
             }
         }
 
-        // Filter by weather tags
         if (currentFilters.weatherTags.isNotEmpty()) {
             filtered = filtered.filter { item ->
                 item.weatherTag?.let { tag ->
@@ -305,7 +315,6 @@ class ItemFragment : Fragment() {
             }
         }
 
-        // Filter by times worn
         filtered = when (currentFilters.timesWornFilter) {
             TimesWornFilter.NEVER_WORN -> filtered.filter { it.timesWorn == 0 }
             TimesWornFilter.LEAST_WORN -> filtered.filter { it.timesWorn in 1..5 }
@@ -323,7 +332,6 @@ class ItemFragment : Fragment() {
             .setCancelable(true)
             .create()
 
-        // Make dialog background transparent
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         val colorChipGroup = dialogView.findViewById<com.google.android.material.chip.ChipGroup>(R.id.colorChipGroup)
@@ -333,12 +341,10 @@ class ItemFragment : Fragment() {
         val btnClear = dialogView.findViewById<Button>(R.id.btnClearFilters)
         val btnApply = dialogView.findViewById<Button>(R.id.btnApplyFilters)
 
-        // Labels for showing/hiding sections
         val tvColorLabel = dialogView.findViewById<TextView>(R.id.tvColorLabel)
         val tvSizeLabel = dialogView.findViewById<TextView>(R.id.tvSizeLabel)
         val tvWeatherLabel = dialogView.findViewById<TextView>(R.id.tvWeatherLabel)
 
-        // Populate color chips (hide section if no colors available)
         val availableColors = allItems.mapNotNull { it.colour }.distinct().sorted()
         if (availableColors.isNotEmpty()) {
             tvColorLabel.visibility = View.VISIBLE
@@ -352,7 +358,6 @@ class ItemFragment : Fragment() {
             colorChipGroup.visibility = View.GONE
         }
 
-        // Populate size chips (hide section if no sizes available)
         val availableSizes = allItems.mapNotNull { it.size }.distinct().sorted()
         if (availableSizes.isNotEmpty()) {
             tvSizeLabel.visibility = View.VISIBLE
@@ -366,7 +371,6 @@ class ItemFragment : Fragment() {
             sizeChipGroup.visibility = View.GONE
         }
 
-        // Populate weather chips (hide section if no weather tags available)
         val availableWeather = allItems.mapNotNull { it.weatherTag }.distinct().sorted()
         if (availableWeather.isNotEmpty()) {
             tvWeatherLabel.visibility = View.VISIBLE
@@ -380,7 +384,6 @@ class ItemFragment : Fragment() {
             weatherChipGroup.visibility = View.GONE
         }
 
-        // Set times worn filter
         when (currentFilters.timesWornFilter) {
             TimesWornFilter.ALL -> dialogView.findViewById<RadioButton>(R.id.rbAll).isChecked = true
             TimesWornFilter.NEVER_WORN -> dialogView.findViewById<RadioButton>(R.id.rbNeverWorn).isChecked = true
@@ -395,7 +398,6 @@ class ItemFragment : Fragment() {
         }
 
         btnApply.setOnClickListener {
-            // Collect selected colors
             val selectedColors = mutableSetOf<String>()
             for (i in 0 until colorChipGroup.childCount) {
                 val chip = colorChipGroup.getChildAt(i) as? Chip
@@ -404,7 +406,6 @@ class ItemFragment : Fragment() {
                 }
             }
 
-            // Collect selected sizes
             val selectedSizes = mutableSetOf<String>()
             for (i in 0 until sizeChipGroup.childCount) {
                 val chip = sizeChipGroup.getChildAt(i) as? Chip
@@ -413,7 +414,6 @@ class ItemFragment : Fragment() {
                 }
             }
 
-            // Collect selected weather tags
             val selectedWeather = mutableSetOf<String>()
             for (i in 0 until weatherChipGroup.childCount) {
                 val chip = weatherChipGroup.getChildAt(i) as? Chip
@@ -422,7 +422,6 @@ class ItemFragment : Fragment() {
                 }
             }
 
-            // Get times worn filter
             val timesWornFilter = when (timesWornRadioGroup.checkedRadioButtonId) {
                 R.id.rbNeverWorn -> TimesWornFilter.NEVER_WORN
                 R.id.rbLeastWorn -> TimesWornFilter.LEAST_WORN
@@ -450,7 +449,6 @@ class ItemFragment : Fragment() {
             isCheckable = true
             this.isChecked = isChecked
 
-            // Set colors based on checked state
             if (isChecked) {
                 setChipBackgroundColorResource(R.color.orange_secondary)
                 setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
@@ -459,7 +457,6 @@ class ItemFragment : Fragment() {
                 setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
             }
 
-            // Update colors when checked state changes
             setOnCheckedChangeListener { _, checked ->
                 if (checked) {
                     setChipBackgroundColorResource(R.color.orange_secondary)
@@ -482,25 +479,21 @@ class ItemFragment : Fragment() {
 
         binding.activeFiltersChipGroup.visibility = View.VISIBLE
 
-        // Add color filters
         currentFilters.colors.forEach { color ->
             val chip = createActiveFilterChip(getString(R.string.filter_color, color))
             binding.activeFiltersChipGroup.addView(chip)
         }
 
-        // Add size filters
         currentFilters.sizes.forEach { size ->
             val chip = createActiveFilterChip(getString(R.string.filter_size, size))
             binding.activeFiltersChipGroup.addView(chip)
         }
 
-        // Add weather filters
         currentFilters.weatherTags.forEach { weather ->
             val chip = createActiveFilterChip(getString(R.string.filter_weather, weather))
             binding.activeFiltersChipGroup.addView(chip)
         }
 
-        // Add times worn filter
         if (currentFilters.timesWornFilter != TimesWornFilter.ALL) {
             val label = when (currentFilters.timesWornFilter) {
                 TimesWornFilter.NEVER_WORN -> getString(R.string.never_worn)
@@ -518,7 +511,6 @@ class ItemFragment : Fragment() {
             text = label
             isCloseIconVisible = true
             setOnCloseIconClickListener {
-                // Remove this specific filter
                 removeFilter(label)
             }
         }
@@ -530,7 +522,6 @@ class ItemFragment : Fragment() {
         val updatedWeather = currentFilters.weatherTags.toMutableSet()
         var updatedTimesWorn = currentFilters.timesWornFilter
 
-        // Check which filter to remove
         currentFilters.colors.forEach { if (label.contains(it)) updatedColors.remove(it) }
         currentFilters.sizes.forEach { if (label.contains(it)) updatedSizes.remove(it) }
         currentFilters.weatherTags.forEach { if (label.contains(it)) updatedWeather.remove(it) }
@@ -558,7 +549,6 @@ class ItemFragment : Fragment() {
             .setCancelable(true)
             .create()
 
-        // Make dialog background transparent to show the dimmed background
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         val btnOrganizeAll = dialogView.findViewById<Button>(R.id.btnOrganizeAll)
@@ -700,7 +690,8 @@ class ItemFragment : Fragment() {
                 val result = itemRepository.updateItem(itemId, updates)
                 result.onSuccess {
                     Toast.makeText(requireContext(), "Item updated successfully", Toast.LENGTH_SHORT).show()
-                    loadItemsFromAPI()
+                    // ✅ CHANGED: Trigger refresh after update
+                    loadItemsWithCaching(forceRefresh = true)
                 }.onFailure { error ->
                     Toast.makeText(
                         requireContext(),
@@ -735,7 +726,8 @@ class ItemFragment : Fragment() {
                 val result = itemRepository.deleteItem(item.itemId)
                 result.onSuccess {
                     Toast.makeText(requireContext(), getString(R.string.item_deleted), Toast.LENGTH_SHORT).show()
-                    loadItemsFromAPI()
+                    // ✅ CHANGED: Trigger refresh after delete
+                    loadItemsWithCaching(forceRefresh = true)
                 }.onFailure { error ->
                     Toast.makeText(
                         requireContext(),
@@ -750,22 +742,15 @@ class ItemFragment : Fragment() {
         }
     }
 
-    // ✅ NEW: Show loading with a custom message (for first load with cold start warning)
     private fun showLoadingWithMessage(show: Boolean, message: String) {
         _binding?.let { binding ->
             if (show) {
                 binding.progressBar.visibility = View.VISIBLE
-                // If you have a loading text view in your layout, update it:
-                // binding.loadingText?.text = message
-                // binding.loadingText?.visibility = View.VISIBLE
-
-                // For now, show in a toast
                 if (message.isNotEmpty()) {
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                 }
             } else {
                 binding.progressBar.visibility = View.GONE
-                // binding.loadingText?.visibility = View.GONE
             }
         }
     }
@@ -779,7 +764,6 @@ class ItemFragment : Fragment() {
         _binding?.rvItems?.visibility = if (show) View.GONE else View.VISIBLE
     }
 
-    // Helper function to convert dp to px
     private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
 
     class GridSpacingItemDecoration(
@@ -814,10 +798,10 @@ class ItemFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh items when returning to fragment (e.g., after adding new item or organizing)
-        // But don't show the "first load" message anymore
+        // Don't show "first load" message on resume
         isFirstLoad = false
-        loadItemsFromAPI()
+        // Reload items (will use cache automatically)
+        loadItemsWithCaching(forceRefresh = false)
     }
 
     override fun onDestroyView() {

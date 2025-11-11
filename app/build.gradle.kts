@@ -4,6 +4,7 @@ plugins {
     id("kotlin-parcelize")
     id("androidx.navigation.safeargs.kotlin")
     id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -80,8 +81,7 @@ dependencies {
 
     // Glide (image loading)
     implementation("com.github.bumptech.glide:glide:4.15.1")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
-
+    kapt("com.github.bumptech.glide:compiler:4.15.1")
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
 
@@ -102,6 +102,14 @@ dependencies {
     // Firebase Cloud Messaging - Don't specify version, BOM handles it
     implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
+
+
+    // Room (uses kapt)
+    val roomVersion = "2.6.0"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     // Test dependencies
     testImplementation("junit:junit:4.13.2")

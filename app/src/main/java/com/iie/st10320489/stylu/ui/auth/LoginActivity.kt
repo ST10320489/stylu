@@ -41,8 +41,18 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         authRepository = AuthRepository(this)
         authViewModel = ViewModelProvider(this)[AuthViewModel::class.java]
+
+        // ✅ CHECK IF ALREADY LOGGED IN BEFORE SHOWING LOGIN
+        if (authRepository.isLoggedIn()) {
+            Log.d("LoginActivity", "✅ Already logged in - navigating to main")
+            navigateToMain()
+            return  // ✅ EXIT - Don't show login screen
+        }
+
+        Log.d("LoginActivity", "Not logged in - showing login screen")
 
         setContentView(R.layout.activity_login)
         initializeViews()
@@ -57,7 +67,6 @@ class LoginActivity : AppCompatActivity() {
             btnBiometric.postDelayed({ showBiometricPrompt() }, 500)
         }
     }
-
     private fun observeAuthState() {
         lifecycleScope.launch {
             authViewModel.authState.collectLatest { state ->

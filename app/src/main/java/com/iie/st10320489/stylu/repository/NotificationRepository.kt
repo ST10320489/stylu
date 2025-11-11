@@ -16,24 +16,102 @@ class NotificationRepository(private val context: Context) {
     private val TAG = "NotificationRepo"
 
     private val SUPABASE_URL = "https://fkmhmtioehokrukqwano.supabase.co"
-    val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrbWhtdGlvZWhva3J1a3F3YW5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg1NjkwNTEsImV4cCI6MjA0NDE0NTA1MX0.z6XKVvEHKL2Edhp_Wy-yjV8PZvcEtCLCv9tA3uuDwGY"
+    private val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrbWhtdGlvZWhva3J1a3F3YW5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMDAzNDIsImV4cCI6MjA3Mzc3NjM0Mn0.wg5fNm5_M8CRN3uzHnqvaxovIUDLCUWDcSiFJ14WqNE"
 
     /**
      * Save a notification to the database
      */
+    suspend fun getUserNotifications(): List<Notification> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val prefs = context.getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
+                val accessToken = prefs.getString("access_token", null)
+                val userId = prefs.getString("user_id", null)  // This is a UUID string
+
+                if (accessToken == null) {
+                    Log.e(TAG, "No access token found")
+                    return@withContext emptyList()
+                }
+
+                if (userId == null) {
+                    Log.e(TAG, "No user ID found")
+                    return@withContext emptyList()
+                }
+
+                // ✅ USE UUID DIRECTLY - Don't convert to int!
+                Log.d(TAG, "Fetching notifications for user: $userId")
+
+                val client = OkHttpClient()
+                val request = Request.Builder()
+                    .url("$SUPABASE_URL/rest/v1/notifications?user_id=eq.$userId&order=sent_at.desc,scheduled_at.desc")
+                    .get()
+                    .addHeader("apikey", SUPABASE_ANON_KEY)
+                    .addHeader("Authorization", "Bearer $accessToken")
+                    .addHeader("Content-Type", "application/json")
+                    .build()
+
+                val response = client.newCall(request).execute()
+
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "Failed to fetch notifications: ${response.code}")
+                    Log.e(TAG, "Response body: ${response.body?.string()}")
+                    return@withContext emptyList()
+                }
+
+                val body = response.body?.string()
+                val jsonArray = org.json.JSONArray(body ?: "[]")
+                val notifications = mutableListOf<Notification>()
+
+                for (i in 0 until jsonArray.length()) {
+                    val obj = jsonArray.getJSONObject(i)
+
+                    // ✅ Parse user_id as string (UUID) but convert to int for model
+                    val userIdFromDb = obj.getString("user_id")
+
+                    notifications.add(
+                        Notification(
+                            id = obj.optInt("notifications_id", 0),
+                            userId = userIdFromDb.hashCode(),  // Convert to int for model
+                            title = obj.getString("title"),
+                            message = obj.getString("message"),
+                            type = obj.optString("type", "general"),
+                            scheduledAt = obj.getString("scheduled_at"),
+                            sentAt = obj.optString("sent_at", null),
+                            status = obj.optString("status", "queued")
+                        )
+                    )
+                }
+
+                Log.d(TAG, "✅ Loaded ${notifications.size} notifications")
+                notifications
+
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error fetching notifications: ${e.message}", e)
+                emptyList()
+            }
+        }
+    }
+
     suspend fun saveNotification(notification: Notification): Boolean {
         return withContext(Dispatchers.IO) {
             try {
                 val prefs = context.getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
                 val accessToken = prefs.getString("access_token", null)
+                val userId = prefs.getString("user_id", null)  // UUID string
 
                 if (accessToken == null) {
                     Log.e(TAG, "Access token not found, cannot save notification")
                     return@withContext false
                 }
 
+                if (userId == null) {
+                    Log.e(TAG, "User ID not found, cannot save notification")
+                    return@withContext false
+                }
+
+                // ✅ USE UUID DIRECTLY
                 val json = JSONObject().apply {
-                    put("user_id", notification.userId)
+                    put("user_id", userId)  // Send UUID string, not int
                     put("title", notification.title)
                     put("message", notification.message)
                     put("type", notification.type)
@@ -75,57 +153,4 @@ class NotificationRepository(private val context: Context) {
         }
     }
 
-    /**
-     * Get all notifications for the current user
-     */
-    suspend fun getUserNotifications(): List<Notification> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val prefs = context.getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
-                val accessToken = prefs.getString("access_token", null) ?: return@withContext emptyList()
-                val userId = prefs.getString("user_id", null) ?: return@withContext emptyList()
-
-                val client = OkHttpClient()
-                val request = Request.Builder()
-                    .url("$SUPABASE_URL/rest/v1/notifications?user_id=eq.$userId&order=sent_at.desc,scheduled_at.desc")
-                    .get()
-                    .addHeader("apikey", SUPABASE_ANON_KEY)
-                    .addHeader("Authorization", "Bearer $accessToken")
-                    .addHeader("Content-Type", "application/json")
-                    .build()
-
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val body = response.body?.string()
-                    val jsonArray = org.json.JSONArray(body ?: "[]")
-                    val notifications = mutableListOf<Notification>()
-
-                    for (i in 0 until jsonArray.length()) {
-                        val obj = jsonArray.getJSONObject(i)
-                        notifications.add(
-                            Notification(
-                                id = obj.optInt("notifications_id", 0),
-                                userId = obj.getInt("user_id"),
-                                title = obj.getString("title"),
-                                message = obj.getString("message"),
-                                type = obj.optString("type", "general"),
-                                scheduledAt = obj.getString("scheduled_at"),
-                                sentAt = obj.optString("sent_at", null),
-                                status = obj.optString("status", "queued")
-                            )
-                        )
-                    }
-
-                    Log.d(TAG, "Loaded ${notifications.size} notifications")
-                    notifications
-                } else {
-                    Log.e(TAG, "Failed to fetch notifications: ${response.code}")
-                    emptyList()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching notifications: ${e.message}", e)
-                emptyList()
-            }
-        }
-    }
 }
