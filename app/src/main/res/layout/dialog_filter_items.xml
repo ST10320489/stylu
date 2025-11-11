@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/filter_items"
+            android:textSize="20sp"
+            android:textColor="@color/purple_primary"
+            android:fontFamily="@font/poppinssemibold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Color Filter -->
+        <TextView
+            android:id="@+id/tvColorLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/color"
+            android:textSize="14sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/colorChipGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:singleSelection="false"
+            app:chipSpacingHorizontal="8dp" />
+
+        <!-- Size Filter -->
+        <TextView
+            android:id="@+id/tvSizeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/size"
+            android:textSize="14sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/sizeChipGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:singleSelection="false"
+            app:chipSpacingHorizontal="8dp" />
+
+        <!-- Weather Tag Filter -->
+        <TextView
+            android:id="@+id/tvWeatherLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/weather_suitability"
+            android:textSize="14sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/weatherChipGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:singleSelection="false"
+            app:chipSpacingHorizontal="8dp" />
+
+        <!-- Times Worn Filter -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/times_worn_filter"
+            android:textSize="14sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/timesWornRadioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/rbAll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/all_items"
+                android:fontFamily="@font/poppinsregular"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rbNeverWorn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/never_worn"
+                android:fontFamily="@font/poppinsregular" />
+
+            <RadioButton
+                android:id="@+id/rbLeastWorn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/least_worn"
+                android:fontFamily="@font/poppinsregular" />
+
+            <RadioButton
+                android:id="@+id/rbMostWorn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/most_worn"
+                android:fontFamily="@font/poppinsregular" />
+        </RadioGroup>
+
+        <!-- Action Buttons - Vertical Stack -->
+        <Button
+            android:id="@+id/btnApplyFilters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/apply_filters"
+            android:textColor="@android:color/white"
+            android:background="@drawable/btn_primary_bg"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textAllCaps="false"
+            android:fontFamily="@font/poppinsregular"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp" />
+
+        <Button
+            android:id="@+id/btnClearFilters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clear_filters"
+            android:textColor="@color/purple_text"
+            android:background="@drawable/btn_secondary_bg"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textAllCaps="false"
+            android:fontFamily="@font/poppinsregular"
+            android:textSize="16sp"
+            android:layout_marginTop="10dp" />
+
+    </LinearLayout>
+</ScrollView>

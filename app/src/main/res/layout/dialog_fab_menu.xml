@@ -4,34 +4,33 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
-    android:gravity="center"><!--android:background="@drawable/bg_dialog"-->
+    android:gravity="center">
 
     <Button
         android:id="@+id/btn_create_outfit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Create a new outfit"
+        android:text="@string/create_new_outfit"
         android:textColor="@color/purple_primary"
         android:layout_marginBottom="3dp"
         android:paddingTop="20dp"
         android:paddingBottom="20dp"
         android:textAllCaps="false"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:fontFamily="@font/poppinsregular"
         android:backgroundTint="@android:color/white"/>
-
 
     <Button
         android:id="@+id/btn_add_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add a new item"
+        android:text="@string/add_new_item"
         android:textColor="@color/purple_primary"
         android:layout_marginBottom="15dp"
         android:paddingTop="20dp"
         android:paddingBottom="20dp"
         android:textAllCaps="false"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:fontFamily="@font/poppinsregular"
         android:backgroundTint="@android:color/white" />
 
@@ -39,14 +38,15 @@
         android:id="@+id/btn_cancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cancel"
+        android:text="@string/cancel"
         android:textColor="@android:color/white"
         android:layout_marginBottom="3dp"
         android:paddingTop="20dp"
         android:paddingBottom="20dp"
         android:textAllCaps="false"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:fontFamily="@font/poppinsregular"
         android:backgroundTint="@color/purple_primary" />
 
 </LinearLayout>
+
