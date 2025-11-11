@@ -120,7 +120,7 @@ class WeatherNotificationWorker(
     ) {
         try {
             val prefs = context.getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
-            val userId = prefs.getString("user_id", null)?.toIntOrNull()
+            val userId = prefs.getString("user_id", null)  // ✅ UUID string
 
             if (userId == null) {
                 Log.e(TAG, "User ID not found, cannot save notification")
@@ -132,7 +132,6 @@ class WeatherNotificationWorker(
                 timeZone = TimeZone.getTimeZone("UTC")
             }.format(Date())
 
-            // Map condition to emoji
             val emoji = when (condition) {
                 "sun" -> "☀️"
                 "cloudy" -> "☁️"
@@ -149,9 +148,9 @@ class WeatherNotificationWorker(
                 else -> "Partly Cloudy"
             }
 
-            // Create notification object
+            // Create notification object using UUID
             val notification = Notification(
-                userId = userId,
+                userId = userId.hashCode(),  // ✅ For model compatibility
                 title = "Today's Weather Forecast $emoji",
                 message = "High: $highTemp°C, Low: $lowTemp°C - $conditionText conditions expected today",
                 type = "weather",
@@ -160,7 +159,7 @@ class WeatherNotificationWorker(
                 status = "sent"
             )
 
-            // Save to database
+            // Save using repository (which now uses UUID)
             val notificationRepository = NotificationRepository(context)
             val saved = notificationRepository.saveNotification(notification)
 

@@ -392,7 +392,8 @@ class ApiService(context: Context) {
     data class CreateOutfitRequest(
         val name: String,
         val category: String?,
-        val itemIds: List<Int>
+        val itemIds: List<Int>,
+        val schedule: String? = null
     )
 
     data class CreateOutfitWithLayoutRequest(
@@ -427,6 +428,8 @@ class ApiService(context: Context) {
                 put("name", request.name)
                 put("category", request.category ?: "")
                 put("itemIds", org.json.JSONArray(request.itemIds))
+                // ✅ ADD THIS LINE - Include schedule if present
+                request.schedule?.let { put("schedule", it) }
             }
 
             Log.d(TAG, "POST Create Outfit - URL: $url")
@@ -477,7 +480,6 @@ class ApiService(context: Context) {
             Result.failure(Exception("Network error: ${e.message}"))
         }
     }
-
     suspend fun createOutfitWithLayout(request: CreateOutfitWithLayoutRequest): Result<OutfitResponse> = withContext(Dispatchers.IO) {
         return@withContext try {
             val token = authRepository.getCurrentAccessToken()
@@ -693,6 +695,170 @@ class ApiService(context: Context) {
         }
     }
 
+    // ==================== CALENDAR/SCHEDULING FUNCTIONS ====================
+
+    suspend fun scheduleOutfit(outfitId: Int, date: String): Result<OutfitDetail> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val token = authRepository.getCurrentAccessToken()
+                ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
+
+            val url = URL("$baseUrl/api/Outfit/$outfitId/schedule")
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = "PUT"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
+            connection.doOutput = true
+
+            val requestBody = JSONObject().apply {
+                put("schedule", date)
+            }
+
+            Log.d(TAG, "PUT Schedule Outfit - URL: $url")
+            Log.d(TAG, "PUT Schedule Outfit - Request: $requestBody")
+
+            connection.outputStream.use { outputStream ->
+                OutputStreamWriter(outputStream, "UTF-8").use { writer ->
+                    writer.write(requestBody.toString())
+                }
+            }
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode >= 400) {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            }
+
+            Log.d(TAG, "PUT Schedule Outfit - Response Code: $responseCode")
+            Log.d(TAG, "PUT Schedule Outfit - Response: $responseText")
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                // Re-fetch the outfit to get updated details
+                getUserOutfits().getOrNull()?.find { it.outfitId == outfitId }?.let {
+                    Result.success(it)
+                } ?: Result.failure(Exception("Outfit scheduled but couldn't retrieve updated details"))
+            } else {
+                val errorMessage = try {
+                    val errorJson = JSONObject(responseText)
+                    errorJson.optString("error", "Failed to schedule outfit")
+                } catch (e: Exception) {
+                    "Failed to schedule outfit: $responseCode"
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout scheduling outfit", e)
+            Result.failure(Exception("Request timed out. Please try again."))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error scheduling outfit", e)
+            Result.failure(Exception("Network error: ${e.message}"))
+        }
+    }
+
+    suspend fun getScheduledOutfits(): Result<List<OutfitDetail>> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val token = authRepository.getCurrentAccessToken()
+                ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
+
+            val url = URL("$baseUrl/api/Outfit/scheduled")
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = "GET"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
+
+            Log.d(TAG, "GET Scheduled Outfits - URL: $url")
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode >= 400) {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            }
+
+            Log.d(TAG, "GET Scheduled Outfits - Response Code: $responseCode")
+            Log.d(TAG, "GET Scheduled Outfits - Response: $responseText")
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val outfits = parseOutfitsResponse(responseText)
+                val scheduledOutfits = outfits.filter { !it.schedule.isNullOrEmpty() }
+                Result.success(scheduledOutfits)
+            } else {
+                // If specific endpoint doesn't exist, fall back to filtering all outfits
+                getUserOutfits().fold(
+                    onSuccess = { allOutfits ->
+                        val scheduledOutfits = allOutfits.filter { !it.schedule.isNullOrEmpty() }
+                        Result.success(scheduledOutfits)
+                    },
+                    onFailure = { error -> Result.failure(error) }
+                )
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout fetching scheduled outfits", e)
+            Result.failure(Exception("Request timed out. Server may be starting up. Please try again."))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching scheduled outfits", e)
+            Result.failure(Exception("Network error: ${e.message}"))
+        }
+    }
+
+    suspend fun getOutfitForDate(date: String): Result<OutfitDetail?> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val token = authRepository.getCurrentAccessToken()
+                ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
+
+            val url = URL("$baseUrl/api/Outfit/date/$date")
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = "GET"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
+
+            Log.d(TAG, "GET Outfit for Date - URL: $url")
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode >= 400) {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            }
+
+            Log.d(TAG, "GET Outfit for Date - Response Code: $responseCode")
+            Log.d(TAG, "GET Outfit for Date - Response: $responseText")
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val outfits = parseOutfitsResponse(responseText)
+                Result.success(outfits.firstOrNull())
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                Result.success(null)
+            } else {
+                // Fallback: filter all outfits by date
+                getUserOutfits().fold(
+                    onSuccess = { allOutfits ->
+                        val outfit = allOutfits.find { it.schedule == date }
+                        Result.success(outfit)
+                    },
+                    onFailure = { error -> Result.failure(error) }
+                )
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout fetching outfit for date", e)
+            Result.failure(Exception("Request timed out. Server may be starting up. Please try again."))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching outfit for date", e)
+            Result.failure(Exception("Network error: ${e.message}"))
+        }
+    }
+
+    // ==================== HELPER FUNCTIONS ====================
+
     private fun parseOutfitsResponse(jsonString: String): List<OutfitDetail> {
         val outfits = mutableListOf<OutfitDetail>()
 
@@ -741,10 +907,10 @@ class ApiService(context: Context) {
                         outfitId = outfitJson.getInt("outfit_id"),
                         userId = outfitJson.getString("user_id"),
                         name = outfitJson.getString("outfit_name"),
-                        category = outfitJson.optString("schedule", null),
+                        category = outfitJson.optString("category", null),
                         schedule = outfitJson.optString("schedule", null),
                         items = items,
-                        createdAt = ""
+                        createdAt = outfitJson.optString("created_at", "")
                     )
                 )
             }
@@ -753,6 +919,70 @@ class ApiService(context: Context) {
         }
 
         return outfits
+    }
+
+    suspend fun updateOutfit(outfitId: Int, request: CreateOutfitWithLayoutRequest): Result<String> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val token = authRepository.getCurrentAccessToken()
+                ?: return@withContext Result.failure(Exception("No access token available. Please login again."))
+
+            val url = URL("$baseUrl/api/Outfit/$outfitId")
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = "PUT"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
+            connection.doOutput = true
+
+            val itemsArray = org.json.JSONArray()
+            request.items.forEach { layoutJson ->
+                itemsArray.put(JSONObject(layoutJson))
+            }
+
+            val requestBody = JSONObject().apply {
+                put("name", request.name)
+                put("items", itemsArray)
+            }
+
+            Log.d(TAG, "PUT Update Outfit - URL: $url")
+            Log.d(TAG, "PUT Update Outfit - Request: $requestBody")
+
+            connection.outputStream.use { outputStream ->
+                OutputStreamWriter(outputStream, "UTF-8").use { writer ->
+                    writer.write(requestBody.toString())
+                }
+            }
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode >= 400) {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            }
+
+            Log.d(TAG, "PUT Update Outfit - Response Code: $responseCode")
+            Log.d(TAG, "PUT Update Outfit - Response: $responseText")
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                Result.success("Outfit updated successfully")
+            } else {
+                val errorMessage = try {
+                    val errorJson = JSONObject(responseText)
+                    errorJson.optString("error", "Failed to update outfit")
+                } catch (e: Exception) {
+                    "Failed to update outfit: $responseCode"
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout updating outfit", e)
+            Result.failure(Exception("Request timed out. Please try again."))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating outfit", e)
+            Result.failure(Exception("Network error: ${e.message}"))
+        }
     }
 }
 

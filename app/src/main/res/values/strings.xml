@@ -75,7 +75,7 @@
     <string name="save_item">Save Item</string>
 
     <!-- Home -->
-    <string name="outfit_calendar">Outfit Calendar</string>
+    <string name="outfit_calendar">Calendar</string>
     <string name="today_date">Today, Jan 1</string>
     <string name="weather">Weather</string>
     <string name="temperature_range">-3° to +8°</string>
@@ -240,6 +240,8 @@
     <string name="organize_summary_kept_all">You kept all your items!</string>
     <string name="organize_summary_discarded_all">You discarded all items in this session</string>
     <string name="confirm_restore_item">Restore %1$s to your wardrobe?</string>
+    <string name="remove_item">Remove item</string>
+    <string name="outfit_item">Outfit item</string>
 
 </resources>
 

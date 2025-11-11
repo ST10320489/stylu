@@ -77,7 +77,7 @@
 
     <fragment
         android:id="@+id/createOutfitFragment"
-        android:name="com.iie.st10320489.stylu.ui.wardrobe.CreateOutfitFragment"
+        android:name="com.iie.st10320489.stylu.ui.createOutfit.CreateOutfitFragment"
         android:label="@string/create_outfit_title"
         tools:layout="@layout/fragment_create_outfit"/>
 
@@ -85,12 +85,24 @@
         android:id="@+id/outfitDetailFragment"
         android:name="com.iie.st10320489.stylu.ui.wardrobe.OutfitDetailFragment"
         android:label="@string/outfit_detail_title"
-        tools:layout="@layout/fragment_outfit_detail"/>
+        tools:layout="@layout/fragment_outfit_detail">
+
+        <action
+            android:id="@+id/action_outfit_detail_to_edit_outfit"
+            app:destination="@id/editOutfitFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/editOutfitFragment"
+        android:name="com.iie.st10320489.stylu.ui.wardrobe.EditOutfitFragment"
+        android:label="Edit Outfit" />
 
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.iie.st10320489.stylu.ui.home.HomeFragment"
-        android:label="@string/title_home">
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_home">
 
         <action
             android:id="@+id/action_home_to_notifications"
@@ -103,12 +115,31 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_home_to_calendar"
+            app:destination="@id/calendarFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_home_to_outfit_detail"
+            app:destination="@id/outfitDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
+
+
 
     <fragment
         android:id="@+id/navigation_item"
         android:name="com.iie.st10320489.stylu.ui.item.ItemFragment"
-        android:label="@string/my_items">
+        android:label="@string/my_items"
+        tools:layout="@layout/fragment_item">
 
         <action
             android:id="@+id/action_items_to_addItem"
@@ -126,7 +157,6 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
 
-        <!-- NEW: Organize Closet Action -->
         <action
             android:id="@+id/action_items_to_organizeCloset"
             app:destination="@id/organizeClosetFragment"
@@ -135,7 +165,6 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
 
-        <!-- NEW: Discarded Items Action -->
         <action
             android:id="@+id/action_items_to_discardedItems"
             app:destination="@id/discardedItemsFragment"
@@ -143,9 +172,27 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_items_to_editItem"
+            app:destination="@id/editItemFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
-    <!-- NEW: Organize Closet Fragment -->
+    <fragment
+        android:id="@+id/editItemFragment"
+        android:name="com.iie.st10320489.stylu.ui.item.EditItemFragment"
+        android:label="Edit Item"
+        tools:layout="@layout/fragment_edit_item">
+
+        <argument
+            android:name="item"
+            app:argType="com.iie.st10320489.stylu.ui.item.models.WardrobeItem" />
+    </fragment>
+
     <fragment
         android:id="@+id/organizeClosetFragment"
         android:name="com.iie.st10320489.stylu.ui.item.OrganizeClosetFragment"
@@ -156,7 +203,6 @@
             android:name="items"
             app:argType="com.iie.st10320489.stylu.ui.item.models.WardrobeItem[]" />
 
-        <!-- Navigate to Complete Screen -->
         <action
             android:id="@+id/action_organizeCloset_to_complete"
             app:destination="@id/organizeCompleteFragment"
@@ -164,7 +210,6 @@
             app:popUpToInclusive="false" />
     </fragment>
 
-    <!-- NEW: Organize Complete Fragment -->
     <fragment
         android:id="@+id/organizeCompleteFragment"
         android:name="com.iie.st10320489.stylu.ui.item.OrganizeCompleteFragment"
@@ -186,7 +231,6 @@
             app:argType="integer"
             android:defaultValue="0" />
 
-        <!-- Navigate to Discarded Items -->
         <action
             android:id="@+id/action_complete_to_discardedItems"
             app:destination="@id/discardedItemsFragment"
@@ -196,11 +240,42 @@
             app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
-    <!-- NEW: Discarded Items Fragment -->
     <fragment
         android:id="@+id/discardedItemsFragment"
         android:name="com.iie.st10320489.stylu.ui.item.DiscardedItemsFragment"
         android:label="@string/discarded_items"
         tools:layout="@layout/fragment_discarded_items" />
+
+    <fragment
+        android:id="@+id/calendarFragment"
+        android:name="com.iie.st10320489.stylu.ui.calendar.CalendarFragment"
+        android:label="Calendar"
+        tools:layout="@layout/fragment_calendar">
+
+        <action
+            android:id="@+id/action_calendar_to_outfit_detail"
+            app:destination="@id/outfitDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_calendar_to_create_outfit"
+            app:destination="@id/createOutfitFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_calendar_to_wardrobe"
+            app:destination="@id/navigation_wardrobe"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
 
 </navigation>

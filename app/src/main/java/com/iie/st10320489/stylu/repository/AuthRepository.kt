@@ -65,4 +65,22 @@ class AuthRepository(private val context: Context) {
     }
 
     fun getBiometricCredentials(): Pair<String, String>? = biometricManager.getSavedCredentials()
+
+    fun getCurrentUserId(): String? {
+        return try {
+            val token = getCurrentAccessToken() ?: return null
+            val parts = token.split('.')
+            if (parts.size != 3) return null
+
+            val payload = parts[1]
+            val paddedPayload = payload.padEnd(payload.length + (4 - payload.length % 4) % 4, '=')
+            val jsonBytes = android.util.Base64.decode(paddedPayload, android.util.Base64.URL_SAFE)
+            val json = String(jsonBytes)
+            val jsonObject = org.json.JSONObject(json)
+
+            jsonObject.getString("sub")
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
