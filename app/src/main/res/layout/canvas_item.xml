@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitCenter"
-        android:contentDescription="Outfit item"/>
+        android:contentDescription="@string/outfit_item"/>
 
     <ImageButton
         android:id="@+id/btnRemoveItem"
@@ -19,6 +19,6 @@
         android:layout_gravity="top|end"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         android:background="@drawable/circle_bg"
-        android:contentDescription="Remove item"/>
+        android:contentDescription="@string/remove_item"/>
 
 </FrameLayout>

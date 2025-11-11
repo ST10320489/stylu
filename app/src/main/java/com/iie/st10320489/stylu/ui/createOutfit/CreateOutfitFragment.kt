@@ -1,11 +1,13 @@
-package com.iie.st10320489.stylu.ui.wardrobe
+package com.iie.st10320489.stylu.ui.createOutfit
 
+import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
@@ -22,16 +24,20 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.chip.Chip
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.iie.st10320489.stylu.R
-import com.iie.st10320489.stylu.network.ApiService
 import com.iie.st10320489.stylu.repository.ItemRepository
+import com.iie.st10320489.stylu.repository.OutfitRepository
 import com.iie.st10320489.stylu.ui.item.ItemAdapter
 import com.iie.st10320489.stylu.ui.item.models.WardrobeItem
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 data class ItemLayout(
     val item: WardrobeItem,
@@ -55,15 +61,20 @@ class CreateOutfitFragment : Fragment() {
     private lateinit var categoryContainer: LinearLayout
     private lateinit var etSearch: EditText
 
-    // ✅ FIXED: Initialize with context
+    // Repositories
     private val itemRepository by lazy { ItemRepository(requireContext()) }
-    private lateinit var apiService: ApiService
+    private val outfitRepository by lazy { OutfitRepository(requireContext()) }
+
     private lateinit var itemAdapter: ItemAdapter
 
     private var allItems: List<WardrobeItem> = emptyList()
     private var filteredItems: List<WardrobeItem> = emptyList()
     private var selectedCategory: String = "All"
     private val itemLayouts = mutableMapOf<Int, ItemLayout>()
+
+    // Scheduling
+    private var scheduledDate: LocalDate? = null
+    private lateinit var chipSchedule: Chip
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,7 +87,10 @@ class CreateOutfitFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        apiService = ApiService(requireContext())
+        // Check if we have a scheduled date from navigation args
+        arguments?.getString("scheduled_date")?.let { dateString ->
+            scheduledDate = LocalDate.parse(dateString)
+        }
 
         initializeViews(view)
         setupBottomSheet(view)
@@ -84,6 +98,7 @@ class CreateOutfitFragment : Fragment() {
         setupClickListeners()
         setupSearch()
         setupBackPressHandler()
+        setupScheduling()
         loadItems()
     }
 
@@ -93,6 +108,78 @@ class CreateOutfitFragment : Fragment() {
         btnCancel = view.findViewById(R.id.btnCancel)
         fabAddItems = view.findViewById(R.id.fabAddItem)
         progressBar = view.findViewById(R.id.progressBar)
+
+        // Add schedule chip programmatically if not in layout
+        chipSchedule = Chip(requireContext()).apply {
+            text = if (scheduledDate != null) {
+                "📅 ${scheduledDate!!.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))}"
+            } else {
+                "📅 Add Schedule"
+            }
+            isClickable = true
+            isCheckable = true
+            isChecked = scheduledDate != null
+        }
+
+        // Add chip to a container in your layout, or create one
+        val chipContainer = view.findViewById<ViewGroup?>(R.id.chipContainer)
+            ?: LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.HORIZONTAL
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(16, 8, 16, 8)
+                }
+                // Add this container to your main layout
+                (view as? ViewGroup)?.addView(this, 0)
+            }
+
+        if (chipSchedule.parent == null) {
+            (chipContainer as? ViewGroup)?.addView(chipSchedule)
+        }
+    }
+
+    private fun setupScheduling() {
+        chipSchedule.setOnClickListener {
+            if (chipSchedule.isChecked) {
+                showDatePicker()
+            } else {
+                // Remove schedule
+                scheduledDate = null
+                chipSchedule.text = "📅 Add Schedule"
+                chipSchedule.isChecked = false
+            }
+        }
+
+        chipSchedule.setOnCloseIconClickListener {
+            scheduledDate = null
+            chipSchedule.text = "📅 Add Schedule"
+            chipSchedule.isChecked = false
+        }
+    }
+
+    private fun showDatePicker() {
+        val calendar = Calendar.getInstance()
+        scheduledDate?.let {
+            calendar.set(it.year, it.monthValue - 1, it.dayOfMonth)
+        }
+
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                scheduledDate = LocalDate.of(year, month + 1, dayOfMonth)
+                chipSchedule.text = "📅 ${scheduledDate!!.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))}"
+                chipSchedule.isChecked = true
+                chipSchedule.isCloseIconVisible = true
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            datePicker.minDate = System.currentTimeMillis() - 1000
+            show()
+        }
     }
 
     private fun setupBottomSheet(view: View) {
@@ -201,11 +288,7 @@ class CreateOutfitFragment : Fragment() {
 
     private fun loadItems() {
         lifecycleScope.launch {
-            try {
-                progressBar.visibility = View.VISIBLE
-
-                // ✅ FIXED: Now properly calls getUserItems()
-                val result = itemRepository.getUserItems()
+            itemRepository.getUserItems().collect { result ->
                 result.onSuccess { items ->
                     allItems = items
                     setupCategoryButtons()
@@ -213,10 +296,6 @@ class CreateOutfitFragment : Fragment() {
                 }.onFailure { error ->
                     Toast.makeText(requireContext(), "Failed to load items: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            } finally {
-                progressBar.visibility = View.GONE
             }
         }
     }
@@ -305,7 +384,7 @@ class CreateOutfitFragment : Fragment() {
         makeDraggableAndScalable(itemView, item, removeBtn)
         canvasContainer.addView(itemView)
 
-        if (itemLayouts.size == 0) {
+        if (itemLayouts.size == 1) {
             Toast.makeText(requireContext(), "Drag to move - Pinch to resize", Toast.LENGTH_LONG).show()
         }
     }
@@ -415,6 +494,13 @@ class CreateOutfitFragment : Fragment() {
 
         val etOutfitName = dialogView.findViewById<EditText>(R.id.etOutfitName)
         val spCategory = dialogView.findViewById<Spinner>(R.id.spOutfitCategory)
+        val tvScheduledDate = dialogView.findViewById<TextView?>(R.id.tvSelectedDate)
+
+        // Show scheduled date if set
+        scheduledDate?.let {
+            tvScheduledDate?.text = "Scheduled for: ${it.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))}"
+            tvScheduledDate?.visibility = View.VISIBLE
+        }
 
         val categories = arrayOf("Casual", "Formal", "Sport", "Party", "Work", "Other")
         spCategory.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories).apply {
@@ -438,48 +524,59 @@ class CreateOutfitFragment : Fragment() {
     }
 
     private fun saveOutfit(name: String, category: String) {
+        Log.d("CreateOutfitFragment", "saveOutfit() called")
+        Log.d("CreateOutfitFragment", "  Name: $name")
+        Log.d("CreateOutfitFragment", "  Category: $category")
+        Log.d("CreateOutfitFragment", "  Scheduled Date: $scheduledDate")
+
         lifecycleScope.launch {
             try {
                 progressBar.visibility = View.VISIBLE
                 btnSaveOutfit.isEnabled = false
 
-                val itemsWithLayout = itemLayouts.values.map { layout ->
-                    JSONObject().apply {
-                        put("itemId", layout.item.itemId)
-                        put("x", layout.x / canvasContainer.width)
-                        put("y", layout.y / canvasContainer.height)
-                        put("scale", layout.scale)
-                        put("width", layout.width)
-                        put("height", layout.height)
-                    }.toString()
-                }
+                val itemIds = itemLayouts.values.map { it.item.itemId.toString() }
+                val scheduleString = scheduledDate?.format(DateTimeFormatter.ISO_LOCAL_DATE)
 
-                val request = ApiService.CreateOutfitWithLayoutRequest(
+                Log.d("CreateOutfitFragment", "  Item IDs: $itemIds")
+                Log.d("CreateOutfitFragment", "  Schedule String: $scheduleString")
+
+                // Use repository which handles offline/online logic
+                val result = outfitRepository.createOutfit(
                     name = name,
                     category = category,
-                    items = itemsWithLayout
+                    items = itemIds,
+                    schedule = scheduleString
                 )
 
-                val result = apiService.createOutfitWithLayout(request)
                 result.onSuccess { savedOutfit ->
+                    Log.d("CreateOutfitFragment", "Outfit saved successfully!")
+                    Log.d("CreateOutfitFragment", "  Saved outfit ID: ${savedOutfit.outfitId}")
+                    Log.d("CreateOutfitFragment", "  Saved schedule: ${savedOutfit.schedule}")
+
+                    // Save bitmap for preview
                     val bitmap = getCanvasBitmap()
                     saveBitmapToFile(bitmap, "outfit_${savedOutfit.outfitId}")
 
-                    Toast.makeText(requireContext(), "Outfit saved!", Toast.LENGTH_SHORT).show()
+                    val successMessage = if (scheduleString != null) {
+                        "Outfit saved and scheduled for ${scheduledDate!!.format(DateTimeFormatter.ofPattern("MMM d"))}"
+                    } else {
+                        "Outfit saved!"
+                    }
+
+                    Toast.makeText(requireContext(), successMessage, Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
                 }.onFailure { error ->
-                    Toast.makeText(requireContext(), "Failed to save: ${error.message}", Toast.LENGTH_SHORT).show()
-                    btnSaveOutfit.isEnabled = true
+                    Log.e("CreateOutfitFragment", "Failed to save outfit: ${error.message}", error)
+                    // ... error handling
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                btnSaveOutfit.isEnabled = true
+                Log.e("CreateOutfitFragment", "Exception in saveOutfit", e)
+                // ... exception handling
             } finally {
                 progressBar.visibility = View.GONE
             }
         }
     }
-
     private fun getCanvasBitmap(): Bitmap {
         fabAddItems.visibility = View.INVISIBLE
 

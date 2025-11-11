@@ -6,16 +6,78 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.iie.st10320489.stylu.MainActivity
 import com.iie.st10320489.stylu.R
+import com.iie.st10320489.stylu.data.models.notifications.Notification
+import com.iie.st10320489.stylu.repository.NotificationRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class NotificationHelper(private val context: Context) {
 
     companion object {
+        private const val TAG = "NotificationHelper"
         private const val CHANNEL_ID = "weather_notifications"
         private const val CHANNEL_NAME = "Weather Notifications"
         private const val NOTIFICATION_ID = 1001
+
+        /**
+         * Save a local notification (not from push)
+         */
+        fun saveLocalNotification(
+            context: Context,
+            title: String,
+            message: String,
+            type: String = "general"
+        ) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val prefs = context.getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
+                    val userId = prefs.getString("user_id", null)  // ✅ UUID string
+
+                    if (userId == null) {
+                        Log.e(TAG, "Cannot save notification: User ID not found")
+                        return@launch
+                    }
+
+                    val timestamp = SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss",
+                        Locale.US
+                    ).apply {
+                        timeZone = TimeZone.getTimeZone("UTC")
+                    }.format(Date())
+
+                    val notification = Notification(
+                        userId = userId.hashCode(),  // ✅ For model compatibility
+                        title = title,
+                        message = message,
+                        type = type,
+                        scheduledAt = timestamp,
+                        sentAt = timestamp,
+                        status = "sent"
+                    )
+
+                    val repository = NotificationRepository(context)
+                    val success = repository.saveNotification(notification)
+
+                    if (success) {
+                        Log.d(TAG, "✅ Local notification saved")
+                        val intent = Intent("com.iie.st10320489.stylu.NEW_NOTIFICATION")
+                        context.sendBroadcast(intent)
+                    } else {
+                        Log.e(TAG, "❌ Failed to save local notification")
+                    }
+
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error saving local notification: ${e.message}", e)
+                }
+            }
+        }
     }
 
     init {
@@ -72,7 +134,7 @@ class NotificationHelper(private val context: Context) {
         }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Replace with your weather icon
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("Today's Weather Forecast $emoji")
             .setContentText("High: $highTemp°C, Low: $lowTemp°C - $conditionText")
             .setStyle(

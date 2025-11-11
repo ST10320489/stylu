@@ -1,7 +1,9 @@
 package com.iie.st10320489.stylu.data.models.outfit
 
+import com.iie.st10320489.stylu.network.ApiService
+
 data class Outfit(
-    val outfitId: Int,
+    val outfitId: Int,  // ✅ Changed from String to Int
     val userId: String,
     val name: String,
     val category: String?,
@@ -15,7 +17,8 @@ data class OutfitItemDetail(
     val name: String?,
     val imageUrl: String,
     val colour: String?,
-    val subcategory: String
+    val subcategory: String,
+    val layoutData: ApiService.ItemLayoutData? = null
 )
 
 data class CreateOutfitRequest(

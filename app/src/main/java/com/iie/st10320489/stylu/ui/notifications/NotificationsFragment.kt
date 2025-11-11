@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -27,7 +28,7 @@ import kotlinx.coroutines.launch
 class NotificationsFragment : Fragment() {
 
     private var rvNotifications: RecyclerView? = null
-    private var tvEmptyState: TextView? = null
+    private var tvEmptyState: LinearLayout? = null  // ✅ CHANGED FROM TextView to LinearLayout
     private var progressBar: ProgressBar? = null
     private lateinit var adapter: NotificationsAdapter
     private val notificationsList = mutableListOf<Notification>()
@@ -57,9 +58,9 @@ class NotificationsFragment : Fragment() {
         return try {
             val view = inflater.inflate(R.layout.fragment_notifications, container, false)
 
-            // Initialize views
+            // Initialize views - ✅ FIXED: tvEmptyState is a LinearLayout, not TextView
             rvNotifications = view.findViewById(R.id.rvNotifications)
-            tvEmptyState = view.findViewById(R.id.tvEmptyState)
+            tvEmptyState = view.findViewById(R.id.tvEmptyState)  // This is now LinearLayout
             progressBar = view.findViewById(R.id.progressBar)
 
             // Setup RecyclerView
@@ -67,13 +68,10 @@ class NotificationsFragment : Fragment() {
             adapter = NotificationsAdapter(notificationsList)
             rvNotifications?.adapter = adapter
 
-            // Initialize repository
+            // ✅ FIXED: Initialize repository in onCreateView, not later
             repository = NotificationRepository(requireContext())
 
             Log.d(TAG, "✅ Views initialized successfully")
-
-            // Load notifications
-            fetchNotifications()
 
             view
         } catch (e: Exception) {
@@ -81,6 +79,13 @@ class NotificationsFragment : Fragment() {
             Toast.makeText(context, "Error loading notifications", Toast.LENGTH_SHORT).show()
             inflater.inflate(R.layout.fragment_notifications, container, false)
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Load notifications after view is created
+        fetchNotifications()
     }
 
     override fun onResume() {

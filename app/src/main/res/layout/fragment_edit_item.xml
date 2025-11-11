@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true"
+    android:paddingTop="70dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Image Preview (Non-editable) -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <ImageView
+                android:id="@+id/ivItemImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/default_img"
+                android:contentDescription="@string/item_image" />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Note about image editing -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/purple_text"
+            android:textSize="12sp"
+            android:fontFamily="@font/poppinsregular"
+            android:layout_gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Item Name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/item_name"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etItemName"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:hint="@string/item_name_hint"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsregular"
+            android:letterSpacing="0.05"
+            android:paddingLeft="10dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Category -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/category"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spCategory"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:paddingLeft="10dp"
+            android:spinnerMode="dropdown"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Subcategory -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/subcategory"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spSubcategory"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:paddingLeft="10dp"
+            android:spinnerMode="dropdown"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Color -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/color"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etColor"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:hint="@string/color_hint"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsregular"
+            android:letterSpacing="0.05"
+            android:paddingLeft="10dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Size -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/size"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etSize"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:hint="@string/size_hint"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsregular"
+            android:letterSpacing="0.05"
+            android:paddingLeft="10dp"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/etPrice"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:hint="@string/price_hint"
+            android:inputType="numberDecimal"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsregular"
+            android:letterSpacing="0.05"
+            android:paddingLeft="10dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Weather Tag -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/weather_suitability"
+            android:textColor="@color/purple_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppinsmedium"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spWeatherTag"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:paddingLeft="10dp"
+            android:spinnerMode="dropdown"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Update Button -->
+        <Button
+            android:id="@+id/btnUpdateItem"
+            android:layout_width="match_parent"
+            android:text="@string/save_changes"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:background="@drawable/btn_primary_bg"
+            android:paddingVertical="12dp"
+            android:fontFamily="@font/tanmeringue"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Cancel Button -->
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            android:textColor="@color/purple_text"
+            android:background="@drawable/btn_secondary_bg"
+            android:paddingVertical="12dp"
+            android:fontFamily="@font/tanmeringue"
+            android:textAllCaps="false"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+</ScrollView>

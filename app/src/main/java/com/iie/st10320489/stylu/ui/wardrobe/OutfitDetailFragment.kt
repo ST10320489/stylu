@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -19,6 +18,11 @@ import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.network.ApiService
 import kotlinx.coroutines.launch
 
+/**
+ * ✅ FIXED: Handles empty outfits gracefully
+ * - Shows message if outfit has no items
+ * - Prevents crashes on empty outfits
+ */
 class OutfitDetailFragment : Fragment() {
 
     private lateinit var apiService: ApiService
@@ -38,15 +42,17 @@ class OutfitDetailFragment : Fragment() {
         apiService = ApiService(requireContext())
         outfitId = arguments?.getInt("outfitId") ?: -1
 
-
+        if (outfitId == -1) {
+            Toast.makeText(requireContext(), "Invalid outfit", Toast.LENGTH_SHORT).show()
+            findNavController().navigateUp()
+            return
+        }
 
         view.findViewById<Button>(R.id.btnDeleteOutfit).setOnClickListener {
             confirmDelete()
         }
 
-        view.findViewById<Button>(R.id.btnDeleteOutfit2).setOnClickListener {
-            Toast.makeText(requireContext(), "Edit feature coming soon", Toast.LENGTH_SHORT).show()
-        }
+
 
         loadOutfitDetail()
     }
@@ -57,14 +63,72 @@ class OutfitDetailFragment : Fragment() {
                 val result = apiService.getUserOutfits()
                 result.onSuccess { outfits ->
                     val outfit = outfits.find { it.outfitId == outfitId }
-                    outfit?.let { displayOutfit(it) }
-                }.onFailure {
-                    Toast.makeText(requireContext(), "Failed to load outfit", Toast.LENGTH_SHORT).show()
+
+                    if (outfit == null) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Outfit not found",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        findNavController().navigateUp()
+                        return@onSuccess
+                    }
+
+                    view?.findViewById<Button>(R.id.btnDeleteOutfit2)?.setOnClickListener {
+                        val bundle = Bundle().apply {
+                            putInt("outfitId", outfitId)
+                            putString("outfitName", outfit.name)
+                        }
+                        findNavController().navigate(
+                            R.id.action_outfit_detail_to_edit_outfit,
+                            bundle
+                        )
+                    }
+
+                    // ✅ Check if outfit is empty
+                    if (outfit.items.isEmpty()) {
+                        showEmptyOutfitMessage(outfit.name)
+                    } else {
+                        displayOutfit(outfit)
+                    }
+
+                }.onFailure { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to load outfit: ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    findNavController().navigateUp()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Error: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                findNavController().navigateUp()
             }
         }
+    }
+
+    /**
+     * ✅ Show message for empty outfits
+     */
+    private fun showEmptyOutfitMessage(outfitName: String) {
+        view?.findViewById<TextView>(R.id.tvOutfitName)?.text = outfitName
+
+        // Hide the canvas
+        view?.findViewById<FrameLayout>(R.id.outfitCanvas)?.visibility = View.GONE
+
+        // Show empty state message
+        Toast.makeText(
+            requireContext(),
+            "This outfit has no items.\nAdd items to see it displayed.",
+            Toast.LENGTH_LONG
+        ).show()
+
+        // Optionally, you can add a TextView to show the message in the UI
+        // For now, we'll just show a toast and allow deletion
     }
 
     private fun displayOutfit(outfit: ApiService.OutfitDetail) {
@@ -72,6 +136,13 @@ class OutfitDetailFragment : Fragment() {
 
         val canvas = view?.findViewById<FrameLayout>(R.id.outfitCanvas)
         canvas?.removeAllViews()
+        canvas?.visibility = View.VISIBLE
+
+        // ✅ Double-check items exist before rendering
+        if (outfit.items.isEmpty()) {
+            showEmptyOutfitMessage(outfit.name)
+            return
+        }
 
         canvas?.post {
             outfit.items.forEach { item ->
@@ -102,6 +173,8 @@ class OutfitDetailFragment : Fragment() {
                 Glide.with(requireContext())
                     .load(item.imageUrl)
                     .fitCenter()
+                    .placeholder(R.drawable.default_img)
+                    .error(R.drawable.default_img)
                     .into(imageView)
 
                 canvas.addView(imageView)
@@ -125,13 +198,25 @@ class OutfitDetailFragment : Fragment() {
             try {
                 val result = apiService.deleteOutfit(outfitId)
                 result.onSuccess {
-                    Toast.makeText(requireContext(), "Outfit deleted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Outfit deleted",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     findNavController().navigateUp()
-                }.onFailure {
-                    Toast.makeText(requireContext(), "Failed to delete", Toast.LENGTH_SHORT).show()
+                }.onFailure { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to delete: ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Error: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

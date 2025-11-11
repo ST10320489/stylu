@@ -23,6 +23,7 @@ import com.iie.st10320489.stylu.network.ApiService
 import com.iie.st10320489.stylu.network.SystemSettings
 import com.iie.st10320489.stylu.utils.LanguageManager
 import com.iie.st10320489.stylu.utils.NotificationPreferences
+import com.iie.st10320489.stylu.utils.ProfileCacheManager
 import com.iie.st10320489.stylu.utils.WorkManagerScheduler
 import kotlinx.coroutines.launch
 
@@ -40,6 +41,9 @@ class SystemSettingsFragment : Fragment() {
     private lateinit var apiService: ApiService
     private lateinit var notificationPrefs: NotificationPreferences
     private lateinit var workManagerScheduler: WorkManagerScheduler
+    private lateinit var progressBar: ProgressBar
+    private lateinit var swipeRefreshLayout: androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    private lateinit var contentLayout: LinearLayout
 
     companion object {
         private const val TAG = "SystemSettingsFragment"
@@ -94,7 +98,11 @@ class SystemSettingsFragment : Fragment() {
         cbNotifyOutfitReminders = view.findViewById(R.id.cbNotifyOutfitReminders)
         btnSave = view.findViewById(R.id.btnSave)
         btnCancel = view.findViewById(R.id.btnCancel)
+        progressBar = view.findViewById(R.id.progressBar)
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefresh)
+        contentLayout = view.findViewById(R.id.contentLayout)
     }
+
 
     private fun setupSpinners() {
         val languageNames = languageCodes.map {
@@ -195,28 +203,55 @@ class SystemSettingsFragment : Fragment() {
 
     private fun loadCurrentSystemSettings() {
         lifecycleScope.launch {
+            showLoading(true)
             try {
-                showLoading(true)
+                // Load cached settings first
+                val cached = ProfileCacheManager.getSystemSettings(requireContext())
+                if (cached != null) {
+                    populateSettingsFields(cached)
+                }
+
+                if (!isInternetAvailable()) {
+                    Toast.makeText(
+                        requireContext(),
+                        "No internet connection. Showing last saved settings.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@launch
+                }
 
                 val result = apiService.getCurrentSystemSettings()
 
                 result.onSuccess { settings ->
                     populateSettingsFields(settings)
-                    Toast.makeText(context, getString(R.string.settings_loaded), Toast.LENGTH_SHORT).show()
-                }.onFailure { error ->
-                    Log.w(TAG, "Failed to load API settings: ${error.message}")
-                    Toast.makeText(context, getString(R.string.failed_load_settings, error.message), Toast.LENGTH_SHORT).show()
-                    // Keep using local preferences on API failure
+                    ProfileCacheManager.saveSystemSettings(requireContext(), settings)
+                    Toast.makeText(requireContext(), "Settings loaded successfully", Toast.LENGTH_SHORT).show()
+                }.onFailure { e ->
+                    val message = when {
+                        e.message?.contains("timeout", true) == true ->
+                            "Connection timed out. Please check your internet."
+                        e.message?.contains("failed to connect", true) == true ->
+                            "Unable to reach server. Try again later."
+                        else -> "Failed to load settings: ${e.message}"
+                    }
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                 }
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading settings", e)
-                Toast.makeText(context, getString(R.string.error_loading_settings, e.message), Toast.LENGTH_SHORT).show()
+                val message = if (e.message?.contains("timeout", true) == true) {
+                    "Request timed out. Check your internet."
+                } else {
+                    "Unexpected error: ${e.message}"
+                }
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
             } finally {
                 showLoading(false)
+                swipeRefreshLayout.isRefreshing = false
             }
         }
     }
+
+
 
     private fun populateSettingsFields(settings: SystemSettings) {
         val languageIndex = languageCodes.indexOf(settings.language)
@@ -408,6 +443,17 @@ class SystemSettingsFragment : Fragment() {
     }
 
     private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            progressBar.visibility = View.VISIBLE
+            // Dim the background so content isn't fully visible
+            contentLayout.alpha = 1.0f
+            swipeRefreshLayout.isEnabled = false
+        } else {
+            progressBar.visibility = View.GONE
+            contentLayout.alpha = 1.0f
+            swipeRefreshLayout.isEnabled = true
+        }
+
         btnSave.isEnabled = !isLoading
         btnCancel.isEnabled = !isLoading
         spLanguage.isEnabled = !isLoading
@@ -416,15 +462,16 @@ class SystemSettingsFragment : Fragment() {
         cbNotifyWeather.isEnabled = !isLoading
         cbNotifyOutfitReminders.isEnabled = !isLoading
 
-        // Keep time picker state based on checkbox
-        if (!isLoading) {
-            updateTimePickerState()
-        }
+        if (!isLoading) updateTimePickerState()
+    }
 
-        if (isLoading) {
-            btnSave.text = getString(R.string.saving)
-        } else {
-            btnSave.text = getString(R.string.save_changes)
-        }
+
+
+    private fun isInternetAvailable(): Boolean {
+        val cm = requireContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE)
+                as android.net.ConnectivityManager
+        val network = cm.activeNetwork ?: return false
+        val capabilities = cm.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 }
