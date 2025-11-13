@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Outfit Preview - INCREASED HEIGHT -->
+        <FrameLayout
+            android:id="@+id/outfitPreviewContainer"
+            android:layout_width="match_parent"
+            android:layout_height="427dp"
+            android:background="@color/light_grey">
+
+            <!-- Delete button overlay -->
+            <ImageButton
+                android:id="@+id/btnDeleteSchedule"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="8dp"
+                android:background="@drawable/btn_circle_bg"
+                android:contentDescription="Delete schedule"
+                android:src="@drawable/ic_delete"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <!-- Outfit Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp">
+
+            <!-- Outfit Name -->
+            <TextView
+                android:id="@+id/tvOutfitName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Outfit Name"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Scheduled Date -->
+            <TextView
+                android:id="@+id/tvScheduledDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mon, Nov 10"
+                android:textSize="14sp"
+                android:textColor="@color/grey"
+                android:layout_marginTop="4dp" />
+
+            <!-- Weather Info -->
+            <TextView
+                android:id="@+id/tvWeatherInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="20°-25° • Sunny"
+                android:textSize="12sp"
+                android:textColor="@color/grey"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
+
+            <!-- Color Dots -->
+            <LinearLayout
+                android:id="@+id/colorDotsContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

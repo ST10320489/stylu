@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@color/background">
+
+<!-- Swipe Refresh -->
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    android:id="@+id/swipeRefresh"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent">
+
+    <!-- Scrollable form content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <!-- Wrap all fields inside a single container -->
+        <LinearLayout
+            android:id="@+id/contentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:layout_marginTop="70dp">
+
+            <!-- Language -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/language"
+                android:textColor="@color/purple_primary"
+                android:textSize="16sp"
+                android:fontFamily="@font/poppinsmedium"
+                android:letterSpacing="0.05" />
+
+            <Spinner
+                android:id="@+id/spLanguage"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/edittext_background"
+                android:paddingLeft="10dp"
+                android:spinnerMode="dropdown" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/grey"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Temperature Unit -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/temperature_unit"
+                android:textColor="@color/purple_primary"
+                android:textSize="16sp"
+                android:fontFamily="@font/poppinsmedium"
+                android:letterSpacing="0.05" />
+
+            <Spinner
+                android:id="@+id/spTemperatureUnit"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/edittext_background"
+                android:paddingLeft="10dp"
+                android:spinnerMode="dropdown" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/grey"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Reminder Time -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reminder_time"
+                android:textColor="@color/purple_primary"
+                android:textSize="16sp"
+                android:fontFamily="@font/poppinsmedium"
+                android:letterSpacing="0.05" />
+
+            <TextView
+                android:id="@+id/tvReminderTime"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/edittext_background"
+                android:paddingLeft="10dp"
+                android:gravity="center_vertical"
+                android:text="07:00"
+                android:textColor="@color/purple_primary"
+                android:textSize="16sp"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/grey"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Weather Sensitivity -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/weather_sensitivity"
+                android:textColor="@color/purple_primary"
+                android:textSize="16sp"
+                android:fontFamily="@font/poppinsmedium"
+                android:letterSpacing="0.05" />
+
+            <Spinner
+                android:id="@+id/spWeatherSensitivity"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/edittext_background"
+                android:paddingLeft="10dp"
+                android:spinnerMode="dropdown" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/grey"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Notification Toggles -->
+            <CheckBox
+                android:id="@+id/cbNotifyWeather"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/notify_weather_alerts"
+                android:textColor="@color/purple_primary"
+                android:fontFamily="@font/poppinsregular"
+                android:buttonTint="@color/purple_primary" />
+
+            <CheckBox
+                android:id="@+id/cbNotifyOutfitReminders"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/notify_outfit_reminders"
+                android:textColor="@color/purple_primary"
+                android:fontFamily="@font/poppinsregular"
+                android:buttonTint="@color/purple_primary" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/grey"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="24dp" />
+
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/save_changes"
+                android:textColor="@android:color/white"
+                android:background="@drawable/btn_primary_bg"
+                android:layout_marginTop="25dp"
+                android:paddingVertical="10dp"
+                android:fontFamily="@font/tanmeringue"
+                android:textAllCaps="false"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel"
+                android:textColor="@color/purple_text"
+                android:background="@drawable/btn_secondary_bg"
+                android:layout_marginTop="8dp"
+                android:paddingVertical="10dp"
+                android:fontFamily="@font/tanmeringue"
+                android:textAllCaps="false"
+                android:textSize="16sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="100dp" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+<!-- Centered Progress Spinner -->
+<ProgressBar
+    android:id="@+id/progressBar"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:visibility="gone"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
