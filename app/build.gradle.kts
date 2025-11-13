@@ -5,6 +5,7 @@ plugins {
     id("androidx.navigation.safeargs.kotlin")
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.kapt")
+    id("jacoco") // <-- Added Jacoco
 }
 
 android {
@@ -21,6 +22,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            isTestCoverageEnabled = true // <-- Enable coverage
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -42,8 +46,36 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
+    }
+
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+
+    packaging {
+        resources {
+            excludes += listOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE-notice.md",
+                "META-INF/LICENSE.txt",
+                "META-INF/NOTICE.txt",
+                "META-INF/NOTICE.md",
+                "META-INF/LICENSE",
+                "META-INF/NOTICE"
+            )
+        }
+    }
 }
 
+// ==========================
+// Dependencies
+// ==========================
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -55,66 +87,109 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.compiler)
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // Google Play Services Location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
-    // Custom Tabs for OAuth flow
-    implementation("androidx.browser:browser:1.6.0")
-
-    // Coroutines for async operations
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
-    // Lifecycle
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-
-    // Activity/Fragment KTX
-    implementation("androidx.activity:activity-ktx:1.8.2")
-    implementation("androidx.fragment:fragment-ktx:1.6.2")
-
-    // UCrop (image cropping)
-    implementation("com.github.yalantis:ucrop:2.2.8")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
-    // Glide (image loading)
+    // Glide
     implementation("com.github.bumptech.glide:glide:4.15.1")
     kapt("com.github.bumptech.glide:compiler:4.15.1")
+
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // Google Play Services Location
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+    // Room
+    val roomVersion = "2.6.0"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+
+    // UCrop
+    implementation("com.github.yalantis:ucrop:2.2.8")
 
     // Biometric
     implementation("androidx.biometric:biometric:1.2.0-alpha05")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
-    // OkHttp for API calls in Firebase service
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // Custom Tabs
+    implementation("androidx.browser:browser:1.6.0")
 
-    // ===== FIREBASE DEPENDENCIES - FIXED VERSION =====
-    // Use the latest stable BOM
-    implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
-
-    // Firebase Cloud Messaging - Don't specify version, BOM handles it
-    implementation("com.google.firebase:firebase-messaging-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
-
-
-    // Room (uses kapt)
-    val roomVersion = "2.6.0"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
+    // Lifecycle KTX
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.activity:activity-ktx:1.8.2")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
-    // Test dependencies
+    // ==========================
+    // TESTING
+    // ==========================
     testImplementation("junit:junit:4.13.2")
+    testImplementation("com.google.truth:truth:1.4.2")
+    androidTestImplementation("com.google.truth:truth:1.4.2")
 
-    //notifications weather
-    implementation("androidx.work:work-runtime-ktx:2.8.1")
+    // MockK
+    testImplementation("io.mockk:mockk:1.13.10")
+    androidTestImplementation("io.mockk:mockk-android:1.13.10")
+
+    // Robolectric
+    testImplementation("org.robolectric:robolectric:4.11.1")
+    testImplementation("org.robolectric:shadows-framework:4.11.1")
+
+    // AndroidX Test
+    testImplementation("androidx.test:core:1.5.0")
+    testImplementation("androidx.test:core-ktx:1.5.0")
+    testImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation("androidx.test.ext:junit-ktx:1.1.5")
+    testImplementation("androidx.test.ext:truth:1.5.0")
+
+    androidTestImplementation("androidx.test:core:1.5.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+}
+
+// ==========================
+// Jacoco Coverage Configuration
+// ==========================
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest") // run after unit tests
+
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco"))
+    }
+
+    val debugTree = fileTree("${buildDir}/tmp/kotlin-classes/debug") {
+        exclude(
+            "**/R.class",
+            "**/R\$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*"
+        )
+    }
+
+    val mainSrc = "${projectDir}/src/main/java"
+
+    sourceDirectories.setFrom(files(mainSrc))
+    classDirectories.setFrom(files(debugTree))
+    executionData.setFrom(files("${buildDir}/jacoco/testDebugUnitTest.exec"))
 }

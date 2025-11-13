@@ -11,16 +11,19 @@ import java.util.*
 
 /**
  * ✅ Background sync service for calendar schedules
- * Call this when:
- * - App starts
- * - Network connectivity is restored
- * - User pulls to refresh
+ * Supports dependency injection for testing
  */
-class CalendarSyncService(private val context: Context) {
+class CalendarSyncService(
+    private val context: Context,
+    private val calendarRepository: CalendarRepository? = null,
+    private val tokenManager: TokenManager? = null,
+    private val database: StyluDatabase? = null
+) {
 
-    private val calendarRepository = CalendarRepository(context)
-    private val database = StyluDatabase.getDatabase(context)
-    private val tokenManager = TokenManager(context)
+    // Use provided dependencies if available, otherwise create defaults
+    private val repo: CalendarRepository = calendarRepository ?: CalendarRepository(context)
+    private val db: StyluDatabase = database ?: StyluDatabase.getDatabase(context)
+    private val token: TokenManager = tokenManager ?: TokenManager(context)
 
     companion object {
         private const val TAG = "CalendarSyncService"
@@ -31,66 +34,42 @@ class CalendarSyncService(private val context: Context) {
      */
     suspend fun syncAll(): SyncResult = withContext(Dispatchers.IO) {
         try {
-            // Check if we have auth token
-            val token = tokenManager.getValidAccessToken().getOrNull()
-            if (token == null) {
+            val tokenValue = token.getValidAccessToken().getOrNull()
+            if (tokenValue == null) {
                 Log.w(TAG, "⚠️ No auth token - skipping sync")
-                return@withContext SyncResult(
-                    success = false,
-                    message = "Not authenticated",
-                    synced = 0,
-                    failed = 0
-                )
+                return@withContext SyncResult(false, "Not authenticated", 0, 0)
             }
-
-            Log.d(TAG, "🔄 Starting calendar sync...")
 
             var syncedCount = 0
             var failedCount = 0
 
-            // Get all schedules with negative IDs (pending sync)
-            val allSchedules = database.calendarDao().getAllScheduledOutfits()
+            val allSchedules = db.calendarDao().getAllScheduledOutfits()
             val pendingSchedules = allSchedules.filter { it.scheduleId < 0 }
 
-            Log.d(TAG, "📦 Found ${pendingSchedules.size} pending schedules to sync")
-
-            // Sync each pending schedule
             for (schedule in pendingSchedules) {
                 try {
-                    // Re-schedule with API
-                    val result = calendarRepository.scheduleOutfit(
+                    val result = repo.scheduleOutfit(
                         outfitId = schedule.outfitId,
                         date = Date(schedule.scheduledDate),
                         eventName = schedule.eventName,
                         notes = schedule.notes
                     )
-
-                    if (result.isSuccess) {
-                        syncedCount++
-                        Log.d(TAG, "✅ Synced schedule: ${schedule.scheduleId}")
-                    } else {
-                        failedCount++
-                        Log.w(TAG, "❌ Failed to sync schedule: ${schedule.scheduleId}")
-                    }
+                    if (result.isSuccess) syncedCount++ else failedCount++
                 } catch (e: Exception) {
                     failedCount++
                     Log.e(TAG, "❌ Error syncing schedule: ${schedule.scheduleId}", e)
                 }
             }
 
-            // Sync down latest schedules from API
             try {
                 val now = Date()
                 val calendar = Calendar.getInstance()
-                calendar.add(Calendar.MONTH, -1) // Last month
+                calendar.add(Calendar.MONTH, -1)
                 val startDate = calendar.time
-
                 calendar.time = now
-                calendar.add(Calendar.MONTH, 3) // Next 3 months
+                calendar.add(Calendar.MONTH, 3)
                 val endDate = calendar.time
-
-                calendarRepository.getScheduledOutfits(startDate, endDate)
-                Log.d(TAG, "✅ Synced down schedules from API")
+                repo.getScheduledOutfits(startDate, endDate)
             } catch (e: Exception) {
                 Log.w(TAG, "⚠️ Could not sync down from API", e)
             }
@@ -102,23 +81,10 @@ class CalendarSyncService(private val context: Context) {
                 else -> "✅ Everything is up to date"
             }
 
-            Log.d(TAG, "🏁 Sync complete: $message")
-
-            SyncResult(
-                success = failedCount == 0,
-                message = message,
-                synced = syncedCount,
-                failed = failedCount
-            )
-
+            SyncResult(failedCount == 0, message, syncedCount, failedCount)
         } catch (e: Exception) {
             Log.e(TAG, "❌ Sync failed", e)
-            SyncResult(
-                success = false,
-                message = "Sync error: ${e.message}",
-                synced = 0,
-                failed = 0
-            )
+            SyncResult(false, "Sync error: ${e.message}", 0, 0)
         }
     }
 
@@ -127,10 +93,8 @@ class CalendarSyncService(private val context: Context) {
      */
     suspend fun hasPendingSyncs(): Boolean = withContext(Dispatchers.IO) {
         try {
-            val allSchedules = database.calendarDao().getAllScheduledOutfits()
-            val pendingCount = allSchedules.count { it.scheduleId < 0 }
-            Log.d(TAG, "📊 Pending syncs: $pendingCount")
-            pendingCount > 0
+            val allSchedules = db.calendarDao().getAllScheduledOutfits()
+            allSchedules.count { it.scheduleId < 0 } > 0
         } catch (e: Exception) {
             Log.e(TAG, "Error checking pending syncs", e)
             false

@@ -48,7 +48,7 @@
         android:gravity="center"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/tvCompleteTitle"
-        app:layout_constraintBottom_toTopOf="@id/statsCard"
+        app:layout_constraintBottom_toTopOf="@id/cardFrame"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -162,7 +162,6 @@
         </androidx.cardview.widget.CardView>
     </FrameLayout>
 
-    <!-- Buttons with proper styling -->
     <Button
         android:id="@+id/btnDone"
         android:layout_width="0dp"
