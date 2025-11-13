@@ -24,7 +24,7 @@
                 android:id="@+id/tvWeekDay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mon"
+                android:text="@string/monday_short"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
@@ -36,20 +36,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="80dp"
                 android:layout_marginTop="8dp"
-                android:contentDescription="Weather icon"
+                android:contentDescription="@string/weather_icon"
                 android:src="@drawable/sunny"/>
 
             <TextView
                 android:id="@+id/tvTempMinMax"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="12°C - 25°C"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:gravity="center"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@font/poppinssemibold"/>
+                android:fontFamily="@font/poppinssemibold"
+                android:gravity="center"
+                android:text="12°C - 25°C"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </FrameLayout>
 

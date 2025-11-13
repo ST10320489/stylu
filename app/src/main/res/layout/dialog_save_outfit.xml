@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Outfit Name"
+        android:textSize="14sp"
+        android:textColor="@color/grey"
+        android:fontFamily="@font/poppinsmedium"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etOutfitName"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Enter outfit name"
+        android:background="@drawable/edittext_background"
+        android:padding="12dp"
+        android:fontFamily="@font/poppinsregular"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Category"
+        android:textSize="14sp"
+        android:textColor="@color/grey"
+        android:fontFamily="@font/poppinsmedium"
+        android:layout_marginBottom="8dp"/>
+
+    <Spinner
+        android:id="@+id/spOutfitCategory"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/edittext_background"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+
+    <CheckBox
+        android:id="@+id/cbSchedule"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Schedule this outfit"
+        android:textSize="14sp"
+        android:fontFamily="@font/poppinsregular"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/btnPickDate"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Pick Date"
+        android:background="@drawable/btn_secondary_bg"
+        android:textColor="@color/purple_primary"
+        android:fontFamily="@font/poppinsmedium"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tvSelectedDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/purple_primary"
+        android:fontFamily="@font/poppinsmedium"
+        android:visibility="gone"/>
+
+</LinearLayout>

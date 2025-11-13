@@ -1,3 +1,9 @@
+// ItemApiService.kt - UPDATED VERSION
+// Changes made:
+// 1. Increased all connectTimeout to 60000ms (60 seconds) for Render cold starts
+// 2. Increased all readTimeout to 30000ms (30 seconds)
+// 3. Added specific error handling for SocketTimeoutException
+
 package com.iie.st10320489.stylu.network
 
 import android.content.Context
@@ -20,26 +26,33 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.UUID
 
-class ItemApiService {
+class ItemApiService(private val context: Context) {
+
+    private val supabaseAuth = DirectSupabaseAuth(context)
 
     companion object {
         private const val TAG = "ItemApiService"
-        private const val SUPABASE_URL = DirectSupabaseAuth.SUPABASE_URL
-        private const val SUPABASE_ANON_KEY = DirectSupabaseAuth.SUPABASE_ANON_KEY
+        private const val SUPABASE_URL = "https://fkmhmtioehokrukqwano.supabase.co"
+        private const val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrbWhtdGlvZWhva3J1a3F3YW5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMDAzNDIsImV4cCI6MjA3Mzc3NjM0Mn0.wg5fNm5_M8CRN3uzHnqvaxovIUDLCUWDcSiFJ14WqNE"
         private const val SUPABASE_STORAGE_BUCKET = "items"
-        private const val REMOVE_BG_API_KEY = "MP6cjk1T5mfdMJrSGPk3gQUV" // Get from remove.bg
+        private const val REMOVE_BG_API_KEY = "MP6cjk1T5mfdMJrSGPk3gQUV"
+
+        // Increased timeouts for better reliability
+        private const val CONNECT_TIMEOUT = 60000  // 60 seconds
+        private const val READ_TIMEOUT = 30000     // 30 seconds
     }
 
     // Get all categories with subcategories directly from Supabase
     suspend fun getCategories(): Result<List<Category>> = withContext(Dispatchers.IO) {
         try {
-            // Query categories table with subcategories
             val url = URL("$SUPABASE_URL/rest/v1/category?select=*,sub_category(*)")
             val connection = url.openConnection() as HttpURLConnection
 
             connection.requestMethod = "GET"
             connection.setRequestProperty("apikey", SUPABASE_ANON_KEY)
             connection.setRequestProperty("Content-Type", "application/json")
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
 
             val responseCode = connection.responseCode
             val response = if (responseCode >= 400) {
@@ -56,6 +69,9 @@ class ItemApiService {
             } else {
                 Result.failure(Exception("Failed to load categories: HTTP $responseCode"))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout loading categories", e)
+            Result.failure(Exception("Request timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error loading categories", e)
             Result.failure(e)
@@ -63,7 +79,7 @@ class ItemApiService {
     }
 
     // Upload image to Supabase Storage
-    suspend fun uploadImage(imageUri: Uri, context: Context, accessToken: String): Result<String> = withContext(Dispatchers.IO) {
+    suspend fun uploadImage(imageUri: Uri, accessToken: String): Result<String> = withContext(Dispatchers.IO) {
         try {
             // Get bitmap from URI
             val inputStream = context.contentResolver.openInputStream(imageUri)
@@ -76,7 +92,7 @@ class ItemApiService {
             val imageBytes = byteArrayOutputStream.toByteArray()
 
             // Generate unique filename with .png extension
-            val userId = DirectSupabaseAuth.getCurrentUser()?.id ?: "unknown"
+            val userId = supabaseAuth.getCurrentUserId() ?: "unknown"
             val fileName = "${userId}_${UUID.randomUUID()}.png"
 
             // Upload to Supabase Storage
@@ -87,10 +103,11 @@ class ItemApiService {
             connection.setRequestProperty("apikey", SUPABASE_ANON_KEY)
             connection.setRequestProperty("Authorization", "Bearer $accessToken")
             connection.setRequestProperty("Content-Type", "image/png")
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
             connection.doOutput = true
 
             connection.outputStream.use { it.write(imageBytes) }
-
 
             val responseCode = connection.responseCode
             val response = if (responseCode >= 400) {
@@ -108,6 +125,9 @@ class ItemApiService {
             } else {
                 Result.failure(Exception("Upload failed: $response"))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout uploading image", e)
+            Result.failure(Exception("Upload timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error uploading image", e)
             Result.failure(e)
@@ -115,7 +135,7 @@ class ItemApiService {
     }
 
     // Remove background using remove.bg API
-    suspend fun removeBackground(imageUri: Uri, context: Context): Result<Uri> = withContext(Dispatchers.IO) {
+    suspend fun removeBackground(imageUri: Uri): Result<Uri> = withContext(Dispatchers.IO) {
         try {
             // Get image bytes
             val inputStream = context.contentResolver.openInputStream(imageUri)
@@ -134,6 +154,8 @@ class ItemApiService {
             connection.requestMethod = "POST"
             connection.setRequestProperty("X-Api-Key", REMOVE_BG_API_KEY)
             connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
             connection.doOutput = true
 
             // Build multipart body
@@ -170,6 +192,9 @@ class ItemApiService {
                 Log.e(TAG, "Remove.bg error: $error")
                 Result.failure(Exception(error))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout removing background", e)
+            Result.failure(Exception("Background removal timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error removing background", e)
             Result.failure(e)
@@ -187,6 +212,8 @@ class ItemApiService {
             connection.setRequestProperty("Authorization", "Bearer $accessToken")
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Prefer", "return=representation")
+            connection.connectTimeout = CONNECT_TIMEOUT
+            connection.readTimeout = READ_TIMEOUT
             connection.doOutput = true
 
             val requestBody = JSONObject().apply {
@@ -254,6 +281,9 @@ class ItemApiService {
                 }
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Timeout creating item", e)
+            Result.failure(Exception("Request timed out. Please try again."))
         } catch (e: Exception) {
             Log.e(TAG, "Error creating item", e)
             Result.failure(e)

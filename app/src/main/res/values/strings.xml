@@ -4,4 +4,245 @@
     <string name="title_wardrobe">Wardrobe</string>
     <string name="title_profile">Profile</string>
     <string name="notifications">Notification</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_settings">Profile Settings</string>
+    <string name="system_settings">System Settings</string>
+    <string name="biometric_login">Biometric Login</string>
+    <string name="biometric_description">Login with fingerprint or face</string>
+    <string name="logout">Logout</string>
+    <string name="logout_message">Are you sure you want to logout?</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Profile Settings -->
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="enter_first_name">Enter First Name</string>
+    <string name="enter_last_name">Enter Last Name</string>
+    <string name="enter_phone_number">Enter Phone Number</string>
+    <string name="enter_email">Enter email</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="save_changes">Save Changes</string>
+
+    <!-- System Settings -->
+    <string name="language">Language</string>
+    <string name="temperature_unit">Temperature Unit</string>
+    <string name="reminder_time">Weather Reminder Time</string>
+    <string name="weather_sensitivity">Weather Sensitivity</string>
+    <string name="notify_weather_alerts">Notify Weather Alerts</string>
+    <string name="notify_outfit_reminders">Notify Outfit Reminders</string>
+
+    <!-- Language Options (does not change)-->
+    <string name="language_english">English</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="language_xhosa">Xhosa</string>
+    <string name="language_zulu">Zulu</string>
+    <string name="language_tswana">Tswana</string>
+    <string name="language_ndebele">Ndebele</string>
+    <string name="language_french">French</string>
+    <string name="language_italian">Italian</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_venda">Venda</string>
+
+
+    <!-- Temperature Units -->
+    <string name="celsius">Celsius (°C)</string>
+    <string name="fahrenheit">Fahrenheit (°F)</string>
+
+    <!-- Weather Sensitivity -->
+    <string name="sensitivity_low">Low</string>
+    <string name="sensitivity_normal">Normal</string>
+    <string name="sensitivity_high">High</string>
+
+    <!-- Add Item -->
+    <string name="item_image">Item image</string>
+    <string name="select_image">Select Image</string>
+    <string name="remove_background">Remove Background</string>
+    <string name="item_name">Item Name</string>
+    <string name="item_name_hint">e.g. Blue Denim Jacket</string>
+    <string name="category">Category</string>
+    <string name="subcategory">Subcategory</string>
+    <string name="color">Color</string>
+    <string name="color_hint">e.g. Blue</string>
+    <string name="size">Size</string>
+    <string name="size_hint">e.g. M, L, XL</string>
+    <string name="price_optional">Price (Optional)</string>
+    <string name="price_hint">e.g. 299.99</string>
+    <string name="weather_suitability">Weather Suitability</string>
+    <string name="save_item">Save Item</string>
+
+    <!-- Home -->
+    <string name="outfit_calendar">Calendar</string>
+    <string name="today_date">Today, Jan 1</string>
+    <string name="weather">Weather</string>
+    <string name="temperature_range">-3° to +8°</string>
+    <string name="precipitation_label">Probability of Precipitation</string>
+    <string name="precipitation_value">90%</string>
+    <string name="scheduled_outfit">Scheduled Outfit</string>
+
+    <!-- Create Outfit -->
+    <string name="save">Save</string>
+
+    <!-- Wardrobe -->
+    <string name="no_items">No items yet</string>
+    <string name="tap_to_add">Tap + to add your first item</string>
+
+    <!-- Outfit Detail -->
+    <string name="outfit_name">Outfit Name</string>
+    <string name="delete_outfit">Delete Outfit</string>
+    <string name="edit_outfit">Edit Outfit</string>
+    <string name="no_outfits">No outfits yet</string>
+    <string name="tap_to_add_outfit">Tap + to create your first outfit</string>
+
+    <!-- Weekly Weather -->
+    <string name="monday_short">Mon</string>
+    <string name="tuesday_short">Tue</string>
+    <string name="wednesday_short">Wed</string>
+    <string name="thursday_short">Thu</string>
+    <string name="friday_short">Fri</string>
+    <string name="saturday_short">Sat</string>
+    <string name="sunday_short">Sun</string>
+    <string name="weather_icon">Weather icon</string>
+
+    <!-- Bottom Sheet -->
+    <string name="add_items">Add Items</string>
+    <string name="search">Search</string>
+
+    <!-- Dialog Edit Item -->
+    <string name="edit_name_hint">Item Name</string>
+    <string name="edit_color_hint">Color</string>
+    <string name="edit_size_hint">Size</string>
+
+    <!-- FAB Dialog -->
+    <string name="create_new_outfit">Create a new outfit</string>
+    <string name="add_new_item">Add a new item</string>
+
+    <!-- Save Outfit Dialog -->
+    <string name="outfit_name_hint">Outfit Name</string>
+
+    <!-- Messages -->
+    <string name="settings_loaded">Settings loaded successfully</string>
+    <string name="failed_load_settings">Failed to load settings: %1$s</string>
+    <string name="error_loading_settings">Error loading settings: %1$s</string>
+    <string name="settings_updated">Settings updated successfully</string>
+    <string name="failed_update_settings">Failed to update settings: %1$s</string>
+    <string name="saving">Saving…</string>
+    <string name="language_changed">Language changed. Restart app to apply.</string>
+
+    <!-- Navigation -->
+
+    <string name="my_items">My Items</string>
+    <string name="my_outfits">My Outfits</string>
+
+    <!-- Navigation Labels -->
+    <string name="add_item_title">Add Item</string>
+    <string name="create_outfit_title">Create Outfit</string>
+    <string name="outfit_detail_title">Outfit Detail</string>
+
+    <!-- Item Fragment Dialogs -->
+    <string name="view_details">View Details</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="edit_item">Edit Item</string>
+
+    <string name="delete_item_title">Delete Item</string>
+    <string name="delete_item_message">Are you sure you want to delete %1$s?</string>
+    <string name="item_deleted">Item deleted</string>
+    <string name="no_changes_made">No changes made</string>
+    <string name="ok">OK</string>
+
+    <!-- Item Details -->
+    <string name="name_label">Name: %1$s</string>
+    <string name="category_label">Category: %1$s</string>
+    <string name="subcategory_label">Subcategory: %1$s</string>
+    <string name="color_label">Color: %1$s</string>
+    <string name="size_label">Size: %1$s</string>
+    <string name="weather_tag_label">Weather Tag: %1$s</string>
+    <string name="times_worn_label">Times Worn: %1$d</string>
+    <string name="not_available">N/A</string>
+
+    <!-- Error Messages -->
+    <string name="failed_to_load_items">Failed to load items: %1$s</string>
+    <string name="error_message">Error: %1$s</string>
+    <string name="failed_to_update">Failed to update: %1$s</string>
+    <string name="failed_to_delete">Failed to delete: %1$s</string>
+
+    <!-- Errors -->
+    <string name="navigation_error">Navigation error: %1$s</string>
+    <string name="logout_failed">Logout failed: %1$s</string>
+
+    <!-- Search and Filter -->
+    <string name="search_items">Search items…</string>
+    <string name="filter">Filter</string>
+    <string name="filter_items">Filter Items</string>
+    <string name="apply_filters">Apply Filters</string>
+    <string name="clear_filters">Clear Filters</string>
+    <string name="active_filters">Active Filters</string>
+    <string name="times_worn_filter">Times Worn</string>
+    <string name="all_items">All Items</string>
+    <string name="never_worn">Never Worn (0 times)</string>
+    <string name="least_worn">Least Worn (1–5 times)</string>
+    <string name="most_worn">Most Worn (6+ times)</string>
+
+    <!-- Organize Closet -->
+    <string name="organize_closet">Organize Closet</string>
+    <string name="organize_closet_description">Swipe right to keep items, left to discard</string>
+    <string name="organize_all_items">Organize All Items</string>
+    <string name="organize_least_worn">Organize Least Worn Items</string>
+    <string name="swipe_instructions">Swipe left to discard, right to keep</string>
+    <string name="keep">Keep</string>
+    <string name="discard">Discard</string>
+
+    <!-- Organize Complete -->
+    <string name="closet_organized">Closet Organized!</string>
+    <string name="organize_summary">You\'ve successfully organized your closet</string>
+    <string name="statistics">Statistics</string>
+    <string name="items_reviewed">Items Reviewed</string>
+    <string name="items_kept">Items Kept</string>
+    <string name="items_discarded">Items Discarded</string>
+    <string name="complete">Complete</string>
+    <string name="done">Done</string>
+
+    <!-- Discarded Items -->
+    <string name="discarded_items">Discarded Items</string>
+    <string name="view_discarded_items">View Discarded Items</string>
+    <string name="discarded_items_description">These items were marked for removal. You can restore them or permanently delete them.</string>
+    <string name="no_discarded_items">No Discarded Items</string>
+    <string name="no_discarded_items_description">You haven\'t discarded any items yet</string>
+    <string name="restore_all">Restore All</string>
+    <string name="delete_all">Delete All</string>
+    <string name="restore_item">Restore Item</string>
+    <string name="delete_permanently">Delete Permanently</string>
+    <string name="confirm_restore_all">Restore all discarded items to your wardrobe?</string>
+    <string name="confirm_delete_all">Permanently delete all discarded items? This cannot be undone.</string>
+    <string name="confirm_delete_item">Permanently delete this item? This cannot be undone.</string>
+    <string name="items_restored">Items restored successfully</string>
+    <string name="items_deleted">Items deleted permanently</string>
+    <string name="item_restored">Item restored</string>
+    <string name="item_discarded">Item discarded</string>
+    <string name="failed_to_restore">Failed to restore: %1$s</string>
+    <string name="failed_to_discard">Failed to discard: %1$s</string>
+
+    <!-- Filters Applied -->
+    <string name="filter_color">Color: %1$s</string>
+    <string name="filter_size">Size: %1$s</string>
+    <string name="filter_weather">Weather: %1$s</string>
+    <string name="filter_times_worn">Times Worn: %1$s</string>
+
+    <!-- Messages -->
+    <string name="no_results">No items match your filters</string>
+    <string name="searching">Searching…</string>
+
+    <!-- Organize Complete Additional Strings -->
+    <string name="organize_summary_kept_all">You kept all your items!</string>
+    <string name="organize_summary_discarded_all">You discarded all items in this session</string>
+    <string name="confirm_restore_item">Restore %1$s to your wardrobe?</string>
+    <string name="remove_item">Remove item</string>
+    <string name="outfit_item">Outfit item</string>
+
 </resources>
+
+
