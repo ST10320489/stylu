@@ -86,6 +86,7 @@ class SystemSettingsFragment : Fragment() {
         initializeViews(view)
         setupSpinners()
         setupClicks()
+        setupSwipeRefresh() // ✅ NEW
         loadCurrentSystemSettings()
     }
 
@@ -103,6 +104,17 @@ class SystemSettingsFragment : Fragment() {
         contentLayout = view.findViewById(R.id.contentLayout)
     }
 
+    // ✅ NEW: Setup SwipeRefreshLayout
+    private fun setupSwipeRefresh() {
+        swipeRefreshLayout.setOnRefreshListener {
+            loadCurrentSystemSettings()
+        }
+
+        swipeRefreshLayout.setColorSchemeResources(
+            R.color.purple_primary,
+            R.color.orange_secondary
+        )
+    }
 
     private fun setupSpinners() {
         val languageNames = languageCodes.map {
@@ -250,8 +262,6 @@ class SystemSettingsFragment : Fragment() {
             }
         }
     }
-
-
 
     private fun populateSettingsFields(settings: SystemSettings) {
         val languageIndex = languageCodes.indexOf(settings.language)
@@ -442,18 +452,19 @@ class SystemSettingsFragment : Fragment() {
         requireActivity().finish()
     }
 
+    // ✅ UPDATED: Hide content during loading, show when done
     private fun showLoading(isLoading: Boolean) {
         if (isLoading) {
             progressBar.visibility = View.VISIBLE
-            // Dim the background so content isn't fully visible
-            contentLayout.alpha = 1.0f
+            swipeRefreshLayout.visibility = View.GONE // ✅ Hide content while loading
             swipeRefreshLayout.isEnabled = false
         } else {
             progressBar.visibility = View.GONE
-            contentLayout.alpha = 1.0f
+            swipeRefreshLayout.visibility = View.VISIBLE // ✅ Show content when done
             swipeRefreshLayout.isEnabled = true
         }
 
+        // Disable/enable all interactive elements
         btnSave.isEnabled = !isLoading
         btnCancel.isEnabled = !isLoading
         spLanguage.isEnabled = !isLoading
@@ -464,8 +475,6 @@ class SystemSettingsFragment : Fragment() {
 
         if (!isLoading) updateTimePickerState()
     }
-
-
 
     private fun isInternetAvailable(): Boolean {
         val cm = requireContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE)

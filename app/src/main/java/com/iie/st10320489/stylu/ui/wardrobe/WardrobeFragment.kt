@@ -21,9 +21,16 @@ import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.network.ApiService
 import com.iie.st10320489.stylu.repository.ItemRepository
 import com.iie.st10320489.stylu.repository.OutfitRepository
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.EditText
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
+
 
 /**
  * ✅ ONLINE-FIRST WardrobeFragment with Offline Support
@@ -50,6 +57,9 @@ class WardrobeFragment : Fragment() {
     private var selectedCategory: String = "All"
     private var observerJob: Job? = null
     private var isFirstLoad = true
+    private lateinit var etSearch: EditText
+    private var searchQuery: String = ""
+    private var searchJob: Job? = null
 
     companion object {
         private const val TAG = "WardrobeFragment"
@@ -72,6 +82,8 @@ class WardrobeFragment : Fragment() {
         initializeViews(view)
         setupRecyclerView()
         setupSwipeRefresh()
+        setupSearch()
+
 
         // Load items first (required for outfit display), then outfits
         loadItemsAndOutfits()
@@ -82,6 +94,7 @@ class WardrobeFragment : Fragment() {
         categoryContainer = view.findViewById(R.id.categoryContainer)
         progressBar = view.findViewById(R.id.progressBar)
         swipeRefresh = view.findViewById(R.id.swipeRefresh)
+        etSearch = view.findViewById(R.id.etSearch)
     }
 
     private fun setupRecyclerView() {
@@ -359,20 +372,43 @@ class WardrobeFragment : Fragment() {
     }
 
     private fun filterOutfits(category: String) {
-        val filtered = if (category == "All") {
+        var filtered = if (category == "All") {
             allOutfits
         } else {
             allOutfits.filter { (it.category ?: "Other") == category }
         }
 
-        Log.d(TAG, "🔍 Filtering: $category - ${filtered.size} outfits")
-
-        // ✅ Log which outfits are being displayed
-        filtered.forEachIndexed { index, outfit ->
-            Log.d(TAG, "  ${index + 1}. ${outfit.name} (${outfit.items.size} items)")
+        // Apply search filter
+        if (searchQuery.isNotEmpty()) {
+            val query = searchQuery.lowercase()
+            filtered = filtered.filter { outfit ->
+                outfit.name.lowercase().contains(query) ||
+                        outfit.category?.lowercase()?.contains(query) == true ||
+                        outfit.items.any { item ->
+                            item.name?.lowercase()?.contains(query) == true ||
+                                    item.subcategory.lowercase().contains(query)
+                        }
+            }
         }
 
+        Log.d(TAG, "🔍 Search: '$searchQuery' - ${filtered.size} outfits")
         outfitAdapter.submitList(filtered)
+    }
+
+    private fun setupSearch() {
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                searchQuery = s?.toString() ?: ""
+                searchJob?.cancel()
+                searchJob = lifecycleScope.launch {
+                    delay(300)  // debounce
+                    filterOutfits(selectedCategory)
+                }
+            }
+        })
     }
 
     private fun showLoadingWithMessage(show: Boolean, message: String) {
@@ -386,7 +422,8 @@ class WardrobeFragment : Fragment() {
         super.onResume()
         Log.d(TAG, "onResume - refreshing wardrobe")
         isFirstLoad = false // Don't show "first load" message on resume
-        loadItemsAndOutfits(forceRefresh = false) // Use cache, but refresh if stale
+        // In WardrobeFragment, onResume()
+        loadItemsAndOutfits(forceRefresh = true)  // Force API refresh
     }
 
     override fun onDestroyView() {

@@ -49,7 +49,7 @@ data class SystemSettings(
 
 class ApiService(context: Context) {
 
-    private val baseUrl = "https://stylu-api-x69c.onrender.com"
+    private val baseUrl = "https://stylu-api-2.onrender.com"
 
     private val authRepository = AuthRepository(context)
 

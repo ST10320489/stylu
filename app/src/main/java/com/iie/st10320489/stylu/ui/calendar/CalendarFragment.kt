@@ -31,6 +31,9 @@ class CalendarFragment : Fragment() {
     private var selectedDate: Date = Date()
     private var observerJob: Job? = null
 
+    // Track if this is the first load
+    private var isFirstLoad = true
+
     companion object {
         private const val TAG = "CalendarFragment"
     }
@@ -53,9 +56,10 @@ class CalendarFragment : Fragment() {
         setupCalendarView()
         setupRecyclerView()
         setupFab()
+        setupSwipeRefresh() // ✅ NEW: Setup pull-to-refresh
 
         // Initial load from API (with cache fallback)
-        loadScheduledOutfitsFromApi()
+        loadScheduledOutfitsWithCaching()
 
         // Then observe cache for real-time updates
         observeScheduledOutfitsCache()
@@ -69,7 +73,8 @@ class CalendarFragment : Fragment() {
             Log.d(TAG, "📅 Date selected: $selectedDate")
 
             // Reload for new date
-            loadScheduledOutfitsFromApi()
+            isFirstLoad = false // Don't show first load message for date changes
+            loadScheduledOutfitsWithCaching()
             observeScheduledOutfitsCache()
         }
     }
@@ -97,7 +102,7 @@ class CalendarFragment : Fragment() {
             val bottomSheet = ScheduleOutfitBottomSheet(
                 onScheduled = {
                     // Reload after scheduling
-                    loadScheduledOutfitsFromApi()
+                    loadScheduledOutfitsWithCaching(forceRefresh = true)
                 },
                 initialDate = selectedDate
             )
@@ -105,14 +110,39 @@ class CalendarFragment : Fragment() {
         }
     }
 
+    // ✅ NEW: Setup SwipeRefreshLayout
+    private fun setupSwipeRefresh() {
+        binding.swipeRefresh?.setOnRefreshListener {
+            // Force refresh from API
+            isFirstLoad = false
+            loadScheduledOutfitsWithCaching(forceRefresh = true)
+        }
+
+        // Set color scheme for refresh indicator
+        binding.swipeRefresh?.setColorSchemeResources(
+            com.iie.st10320489.stylu.R.color.purple_primary,
+            com.iie.st10320489.stylu.R.color.orange_secondary
+        )
+    }
+
     /**
-     * ✅ ONLINE-FIRST: Load from API, which will cache to Room
+     * ✅ NEW: Load with caching pattern similar to ItemFragment
+     * ONLINE-FIRST: Load from API, which will cache to Room
      * This triggers once, then Flow observes the cache for updates
      */
-    private fun loadScheduledOutfitsFromApi() {
+    private fun loadScheduledOutfitsWithCaching(forceRefresh: Boolean = false) {
         lifecycleScope.launch {
             try {
-                binding.progressBar.visibility = View.VISIBLE
+                // Show loading message only on first load
+                if (isFirstLoad && !forceRefresh) {
+                    showLoadingWithMessage(
+                        show = true,
+                        message = "Loading scheduled outfits...\n\n" +
+                                "First load may take up to 60 seconds if the server is starting up."
+                    )
+                } else {
+                    showLoading(true)
+                }
 
                 val calendar = Calendar.getInstance()
                 calendar.time = selectedDate
@@ -138,16 +168,6 @@ class CalendarFragment : Fragment() {
                 result.onSuccess { outfits ->
                     Log.d(TAG, "✅ Loaded ${outfits.size} scheduled outfits")
 
-                    // Log for debugging
-                    outfits.forEachIndexed { index, outfit ->
-                        Log.d(TAG, "📦 Outfit $index:")
-                        Log.d(TAG, "  - Schedule ID: ${outfit.scheduleId}")
-                        Log.d(TAG, "  - Name: ${outfit.outfit.name}")
-                        Log.d(TAG, "  - Outfit ID: ${outfit.outfit.outfitId}")
-                        Log.d(TAG, "  - Date: ${SimpleDateFormat("yyyy-MM-dd", Locale.US).format(outfit.date)}")
-                        Log.d(TAG, "  - Items: ${outfit.outfit.items.size}")
-                    }
-
                     // Note: Flow will update UI, but we show initial state
                     if (outfits.isEmpty()) {
                         binding.tvNoScheduled.visibility = View.VISIBLE
@@ -157,39 +177,51 @@ class CalendarFragment : Fragment() {
                         binding.rvScheduledOutfits.visibility = View.VISIBLE
                     }
 
+                    // Mark first load as complete
+                    isFirstLoad = false
+
                 }.onFailure { error ->
-                    Log.e(TAG, "❌ Failed to load scheduled outfits", error)
-
-                    val message = when {
-                        error.message?.contains("Authentication failed") == true ||
-                                error.message?.contains("Session expired") == true -> {
-                            "Session expired. Showing cached data."
-                        }
-                        error.message?.contains("cached data") == true -> {
-                            "📱 Offline mode - showing cached data"
-                        }
-                        error.message?.contains("timed out") == true -> {
-                            "Server timeout. Showing cached data."
-                        }
-                        error.message?.contains("connect") == true -> {
-                            "📱 No internet - showing cached data"
-                        }
-                        else -> "Using cached data: ${error.message}"
-                    }
-
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                    handleLoadError(error)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Exception loading scheduled outfits", e)
                 Toast.makeText(
                     requireContext(),
                     "Error: ${e.message}",
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
             } finally {
-                binding.progressBar.visibility = View.GONE
+                showLoading(false)
+                showLoadingWithMessage(show = false, message = "")
+                binding.swipeRefresh?.isRefreshing = false
             }
         }
+    }
+
+    // ✅ NEW: Better error handling
+    private fun handleLoadError(error: Throwable) {
+        val errorMessage = when {
+            error.message?.contains("timed out", ignoreCase = true) == true -> {
+                "Server is starting up. This can take up to 60 seconds on first request.\n\n" +
+                        "Please try again in a moment."
+            }
+            error.message?.contains("starting up", ignoreCase = true) == true -> {
+                error.message ?: "Server is starting..."
+            }
+            error.message?.contains("Authentication failed") == true ||
+                    error.message?.contains("Session expired") == true -> {
+                "Session expired. Showing cached data."
+            }
+            error.message?.contains("cached data") == true -> {
+                "📱 Offline mode - showing cached data"
+            }
+            error.message?.contains("connect") == true -> {
+                "📱 No internet - showing cached data"
+            }
+            else -> "Using cached data: ${error.message}"
+        }
+
+        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -256,7 +288,7 @@ class CalendarFragment : Fragment() {
     private fun deleteSchedule(scheduleId: Int) {
         lifecycleScope.launch {
             try {
-                binding.progressBar.visibility = View.VISIBLE
+                showLoading(true)
 
                 val result = calendarRepository.deleteScheduledOutfit(scheduleId)
 
@@ -295,7 +327,33 @@ class CalendarFragment : Fragment() {
                     Toast.LENGTH_SHORT
                 ).show()
             } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    // ✅ NEW: Loading with message support - hides content while loading
+    private fun showLoadingWithMessage(show: Boolean, message: String) {
+        _binding?.let { binding ->
+            if (show) {
+                binding.progressBar.visibility = View.VISIBLE
+                binding.swipeRefresh?.visibility = View.GONE // ✅ Hide content during first load
+                if (message.isNotEmpty()) {
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                }
+            } else {
                 binding.progressBar.visibility = View.GONE
+                binding.swipeRefresh?.visibility = View.VISIBLE // ✅ Show content when ready
+            }
+        }
+    }
+
+    private fun showLoading(show: Boolean) {
+        _binding?.let { binding ->
+            binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
+            // Don't hide content for quick refreshes
+            if (!show) {
+                binding.swipeRefresh?.visibility = View.VISIBLE // ✅ Ensure content is visible
             }
         }
     }
@@ -303,7 +361,9 @@ class CalendarFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume - refreshing from API")
-        loadScheduledOutfitsFromApi()
+        // Don't show "first load" message on resume
+        isFirstLoad = false
+        loadScheduledOutfitsWithCaching(forceRefresh = false)
     }
 
     override fun onDestroyView() {

@@ -1,38 +1,34 @@
 package com.iie.st10320489.stylu.ui.wardrobe
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.network.ApiService
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
 
 class OutfitAdapter(
-    private val onOutfitClick: (ApiService.OutfitDetail) -> Unit,
-    private val onScheduleClick: ((ApiService.OutfitDetail) -> Unit)? = null
+    private val onOutfitClick: (ApiService.OutfitDetail) -> Unit
 ) : ListAdapter<ApiService.OutfitDetail, OutfitAdapter.OutfitViewHolder>(OutfitDiffCallback()) {
 
     inner class OutfitViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvOutfitName: TextView = itemView.findViewById(R.id.tvOutfitName)
         private val outfitPreviewContainer: FrameLayout = itemView.findViewById(R.id.outfitPreviewContainer)
         private val colorDotsContainer: LinearLayout = itemView.findViewById(R.id.colorDotsContainer)
-
-        // Schedule-related views (optional - may not exist in all layouts)
-        private val btnSchedule: Button? = itemView.findViewById(R.id.btnSchedule)
-        private val tvScheduledDate: TextView? = itemView.findViewById(R.id.tvScheduledDate)
-        private val ivScheduledIndicator: ImageView? = itemView.findViewById(R.id.ivScheduledIndicator)
 
         init {
             itemView.setOnClickListener {
@@ -41,27 +37,17 @@ class OutfitAdapter(
                     onOutfitClick(getItem(position))
                 }
             }
-
-            // Setup schedule button click listener if it exists
-            btnSchedule?.setOnClickListener {
-                val position = adapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    onScheduleClick?.invoke(getItem(position))
-                }
-            }
         }
 
         fun bind(outfit: ApiService.OutfitDetail) {
             tvOutfitName.text = outfit.name
-
-            // Handle schedule status if views exist
-            handleScheduleStatus(outfit)
-
             outfitPreviewContainer.removeAllViews()
+            colorDotsContainer.removeAllViews()
 
             val savedImagePath = getSavedOutfitImagePath(outfit.outfitId, itemView.context)
+
             if (savedImagePath.isNotEmpty()) {
-                // Display saved bitmap
+                // Display saved bitmap AND extract colors using Palette API
                 val imageView = ImageView(itemView.context).apply {
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
@@ -70,100 +56,134 @@ class OutfitAdapter(
                     scaleType = ImageView.ScaleType.FIT_CENTER
                 }
 
+                // Load image as Bitmap to extract colors
                 Glide.with(itemView.context)
+                    .asBitmap()
                     .load(savedImagePath)
-                    .into(imageView)
+                    .into(object : CustomTarget<Bitmap>() {
+                        override fun onResourceReady(
+                            bitmap: Bitmap,
+                            transition: Transition<in Bitmap>?
+                        ) {
+                            imageView.setImageBitmap(bitmap)
+
+                            // ✅ Extract colors from bitmap using Palette API
+                            extractColorsFromBitmap(bitmap)
+                        }
+
+                        override fun onLoadCleared(placeholder: Drawable?) {
+                            // Optional: handle cleanup
+                        }
+                    })
 
                 outfitPreviewContainer.addView(imageView)
             } else {
                 // Fallback: build canvas from layoutData
-                outfitPreviewContainer.post {
-                    outfit.items.forEach { item ->
-                        val imageView = ImageView(itemView.context)
-                        val layoutData = item.layoutData
+                buildCanvasPreview(outfit)
 
-                        if (layoutData != null) {
-                            val actualX = layoutData.x * outfitPreviewContainer.width
-                            val actualY = layoutData.y * outfitPreviewContainer.height
+                // Extract colors from item metadata as fallback
+                extractColorsFromItems(outfit.items)
+            }
+        }
 
-                            imageView.layoutParams = FrameLayout.LayoutParams(
-                                (layoutData.width * 0.6f).toInt(),
-                                (layoutData.height * 0.6f).toInt()
-                            )
-                            imageView.x = actualX
-                            imageView.y = actualY
-                            imageView.scaleX = layoutData.scale * 0.6f
-                            imageView.scaleY = layoutData.scale * 0.6f
-                        } else {
-                            imageView.layoutParams = FrameLayout.LayoutParams(120, 120)
+        // ✅ Extract colors using Palette API
+        private fun extractColorsFromBitmap(bitmap: Bitmap) {
+            Palette.from(bitmap).generate { palette ->
+                palette?.let {
+                    val colors = mutableListOf<Int>()
+
+                    // Get vibrant, light, dark, and muted colors
+                    it.vibrantSwatch?.rgb?.let { color -> colors.add(color) }
+                    it.lightVibrantSwatch?.rgb?.let { color -> colors.add(color) }
+                    it.darkVibrantSwatch?.rgb?.let { color -> colors.add(color) }
+                    it.mutedSwatch?.rgb?.let { color -> colors.add(color) }
+
+                    // If we still don't have 4 colors, add dominant swatch
+                    if (colors.size < 4) {
+                        it.dominantSwatch?.rgb?.let { color ->
+                            if (!colors.contains(color)) {
+                                colors.add(color)
+                            }
                         }
+                    }
 
-                        imageView.scaleType = ImageView.ScaleType.FIT_CENTER
-
-                        Glide.with(itemView.context)
-                            .load(item.imageUrl)
-                            .fitCenter()
-                            .placeholder(R.drawable.cloudy)
-                            .error(R.drawable.sunny)
-                            .into(imageView)
-
-                        outfitPreviewContainer.addView(imageView)
+                    // Take only first 4 unique colors and display them
+                    colors.distinct().take(4).forEach { color ->
+                        addColorDot(color)
                     }
                 }
             }
+        }
 
-            // Draw color dots
-            colorDotsContainer.removeAllViews()
-            outfit.items.take(5).forEach { item ->
-                val dot = View(itemView.context).apply {
-                    layoutParams = LinearLayout.LayoutParams(
-                        (12 * resources.displayMetrics.density).toInt(),
-                        (12 * resources.displayMetrics.density).toInt()
-                    ).apply {
-                        setMargins(
-                            (2 * resources.displayMetrics.density).toInt(),
-                            0,
-                            (2 * resources.displayMetrics.density).toInt(),
-                            0
+        // ✅ Fallback - extract colors from item metadata
+        private fun extractColorsFromItems(items: List<ApiService.OutfitItemDetail>) {
+            items.take(4).forEach { item ->
+                item.colour?.let { colourString ->
+                    try {
+                        val color = android.graphics.Color.parseColor(colourString)
+                        addColorDot(color)
+                    } catch (e: Exception) {
+                        // If parsing fails, use a subtle gray
+                        addColorDot(android.graphics.Color.LTGRAY)
+                    }
+                }
+            }
+        }
+
+        // ✅ Helper to add color dot
+        private fun addColorDot(color: Int) {
+            val dot = View(itemView.context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    (16 * itemView.resources.displayMetrics.density).toInt(),
+                    (16 * itemView.resources.displayMetrics.density).toInt()
+                ).apply {
+                    setMargins(
+                        (4 * itemView.resources.displayMetrics.density).toInt(),
+                        0,
+                        (4 * itemView.resources.displayMetrics.density).toInt(),
+                        0
+                    )
+                }
+
+                setBackgroundResource(R.drawable.color_dot_bg)
+                setBackgroundColor(color)
+            }
+            colorDotsContainer.addView(dot)
+        }
+
+        private fun buildCanvasPreview(outfit: ApiService.OutfitDetail) {
+            outfitPreviewContainer.post {
+                outfit.items.forEach { item ->
+                    val imageView = ImageView(itemView.context)
+                    val layoutData = item.layoutData
+
+                    if (layoutData != null) {
+                        val actualX = layoutData.x * outfitPreviewContainer.width
+                        val actualY = layoutData.y * outfitPreviewContainer.height
+
+                        imageView.layoutParams = FrameLayout.LayoutParams(
+                            (layoutData.width * 0.6f).toInt(),
+                            (layoutData.height * 0.6f).toInt()
                         )
+                        imageView.x = actualX
+                        imageView.y = actualY
+                        imageView.scaleX = layoutData.scale * 0.6f
+                        imageView.scaleY = layoutData.scale * 0.6f
+                    } else {
+                        imageView.layoutParams = FrameLayout.LayoutParams(120, 120)
                     }
 
-                    setBackgroundResource(R.drawable.color_dot_bg)
-                    item.colour?.let { colour ->
-                        try { setBackgroundColor(android.graphics.Color.parseColor(colour)) }
-                        catch (e: Exception) { setBackgroundColor(android.graphics.Color.GRAY) }
-                    }
+                    imageView.scaleType = ImageView.ScaleType.FIT_CENTER
+
+                    Glide.with(itemView.context)
+                        .load(item.imageUrl)
+                        .fitCenter()
+                        .placeholder(R.drawable.cloudy)
+                        .error(R.drawable.sunny)
+                        .into(imageView)
+
+                    outfitPreviewContainer.addView(imageView)
                 }
-                colorDotsContainer.addView(dot)
-            }
-        }
-
-        private fun handleScheduleStatus(outfit: ApiService.OutfitDetail) {
-            val schedule = outfit.schedule
-
-            // Only update schedule views if they exist in the layout
-            if (btnSchedule != null || tvScheduledDate != null || ivScheduledIndicator != null) {
-                if (schedule != null && schedule.isNotEmpty()) {
-                    ivScheduledIndicator?.visibility = View.VISIBLE
-                    tvScheduledDate?.visibility = View.VISIBLE
-                    tvScheduledDate?.text = "Scheduled: ${formatDate(schedule)}"
-                    btnSchedule?.text = "Reschedule"
-                } else {
-                    ivScheduledIndicator?.visibility = View.GONE
-                    tvScheduledDate?.visibility = View.GONE
-                    btnSchedule?.text = "Schedule"
-                }
-            }
-        }
-
-        private fun formatDate(dateString: String): String {
-            return try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val outputFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
-                val date = inputFormat.parse(dateString)
-                if (date != null) outputFormat.format(date) else dateString
-            } catch (e: Exception) {
-                dateString
             }
         }
 

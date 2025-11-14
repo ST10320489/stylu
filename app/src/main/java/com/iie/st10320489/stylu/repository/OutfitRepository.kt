@@ -357,6 +357,70 @@ class OutfitRepository(private val context: Context) {
     }
 
     /**
+     * ✅ Create new outfit WITH LAYOUT DATA
+     * This sends items with positions, scales, and sizes to save in outfit_item table
+     */
+    suspend fun createOutfitWithLayout(
+        name: String,
+        category: String,
+        items: List<String>,  // JSON strings with layout data
+        schedule: String? = null
+    ): Result<Outfit> = withContext(Dispatchers.IO) {
+        Log.d(TAG, "createOutfitWithLayout() - Name: $name, Items: ${items.size}")
+
+        return@withContext try {
+            // ✅ Use the SAME request format as updateOutfit
+            val request = ApiService.CreateOutfitWithLayoutRequest(
+                name = name,
+                category = category,
+                items = items  // JSON strings: ["{itemId:52,x:0.3,...}", ...]
+            )
+
+            // ✅ Call the createOutfitWithLayout API endpoint
+            val result = apiService.createOutfitWithLayout(request)
+
+            result.onSuccess { response ->
+                Log.d(TAG, "✅ API success - Outfit ID: ${response.outfitId}")
+
+                val entity = OutfitEntity(
+                    outfitId = response.outfitId,
+                    userId = authRepository.getCurrentUserId() ?: "",
+                    name = response.name,
+                    category = response.category,
+                    scheduledDate = schedule,
+                    createdAt = response.createdAt,
+                    updatedAt = System.currentTimeMillis().toString()
+                )
+
+                outfitDao.insertOutfit(entity)
+                Log.d(TAG, "💾 Cached new outfit with layout")
+
+                refreshCacheInBackground()
+            }
+
+            result.onFailure { error ->
+                Log.e(TAG, "❌ API failed: ${error.message}")
+            }
+
+            result.map { response ->
+                Outfit(
+                    outfitId = response.outfitId,
+                    userId = authRepository.getCurrentUserId() ?: "",
+                    name = response.name,
+                    category = response.category,
+                    items = emptyList(),  // Items will be loaded from cache refresh
+                    schedule = schedule,
+                    createdAt = response.createdAt
+                )
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error creating outfit with layout", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
      * ✅ ONLINE-FIRST: Update outfit
      */
     suspend fun updateOutfit(

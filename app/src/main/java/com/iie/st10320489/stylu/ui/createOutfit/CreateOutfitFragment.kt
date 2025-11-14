@@ -523,60 +523,98 @@ class CreateOutfitFragment : Fragment() {
             .show()
     }
 
+// ✅ ADD THIS to your saveOutfit() method in CreateOutfitFragment.kt
+
+// ✅ ADD THIS to your saveOutfit() method in CreateOutfitFragment.kt
+
+// ✅ REPLACE your saveOutfit() method in CreateOutfitFragment.kt with this:
+
     private fun saveOutfit(name: String, category: String) {
-        Log.d("CreateOutfitFragment", "saveOutfit() called")
-        Log.d("CreateOutfitFragment", "  Name: $name")
-        Log.d("CreateOutfitFragment", "  Category: $category")
-        Log.d("CreateOutfitFragment", "  Scheduled Date: $scheduledDate")
+        Log.d(TAG, "=== SAVING OUTFIT WITH LAYOUT DATA ===")
 
         lifecycleScope.launch {
             try {
                 progressBar.visibility = View.VISIBLE
                 btnSaveOutfit.isEnabled = false
 
-                val itemIds = itemLayouts.values.map { it.item.itemId.toString() }
                 val scheduleString = scheduledDate?.format(DateTimeFormatter.ISO_LOCAL_DATE)
 
-                Log.d("CreateOutfitFragment", "  Item IDs: $itemIds")
-                Log.d("CreateOutfitFragment", "  Schedule String: $scheduleString")
+                // ✅ Build items with LAYOUT DATA (same as EditOutfit!)
+                val itemsJson = itemLayouts.values.map { layout ->
+                    JSONObject().apply {
+                        put("itemId", layout.item.itemId)
+                        put("x", (layout.x / canvasContainer.width).toDouble())  // ✅ Relative position
+                        put("y", (layout.y / canvasContainer.height).toDouble()) // ✅ Relative position
+                        put("scale", layout.scale)
+                        put("width", layout.width)
+                        put("height", layout.height)
+                    }.toString()
+                }
 
-                // Use repository which handles offline/online logic
-                val result = outfitRepository.createOutfit(
+                Log.d(TAG, "Outfit Details:")
+                Log.d(TAG, "  Name: $name")
+                Log.d(TAG, "  Category: $category")
+                Log.d(TAG, "  Schedule: $scheduleString")
+                Log.d(TAG, "  Item Count: ${itemsJson.size}")
+                Log.d(TAG, "  ✅ Sending WITH layout data")
+
+                // ✅ Use createOutfitWithLayout method (same as updateOutfit!)
+                val result = outfitRepository.createOutfitWithLayout(
                     name = name,
                     category = category,
-                    items = itemIds,
+                    items = itemsJson,
                     schedule = scheduleString
                 )
 
                 result.onSuccess { savedOutfit ->
-                    Log.d("CreateOutfitFragment", "Outfit saved successfully!")
-                    Log.d("CreateOutfitFragment", "  Saved outfit ID: ${savedOutfit.outfitId}")
-                    Log.d("CreateOutfitFragment", "  Saved schedule: ${savedOutfit.schedule}")
+                    Log.d(TAG, "=== OUTFIT SAVED WITH LAYOUT! ===")
+                    Log.d(TAG, "  Outfit ID: ${savedOutfit.outfitId}")
+                    Log.d(TAG, "  Outfit Name: ${savedOutfit.name}")
 
-                    // Save bitmap for preview
+                    // ✅ Save bitmap snapshot
                     val bitmap = getCanvasBitmap()
                     saveBitmapToFile(bitmap, "outfit_${savedOutfit.outfitId}")
+                    Log.d(TAG, "✅ Saved outfit preview image")
 
                     val successMessage = if (scheduleString != null) {
-                        "Outfit saved and scheduled for ${scheduledDate!!.format(DateTimeFormatter.ofPattern("MMM d"))}"
+                        "Outfit saved and scheduled! 📅"
                     } else {
-                        "Outfit saved!"
+                        "Outfit saved! ✅"
                     }
 
                     Toast.makeText(requireContext(), successMessage, Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
+
                 }.onFailure { error ->
-                    Log.e("CreateOutfitFragment", "Failed to save outfit: ${error.message}", error)
-                    // ... error handling
+                    Log.e(TAG, "❌ FAILED TO SAVE OUTFIT")
+                    Log.e(TAG, "Error: ${error.message}", error)
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to save outfit: ${error.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
+
             } catch (e: Exception) {
-                Log.e("CreateOutfitFragment", "Exception in saveOutfit", e)
-                // ... exception handling
+                Log.e(TAG, "❌ EXCEPTION IN SAVE OUTFIT")
+                Log.e(TAG, "Exception: ${e.message}", e)
+
+                Toast.makeText(
+                    requireContext(),
+                    "Error: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             } finally {
                 progressBar.visibility = View.GONE
+                btnSaveOutfit.isEnabled = true
             }
         }
     }
+    companion object {
+        private const val TAG = "CreateOutfitFragment"
+    }
+
     private fun getCanvasBitmap(): Bitmap {
         fabAddItems.visibility = View.INVISIBLE
 
