@@ -63,6 +63,21 @@ interface OutfitDao {
         deleteOutfit(outfitId)
     }
 
+    @Query("SELECT DISTINCT outfitId FROM outfits")
+    suspend fun getAllOutfitIds(): List<Int>
+
+    @Query("DELETE FROM outfits")
+    suspend fun clearAllOutfits()
+
+    @Query("DELETE FROM outfit_items")
+    suspend fun clearAllOutfitItems()
+
+    @Transaction
+    suspend fun clearAllOutfitData() {
+        clearAllOutfitItems()
+        clearAllOutfits()
+    }
+
     @Query("SELECT * FROM outfit_items WHERE outfitId = :outfitId ORDER BY zIndex ASC")
     suspend fun getOutfitLayout(outfitId: Int): List<OutfitItemEntity>
 }

@@ -1,6 +1,5 @@
 package com.iie.st10320489.stylu.ui.createOutfit
 
-import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -23,31 +22,31 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.chip.Chip
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.repository.ItemRepository
 import com.iie.st10320489.stylu.repository.OutfitRepository
 import com.iie.st10320489.stylu.ui.item.ItemAdapter
 import com.iie.st10320489.stylu.ui.item.models.WardrobeItem
+import com.iie.st10320489.stylu.utils.SnapshotManager
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
-import java.io.FileOutputStream
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Calendar
 
 data class ItemLayout(
     val item: WardrobeItem,
-    val x: Float,
-    val y: Float,
-    val scale: Float,
+    var x: Float,
+    var y: Float,
+    var scale: Float,
     val width: Int,
     val height: Int
 )
 
+/**
+ * ✅ COMPLETE: Full functionality WITH debug logging
+ */
 class CreateOutfitFragment : Fragment() {
 
     private lateinit var canvasContainer: FrameLayout
@@ -61,7 +60,6 @@ class CreateOutfitFragment : Fragment() {
     private lateinit var categoryContainer: LinearLayout
     private lateinit var etSearch: EditText
 
-    // Repositories
     private val itemRepository by lazy { ItemRepository(requireContext()) }
     private val outfitRepository by lazy { OutfitRepository(requireContext()) }
 
@@ -72,9 +70,13 @@ class CreateOutfitFragment : Fragment() {
     private var selectedCategory: String = "All"
     private val itemLayouts = mutableMapOf<Int, ItemLayout>()
 
-    // Scheduling
-    private var scheduledDate: LocalDate? = null
-    private lateinit var chipSchedule: Chip
+    // ✅ FIX: Store canvas dimensions when items are added
+    private var capturedCanvasWidth: Int = 0
+    private var capturedCanvasHeight: Int = 0
+
+    companion object {
+        private const val TAG = "CreateOutfit_DEBUG"
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -87,18 +89,12 @@ class CreateOutfitFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Check if we have a scheduled date from navigation args
-        arguments?.getString("scheduled_date")?.let { dateString ->
-            scheduledDate = LocalDate.parse(dateString)
-        }
-
         initializeViews(view)
         setupBottomSheet(view)
         setupRecyclerView()
         setupClickListeners()
         setupSearch()
         setupBackPressHandler()
-        setupScheduling()
         loadItems()
     }
 
@@ -108,78 +104,6 @@ class CreateOutfitFragment : Fragment() {
         btnCancel = view.findViewById(R.id.btnCancel)
         fabAddItems = view.findViewById(R.id.fabAddItem)
         progressBar = view.findViewById(R.id.progressBar)
-
-        // Add schedule chip programmatically if not in layout
-        chipSchedule = Chip(requireContext()).apply {
-            text = if (scheduledDate != null) {
-                "📅 ${scheduledDate!!.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))}"
-            } else {
-                "📅 Add Schedule"
-            }
-            isClickable = true
-            isCheckable = true
-            isChecked = scheduledDate != null
-        }
-
-        // Add chip to a container in your layout, or create one
-        val chipContainer = view.findViewById<ViewGroup?>(R.id.chipContainer)
-            ?: LinearLayout(requireContext()).apply {
-                orientation = LinearLayout.HORIZONTAL
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(16, 8, 16, 8)
-                }
-                // Add this container to your main layout
-                (view as? ViewGroup)?.addView(this, 0)
-            }
-
-        if (chipSchedule.parent == null) {
-            (chipContainer as? ViewGroup)?.addView(chipSchedule)
-        }
-    }
-
-    private fun setupScheduling() {
-        chipSchedule.setOnClickListener {
-            if (chipSchedule.isChecked) {
-                showDatePicker()
-            } else {
-                // Remove schedule
-                scheduledDate = null
-                chipSchedule.text = "📅 Add Schedule"
-                chipSchedule.isChecked = false
-            }
-        }
-
-        chipSchedule.setOnCloseIconClickListener {
-            scheduledDate = null
-            chipSchedule.text = "📅 Add Schedule"
-            chipSchedule.isChecked = false
-        }
-    }
-
-    private fun showDatePicker() {
-        val calendar = Calendar.getInstance()
-        scheduledDate?.let {
-            calendar.set(it.year, it.monthValue - 1, it.dayOfMonth)
-        }
-
-        DatePickerDialog(
-            requireContext(),
-            { _, year, month, dayOfMonth ->
-                scheduledDate = LocalDate.of(year, month + 1, dayOfMonth)
-                chipSchedule.text = "📅 ${scheduledDate!!.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))}"
-                chipSchedule.isChecked = true
-                chipSchedule.isCloseIconVisible = true
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).apply {
-            datePicker.minDate = System.currentTimeMillis() - 1000
-            show()
-        }
     }
 
     private fun setupBottomSheet(view: View) {
@@ -238,17 +162,6 @@ class CreateOutfitFragment : Fragment() {
             } else {
                 findNavController().navigateUp()
             }
-        }
-
-        canvasContainer.setOnLongClickListener {
-            if (itemLayouts.isNotEmpty()) {
-                Toast.makeText(
-                    requireContext(),
-                    "Drag with 1 finger - Pinch with 2 fingers to resize",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-            true
         }
     }
 
@@ -351,13 +264,20 @@ class CreateOutfitFragment : Fragment() {
             return
         }
 
+        // ✅ FIX: Capture canvas size ONCE when first item is added
+        if (capturedCanvasWidth == 0 || capturedCanvasHeight == 0) {
+            capturedCanvasWidth = canvasContainer.width
+            capturedCanvasHeight = canvasContainer.height
+            Log.d(TAG, "📐 CAPTURED CANVAS SIZE: ${capturedCanvasWidth}x${capturedCanvasHeight}")
+        }
+
         val itemView = LayoutInflater.from(requireContext())
             .inflate(R.layout.canvas_item, canvasContainer, false)
 
         val imageView = itemView.findViewById<ImageView>(R.id.ivCanvasItem)
         val removeBtn = itemView.findViewById<ImageButton>(R.id.btnRemoveItem)
 
-        com.bumptech.glide.Glide.with(requireContext())
+        Glide.with(requireContext())
             .load(item.imageUrl)
             .fitCenter()
             .placeholder(R.drawable.cloudy)
@@ -494,13 +414,6 @@ class CreateOutfitFragment : Fragment() {
 
         val etOutfitName = dialogView.findViewById<EditText>(R.id.etOutfitName)
         val spCategory = dialogView.findViewById<Spinner>(R.id.spOutfitCategory)
-        val tvScheduledDate = dialogView.findViewById<TextView?>(R.id.tvSelectedDate)
-
-        // Show scheduled date if set
-        scheduledDate?.let {
-            tvScheduledDate?.text = "Scheduled for: ${it.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))}"
-            tvScheduledDate?.visibility = View.VISIBLE
-        }
 
         val categories = arrayOf("Casual", "Formal", "Sport", "Party", "Work", "Other")
         spCategory.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories).apply {
@@ -524,60 +437,154 @@ class CreateOutfitFragment : Fragment() {
     }
 
     private fun saveOutfit(name: String, category: String) {
-        Log.d("CreateOutfitFragment", "saveOutfit() called")
-        Log.d("CreateOutfitFragment", "  Name: $name")
-        Log.d("CreateOutfitFragment", "  Category: $category")
-        Log.d("CreateOutfitFragment", "  Scheduled Date: $scheduledDate")
+        Log.d(TAG, "╔═══════════════════════════════════════════════════════")
+        Log.d(TAG, "║ SAVING NEW OUTFIT")
+        Log.d(TAG, "╠═══════════════════════════════════════════════════════")
+        Log.d(TAG, "║ Outfit Name: $name")
+        Log.d(TAG, "║ Category: $category")
+        Log.d(TAG, "║ Items Count: ${itemLayouts.size}")
+        Log.d(TAG, "║ Canvas Size: ${canvasContainer.width}x${canvasContainer.height}")
+        Log.d(TAG, "╚═══════════════════════════════════════════════════════")
 
         lifecycleScope.launch {
             try {
                 progressBar.visibility = View.VISIBLE
                 btnSaveOutfit.isEnabled = false
 
-                val itemIds = itemLayouts.values.map { it.item.itemId.toString() }
-                val scheduleString = scheduledDate?.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                Log.d(TAG, "")
+                Log.d(TAG, "📊 ITEM LAYOUT DATA:")
+                Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-                Log.d("CreateOutfitFragment", "  Item IDs: $itemIds")
-                Log.d("CreateOutfitFragment", "  Schedule String: $scheduleString")
+                // ✅ FIX: Use CAPTURED canvas dimensions for relative positions
+                val canvasWidthForSaving = if (capturedCanvasWidth > 0) capturedCanvasWidth else canvasContainer.width
+                val canvasHeightForSaving = if (capturedCanvasHeight > 0) capturedCanvasHeight else canvasContainer.height
 
-                // Use repository which handles offline/online logic
-                val result = outfitRepository.createOutfit(
+                Log.d(TAG, "Using canvas size for calculations: ${canvasWidthForSaving}x${canvasHeightForSaving}")
+                Log.d(TAG, "Current canvas size: ${canvasContainer.width}x${canvasContainer.height}")
+                Log.d(TAG, "")
+
+                val itemsJson = itemLayouts.values.mapIndexed { index, layout ->
+                    val relativeX = layout.x / canvasWidthForSaving
+                    val relativeY = layout.y / canvasHeightForSaving
+
+                    Log.d(TAG, "Item #${index + 1} (ID: ${layout.item.itemId}):")
+                    Log.d(TAG, "  ├─ Absolute Position: (${layout.x}, ${layout.y})")
+                    Log.d(TAG, "  ├─ Relative Position: ($relativeX, $relativeY)")
+                    Log.d(TAG, "  ├─ Scale: ${layout.scale}")
+                    Log.d(TAG, "  ├─ Size: ${layout.width}x${layout.height}")
+                    Log.d(TAG, "  └─ Item Name: ${layout.item.name}")
+
+                    JSONObject().apply {
+                        put("itemId", layout.item.itemId)
+                        put("x", relativeX.toDouble())
+                        put("y", relativeY.toDouble())
+                        put("scale", layout.scale.toDouble())
+                        put("width", layout.width)
+                        put("height", layout.height)
+                    }.toString()
+                }
+
+                Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                Log.d(TAG, "")
+
+                Log.d(TAG, "🌐 SENDING TO API...")
+                val result = outfitRepository.createOutfitWithLayout(
                     name = name,
                     category = category,
-                    items = itemIds,
-                    schedule = scheduleString
+                    items = itemsJson,
+                    schedule = null
                 )
 
                 result.onSuccess { savedOutfit ->
-                    Log.d("CreateOutfitFragment", "Outfit saved successfully!")
-                    Log.d("CreateOutfitFragment", "  Saved outfit ID: ${savedOutfit.outfitId}")
-                    Log.d("CreateOutfitFragment", "  Saved schedule: ${savedOutfit.schedule}")
+                    Log.d(TAG, "")
+                    Log.d(TAG, "✅ API SUCCESS")
+                    Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.d(TAG, "Outfit ID: ${savedOutfit.outfitId}")
+                    Log.d(TAG, "Outfit Name: ${savedOutfit.name}")
+                    Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.d(TAG, "")
 
-                    // Save bitmap for preview
-                    val bitmap = getCanvasBitmap()
-                    saveBitmapToFile(bitmap, "outfit_${savedOutfit.outfitId}")
+                    try {
+                        Log.d(TAG, "📸 CREATING SNAPSHOT...")
+                        Log.d(TAG, "Canvas dimensions: ${canvasContainer.width}x${canvasContainer.height}")
 
-                    val successMessage = if (scheduleString != null) {
-                        "Outfit saved and scheduled for ${scheduledDate!!.format(DateTimeFormatter.ofPattern("MMM d"))}"
-                    } else {
-                        "Outfit saved!"
+                        val bitmap = getCanvasBitmap()
+
+                        Log.d(TAG, "Bitmap created: ${bitmap.width}x${bitmap.height}")
+                        Log.d(TAG, "Bitmap size: ${bitmap.byteCount} bytes")
+                        Log.d(TAG, "")
+
+                        Log.d(TAG, "💾 SAVING SNAPSHOT...")
+                        val saved = SnapshotManager.saveSnapshot(
+                            requireContext(),
+                            savedOutfit.outfitId,
+                            bitmap
+                        )
+
+                        if (saved) {
+                            val snapshotFile = File(
+                                requireContext().filesDir,
+                                "outfit_${savedOutfit.outfitId}.png"
+                            )
+
+                            Log.d(TAG, "")
+                            Log.d(TAG, "✅ SNAPSHOT VERIFICATION")
+                            Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                            Log.d(TAG, "File path: ${snapshotFile.absolutePath}")
+                            Log.d(TAG, "File exists: ${snapshotFile.exists()}")
+                            Log.d(TAG, "File size: ${snapshotFile.length()} bytes")
+                            Log.d(TAG, "File readable: ${snapshotFile.canRead()}")
+                            Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                            Log.d(TAG, "")
+                        } else {
+                            Log.e(TAG, "❌ SNAPSHOT SAVE FAILED!")
+                        }
+
+                    } catch (e: Exception) {
+                        Log.e(TAG, "❌ SNAPSHOT ERROR", e)
+                        Log.e(TAG, "Error message: ${e.message}")
+                        Log.e(TAG, "Stack trace: ${e.stackTraceToString()}")
                     }
 
-                    Toast.makeText(requireContext(), successMessage, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Outfit saved! ✅", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
+
                 }.onFailure { error ->
-                    Log.e("CreateOutfitFragment", "Failed to save outfit: ${error.message}", error)
-                    // ... error handling
+                    Log.e(TAG, "")
+                    Log.e(TAG, "❌ API FAILED")
+                    Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.e(TAG, "Error: ${error.message}")
+                    Log.e(TAG, "Stack trace: ${error.stackTraceToString()}")
+                    Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.e(TAG, "")
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to save outfit: ${error.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
+
             } catch (e: Exception) {
-                Log.e("CreateOutfitFragment", "Exception in saveOutfit", e)
-                // ... exception handling
+                Log.e(TAG, "")
+                Log.e(TAG, "❌ EXCEPTION IN SAVE")
+                Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                Log.e(TAG, "Exception: ${e.message}")
+                Log.e(TAG, "Stack trace: ${e.stackTraceToString()}")
+                Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                Log.e(TAG, "")
+
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
             } finally {
                 progressBar.visibility = View.GONE
+                btnSaveOutfit.isEnabled = true
             }
         }
     }
+
     private fun getCanvasBitmap(): Bitmap {
+        Log.d(TAG, "🎨 Preparing canvas for bitmap capture...")
+
         fabAddItems.visibility = View.INVISIBLE
 
         val removeButtons = mutableListOf<View>()
@@ -590,6 +597,8 @@ class CreateOutfitFragment : Fragment() {
             }
         }
 
+        Log.d(TAG, "Hidden ${removeButtons.size} remove buttons")
+
         val bitmap = Bitmap.createBitmap(
             canvasContainer.width,
             canvasContainer.height,
@@ -601,13 +610,8 @@ class CreateOutfitFragment : Fragment() {
         fabAddItems.visibility = View.VISIBLE
         removeButtons.forEach { it.visibility = View.VISIBLE }
 
-        return bitmap
-    }
+        Log.d(TAG, "Bitmap captured successfully")
 
-    private fun saveBitmapToFile(bitmap: Bitmap, fileName: String) {
-        val file = File(requireContext().filesDir, "$fileName.png")
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-        }
+        return bitmap
     }
 }

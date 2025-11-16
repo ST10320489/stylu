@@ -31,10 +31,10 @@ import com.iie.st10320489.stylu.repository.ItemRepository
 import com.iie.st10320489.stylu.repository.OutfitRepository
 import com.iie.st10320489.stylu.ui.item.ItemAdapter
 import com.iie.st10320489.stylu.ui.item.models.WardrobeItem
+import com.iie.st10320489.stylu.utils.SnapshotManager
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
-import java.io.FileOutputStream
 
 data class EditItemLayout(
     val item: WardrobeItem,
@@ -45,6 +45,9 @@ data class EditItemLayout(
     val height: Int
 )
 
+/**
+ * ✅ COMPLETE: Full functionality WITH debug logging
+ */
 class EditOutfitFragment : Fragment() {
 
     private lateinit var canvasContainer: FrameLayout
@@ -69,13 +72,17 @@ class EditOutfitFragment : Fragment() {
     private var selectedCategory: String = "All"
     private val itemLayouts = mutableMapOf<Int, EditItemLayout>()
 
-    // Edit mode data
     private var outfitId: Int = -1
     private var outfitName: String = ""
-    private var originalOutfit: ApiService.OutfitDetail? = null
+    private var canvasWidth: Int = 0
+    private var canvasHeight: Int = 0
+
+    // ✅ FIX: Store canvas dimensions when items are loaded/added
+    private var capturedCanvasWidth: Int = 0
+    private var capturedCanvasHeight: Int = 0
 
     companion object {
-        private const val TAG = "EditOutfitFragment"
+        private const val TAG = "EditOutfit_DEBUG"
     }
 
     override fun onCreateView(
@@ -89,9 +96,15 @@ class EditOutfitFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Get outfit data from arguments
         outfitId = arguments?.getInt("outfitId", -1) ?: -1
         outfitName = arguments?.getString("outfitName", "") ?: ""
+
+        Log.d(TAG, "╔═══════════════════════════════════════════════════════")
+        Log.d(TAG, "║ EDIT OUTFIT FRAGMENT STARTED")
+        Log.d(TAG, "╠═══════════════════════════════════════════════════════")
+        Log.d(TAG, "║ Outfit ID: $outfitId")
+        Log.d(TAG, "║ Outfit Name: $outfitName")
+        Log.d(TAG, "╚═══════════════════════════════════════════════════════")
 
         if (outfitId == -1) {
             Toast.makeText(requireContext(), "Invalid outfit", Toast.LENGTH_SHORT).show()
@@ -107,7 +120,27 @@ class EditOutfitFragment : Fragment() {
         setupBackPressHandler()
 
         loadItems()
-        loadExistingOutfit()
+
+        // ✅ Wait for canvas to be measured BEFORE loading
+        canvasContainer.viewTreeObserver.addOnGlobalLayoutListener(
+            object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    canvasContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
+
+                    canvasWidth = canvasContainer.width
+                    canvasHeight = canvasContainer.height
+
+                    Log.d(TAG, "")
+                    Log.d(TAG, "📐 CANVAS MEASURED")
+                    Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.d(TAG, "Canvas Size: ${canvasWidth}x${canvasHeight}")
+                    Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.d(TAG, "")
+
+                    loadExistingOutfit()
+                }
+            }
+        )
     }
 
     private fun initializeViews(view: View) {
@@ -117,70 +150,7 @@ class EditOutfitFragment : Fragment() {
         fabAddItems = view.findViewById(R.id.fabAddItem)
         progressBar = view.findViewById(R.id.progressBar)
 
-        // Update button text for edit mode
         btnSaveOutfit.text = "Update Outfit"
-    }
-
-    private fun loadExistingOutfit() {
-        lifecycleScope.launch {
-            try {
-                progressBar.visibility = View.VISIBLE
-
-                Log.d(TAG, "Loading outfit with ID: $outfitId")
-
-                val result = apiService.getUserOutfits()
-                result.onSuccess { outfits ->
-                    val outfit = outfits.find { it.outfitId == outfitId }
-
-                    if (outfit == null) {
-                        Toast.makeText(requireContext(), "Outfit not found", Toast.LENGTH_SHORT).show()
-                        findNavController().navigateUp()
-                        return@onSuccess
-                    }
-
-                    originalOutfit = outfit
-                    outfitName = outfit.name
-
-                    Log.d(TAG, "Loaded outfit: ${outfit.name} with ${outfit.items.size} items")
-
-                    // Wait for canvas to be measured
-                    canvasContainer.post {
-                        outfit.items.forEach { apiItem ->
-                            // Convert ApiService.OutfitItemDetail to WardrobeItem
-                            val wardrobeItem = WardrobeItem(
-                                itemId = apiItem.itemId,
-                                name = apiItem.name ?: "Item ${apiItem.itemId}",
-                                imageUrl = apiItem.imageUrl,
-                                colour = apiItem.colour,
-                                subcategory = apiItem.subcategory,
-                                category = "Unknown", // We don't have category in OutfitItemDetail
-                                size = null, // ✅ Added missing parameter
-                                weatherTag = null, // ✅ Added missing parameter
-                                timesWorn = 0 // ✅ Added missing parameter
-                            )
-
-                            addItemToCanvas(wardrobeItem, apiItem.layoutData)
-                        }
-                    }
-                }.onFailure { error ->
-                    Log.e(TAG, "Failed to load outfit: ${error.message}")
-                    Toast.makeText(
-                        requireContext(),
-                        "Failed to load outfit: ${error.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error loading outfit", e)
-                Toast.makeText(
-                    requireContext(),
-                    "Error: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } finally {
-                progressBar.visibility = View.GONE
-            }
-        }
     }
 
     private fun setupBottomSheet(view: View) {
@@ -229,7 +199,7 @@ class EditOutfitFragment : Fragment() {
             if (itemLayouts.isEmpty()) {
                 Toast.makeText(requireContext(), "Please add at least one item", Toast.LENGTH_SHORT).show()
             } else {
-                showUpdateConfirmationDialog()
+                updateOutfit()
             }
         }
 
@@ -326,10 +296,124 @@ class EditOutfitFragment : Fragment() {
         itemAdapter.submitList(filteredItems)
     }
 
+    private fun loadExistingOutfit() {
+        lifecycleScope.launch {
+            try {
+                progressBar.visibility = View.VISIBLE
+
+                Log.d(TAG, "🌐 LOADING OUTFIT FROM API...")
+
+                val existingSnapshot = File(requireContext().filesDir, "outfit_$outfitId.png")
+                Log.d(TAG, "")
+                Log.d(TAG, "📸 CHECKING EXISTING SNAPSHOT")
+                Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                Log.d(TAG, "File path: ${existingSnapshot.absolutePath}")
+                Log.d(TAG, "File exists: ${existingSnapshot.exists()}")
+                if (existingSnapshot.exists()) {
+                    Log.d(TAG, "File size: ${existingSnapshot.length()} bytes")
+                    Log.d(TAG, "Last modified: ${java.util.Date(existingSnapshot.lastModified())}")
+                }
+                Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                Log.d(TAG, "")
+
+                val result = apiService.getUserOutfits()
+                result.onSuccess { outfits ->
+                    val outfit = outfits.find { it.outfitId == outfitId }
+
+                    if (outfit == null) {
+                        Log.e(TAG, "❌ Outfit $outfitId not found in API response")
+                        Toast.makeText(requireContext(), "Outfit not found", Toast.LENGTH_SHORT).show()
+                        findNavController().navigateUp()
+                        return@onSuccess
+                    }
+
+                    outfitName = outfit.name
+
+                    Log.d(TAG, "")
+                    Log.d(TAG, "✅ OUTFIT LOADED FROM API")
+                    Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.d(TAG, "Outfit Name: ${outfit.name}")
+                    Log.d(TAG, "Items Count: ${outfit.items.size}")
+                    Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.d(TAG, "")
+
+                    loadItemsToCanvas(outfit)
+
+                }.onFailure { error ->
+                    Log.e(TAG, "")
+                    Log.e(TAG, "❌ FAILED TO LOAD OUTFIT FROM API")
+                    Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.e(TAG, "Error: ${error.message}")
+                    Log.e(TAG, "Stack trace: ${error.stackTraceToString()}")
+                    Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.e(TAG, "")
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to load outfit: ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ EXCEPTION IN LOAD", e)
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                progressBar.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun loadItemsToCanvas(outfit: ApiService.OutfitDetail) {
+        Log.d(TAG, "")
+        Log.d(TAG, "📦 LOADING ITEMS TO CANVAS")
+        Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        Log.d(TAG, "Canvas: ${canvasWidth}x${canvasHeight}")
+        Log.d(TAG, "Items to load: ${outfit.items.size}")
+        Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        Log.d(TAG, "")
+
+        // ✅ FIX: Capture canvas size when loading existing items
+        capturedCanvasWidth = canvasWidth
+        capturedCanvasHeight = canvasHeight
+        Log.d(TAG, "📐 CAPTURED CANVAS SIZE: ${capturedCanvasWidth}x${capturedCanvasHeight}")
+        Log.d(TAG, "")
+
+        outfit.items.forEachIndexed { index, apiItem ->
+            val wardrobeItem = WardrobeItem(
+                itemId = apiItem.itemId,
+                name = apiItem.name ?: "Item",
+                imageUrl = apiItem.imageUrl,
+                colour = apiItem.colour,
+                subcategory = apiItem.subcategory,
+                category = "Unknown",
+                size = null,
+                weatherTag = null,
+                timesWorn = 0
+            )
+
+            Log.d(TAG, "Item #${index + 1} (ID: ${apiItem.itemId}):")
+            Log.d(TAG, "  Name: ${apiItem.name}")
+
+            addItemToCanvas(wardrobeItem, apiItem.layoutData)
+        }
+
+        Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        Log.d(TAG, "✅ Finished loading ${outfit.items.size} items")
+        Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        Log.d(TAG, "")
+    }
+
     private fun addItemToCanvas(item: WardrobeItem, existingLayout: ApiService.ItemLayoutData?) {
         if (itemLayouts.containsKey(item.itemId)) {
             Toast.makeText(requireContext(), "Item already added", Toast.LENGTH_SHORT).show()
             return
+        }
+
+        // ✅ FIX: Capture canvas size if adding new items
+        if (capturedCanvasWidth == 0 || capturedCanvasHeight == 0) {
+            capturedCanvasWidth = canvasWidth
+            capturedCanvasHeight = canvasHeight
+            Log.d(TAG, "📐 CAPTURED CANVAS SIZE (new item): ${capturedCanvasWidth}x${capturedCanvasHeight}")
         }
 
         val itemView = LayoutInflater.from(requireContext())
@@ -350,6 +434,7 @@ class EditOutfitFragment : Fragment() {
                 .setTitle("Remove Item")
                 .setMessage("Remove this item from the outfit?")
                 .setPositiveButton("Remove") { _, _ ->
+                    Log.d(TAG, "🗑️ Removing item ${item.itemId}")
                     itemLayouts.remove(item.itemId)
                     canvasContainer.removeView(itemView)
                     Toast.makeText(requireContext(), "Item removed", Toast.LENGTH_SHORT).show()
@@ -358,34 +443,63 @@ class EditOutfitFragment : Fragment() {
                 .show()
         }
 
-        // Apply existing layout or use defaults
-        itemView.post {
-            if (existingLayout != null) {
-                // Use existing layout data
-                val layoutParams = FrameLayout.LayoutParams(
-                    existingLayout.width,
-                    existingLayout.height
-                )
-                itemView.layoutParams = layoutParams
-                itemView.x = existingLayout.x * canvasContainer.width
-                itemView.y = existingLayout.y * canvasContainer.height
-                itemView.scaleX = existingLayout.scale
-                itemView.scaleY = existingLayout.scale
+        if (existingLayout != null) {
+            Log.d(TAG, "  Stored Layout Data:")
+            Log.d(TAG, "    ├─ Relative X: ${existingLayout.x}")
+            Log.d(TAG, "    ├─ Relative Y: ${existingLayout.y}")
+            Log.d(TAG, "    ├─ Scale: ${existingLayout.scale}")
+            Log.d(TAG, "    └─ Size: ${existingLayout.width}x${existingLayout.height}")
 
-                removeBtn.scaleX = 1f / existingLayout.scale
-                removeBtn.scaleY = 1f / existingLayout.scale
+            val layoutParams = FrameLayout.LayoutParams(
+                existingLayout.width,
+                existingLayout.height
+            )
+            itemView.layoutParams = layoutParams
 
+            canvasContainer.addView(itemView)
+
+            itemView.post {
+                try {
+                    val absoluteX = existingLayout.x * canvasWidth
+                    val absoluteY = existingLayout.y * canvasHeight
+
+                    Log.d(TAG, "  Calculated Absolute Position:")
+                    Log.d(TAG, "    ├─ X: ${existingLayout.x} * $canvasWidth = $absoluteX")
+                    Log.d(TAG, "    └─ Y: ${existingLayout.y} * $canvasHeight = $absoluteY")
+
+                    itemView.x = absoluteX
+                    itemView.y = absoluteY
+                    itemView.scaleX = existingLayout.scale
+                    itemView.scaleY = existingLayout.scale
+
+                    removeBtn.scaleX = 1f / existingLayout.scale
+                    removeBtn.scaleY = 1f / existingLayout.scale
+
+                    Log.d(TAG, "  Applied to View:")
+                    Log.d(TAG, "    ├─ Position: ($absoluteX, $absoluteY)")
+                    Log.d(TAG, "    ├─ Scale: ${existingLayout.scale}")
+                    Log.d(TAG, "    └─ ✅ POSITIONED SUCCESSFULLY")
+                    Log.d(TAG, "")
+
+                    itemLayouts[item.itemId] = EditItemLayout(
+                        item = item,
+                        x = absoluteX,
+                        y = absoluteY,
+                        scale = existingLayout.scale,
+                        width = existingLayout.width,
+                        height = existingLayout.height
+                    )
+
+                } catch (e: Exception) {
+                    Log.e(TAG, "  ❌ ERROR POSITIONING ITEM", e)
+                    Log.d(TAG, "")
+                }
+            }
+        } else {
+            canvasContainer.addView(itemView)
+
+            itemView.post {
                 itemLayouts[item.itemId] = EditItemLayout(
-                    item = item,
-                    x = itemView.x,
-                    y = itemView.y,
-                    scale = existingLayout.scale,
-                    width = existingLayout.width,
-                    height = existingLayout.height
-                )
-            } else {
-                // New item - center it
-                val initialLayout = EditItemLayout(
                     item = item,
                     x = itemView.x,
                     y = itemView.y,
@@ -393,49 +507,46 @@ class EditOutfitFragment : Fragment() {
                     width = itemView.width,
                     height = itemView.height
                 )
-                itemLayouts[item.itemId] = initialLayout
             }
         }
 
-        makeDraggableAndScalable(itemView, item, removeBtn)
-        canvasContainer.addView(itemView)
-
-        Log.d(TAG, "Added item ${item.itemId} to canvas")
+        makeDraggableAndScalable(itemView, item.itemId, removeBtn)
     }
 
-    private fun makeDraggableAndScalable(view: View, item: WardrobeItem, removeBtn: ImageButton) {
+    private fun makeDraggableAndScalable(view: View, itemId: Int, removeBtn: ImageButton) {
         var dX = 0f
         var dY = 0f
         var isScaling = false
 
-        val scaleGestureDetector = ScaleGestureDetector(requireContext(), object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-                isScaling = true
-                view.elevation = 8f * resources.displayMetrics.density
-                return true
-            }
+        val scaleGestureDetector = ScaleGestureDetector(requireContext(),
+            object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                    isScaling = true
+                    view.elevation = 8f * resources.displayMetrics.density
+                    return true
+                }
 
-            override fun onScale(detector: ScaleGestureDetector): Boolean {
-                val layout = itemLayouts[item.itemId] ?: return false
+                override fun onScale(detector: ScaleGestureDetector): Boolean {
+                    val layout = itemLayouts[itemId] ?: return false
 
-                var newScale = layout.scale * detector.scaleFactor
-                newScale = newScale.coerceIn(0.3f, 5.0f)
+                    var newScale = layout.scale * detector.scaleFactor
+                    newScale = newScale.coerceIn(0.3f, 5.0f)
 
-                view.scaleX = newScale
-                view.scaleY = newScale
+                    view.scaleX = newScale
+                    view.scaleY = newScale
 
-                removeBtn.scaleX = 1f / newScale
-                removeBtn.scaleY = 1f / newScale
+                    removeBtn.scaleX = 1f / newScale
+                    removeBtn.scaleY = 1f / newScale
 
-                layout.scale = newScale
-                return true
-            }
+                    layout.scale = newScale
+                    return true
+                }
 
-            override fun onScaleEnd(detector: ScaleGestureDetector) {
-                isScaling = false
-                view.elevation = 4f * resources.displayMetrics.density
-            }
-        })
+                override fun onScaleEnd(detector: ScaleGestureDetector) {
+                    isScaling = false
+                    view.elevation = 4f * resources.displayMetrics.density
+                }
+            })
 
         var touchCount = 0
 
@@ -467,7 +578,7 @@ class EditOutfitFragment : Fragment() {
                         v.x = newX.coerceIn(-v.width * 0.2f, maxX - v.width * 0.8f)
                         v.y = newY.coerceIn(-v.height * 0.2f, maxY - v.height * 0.8f)
 
-                        itemLayouts[item.itemId]?.let {
+                        itemLayouts[itemId]?.let {
                             it.x = v.x
                             it.y = v.y
                         }
@@ -491,17 +602,6 @@ class EditOutfitFragment : Fragment() {
         }
     }
 
-    private fun showUpdateConfirmationDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Update Outfit")
-            .setMessage("Save changes to \"$outfitName\"?")
-            .setPositiveButton("Update") { _, _ ->
-                updateOutfit()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
     private fun showExitConfirmationDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("Discard Changes?")
@@ -514,27 +614,57 @@ class EditOutfitFragment : Fragment() {
     }
 
     private fun updateOutfit() {
-        Log.d(TAG, "updateOutfit() called for outfit ID: $outfitId")
+        Log.d(TAG, "")
+        Log.d(TAG, "╔═══════════════════════════════════════════════════════")
+        Log.d(TAG, "║ UPDATING OUTFIT")
+        Log.d(TAG, "╠═══════════════════════════════════════════════════════")
+        Log.d(TAG, "║ Outfit ID: $outfitId")
+        Log.d(TAG, "║ Outfit Name: $outfitName")
+        Log.d(TAG, "║ Items Count: ${itemLayouts.size}")
+        Log.d(TAG, "║ Canvas: ${canvasWidth}x${canvasHeight}")
+        Log.d(TAG, "╚═══════════════════════════════════════════════════════")
+        Log.d(TAG, "")
 
         lifecycleScope.launch {
             try {
                 progressBar.visibility = View.VISIBLE
                 btnSaveOutfit.isEnabled = false
 
-                // Build layout JSON for each item
-                val itemsJson = itemLayouts.values.map { layout ->
+                Log.d(TAG, "📊 UPDATED ITEM LAYOUT DATA:")
+                Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+                // ✅ FIX: Use CAPTURED canvas dimensions
+                val canvasWidthForSaving = if (capturedCanvasWidth > 0) capturedCanvasWidth else canvasWidth
+                val canvasHeightForSaving = if (capturedCanvasHeight > 0) capturedCanvasHeight else canvasHeight
+
+                Log.d(TAG, "Using canvas size for calculations: ${canvasWidthForSaving}x${canvasHeightForSaving}")
+                Log.d(TAG, "Current canvas size: ${canvasContainer.width}x${canvasContainer.height}")
+                Log.d(TAG, "")
+
+                val itemsJson = itemLayouts.values.mapIndexed { index, layout ->
+                    val relativeX = layout.x / canvasWidthForSaving
+                    val relativeY = layout.y / canvasHeightForSaving
+
+                    Log.d(TAG, "Item #${index + 1} (ID: ${layout.item.itemId}):")
+                    Log.d(TAG, "  ├─ Absolute: (${layout.x}, ${layout.y})")
+                    Log.d(TAG, "  ├─ Relative: ($relativeX, $relativeY)")
+                    Log.d(TAG, "  ├─ Scale: ${layout.scale}")
+                    Log.d(TAG, "  └─ Size: ${layout.width}x${layout.height}")
+
                     JSONObject().apply {
                         put("itemId", layout.item.itemId)
-                        put("x", (layout.x / canvasContainer.width).toDouble())
-                        put("y", (layout.y / canvasContainer.height).toDouble())
+                        put("x", relativeX.toDouble())
+                        put("y", relativeY.toDouble())
                         put("scale", layout.scale.toDouble())
                         put("width", layout.width)
                         put("height", layout.height)
                     }.toString()
                 }
 
-                Log.d(TAG, "Updating with ${itemsJson.size} items")
+                Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                Log.d(TAG, "")
 
+                Log.d(TAG, "🌐 SENDING UPDATE TO API...")
                 val result = outfitRepository.updateOutfit(
                     outfitId = outfitId,
                     name = outfitName,
@@ -542,14 +672,59 @@ class EditOutfitFragment : Fragment() {
                 )
 
                 result.onSuccess {
-                    // Save updated bitmap
-                    val bitmap = getCanvasBitmap()
-                    saveBitmapToFile(bitmap, "outfit_$outfitId")
+                    Log.d(TAG, "")
+                    Log.d(TAG, "✅ API UPDATE SUCCESS")
+                    Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.d(TAG, "")
 
-                    Toast.makeText(requireContext(), "Outfit updated!", Toast.LENGTH_SHORT).show()
+                    val oldSnapshot = File(requireContext().filesDir, "outfit_$outfitId.png")
+                    if (oldSnapshot.exists()) {
+                        val deleted = oldSnapshot.delete()
+                        Log.d(TAG, "🗑️ OLD SNAPSHOT")
+                        Log.d(TAG, "Path: ${oldSnapshot.absolutePath}")
+                        Log.d(TAG, "Deleted: $deleted")
+                        Log.d(TAG, "")
+                    }
+
+                    Log.d(TAG, "📸 CREATING NEW SNAPSHOT...")
+                    Log.d(TAG, "Canvas: ${canvasContainer.width}x${canvasContainer.height}")
+
+                    val bitmap = getCanvasBitmap()
+
+                    Log.d(TAG, "Bitmap: ${bitmap.width}x${bitmap.height} (${bitmap.byteCount} bytes)")
+                    Log.d(TAG, "")
+
+                    Log.d(TAG, "💾 SAVING NEW SNAPSHOT...")
+                    val saved = SnapshotManager.saveSnapshot(requireContext(), outfitId, bitmap)
+
+                    if (saved) {
+                        val newSnapshot = File(requireContext().filesDir, "outfit_$outfitId.png")
+
+                        Log.d(TAG, "")
+                        Log.d(TAG, "✅ NEW SNAPSHOT SAVED")
+                        Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                        Log.d(TAG, "Path: ${newSnapshot.absolutePath}")
+                        Log.d(TAG, "Size: ${newSnapshot.length()} bytes")
+                        Log.d(TAG, "Modified: ${java.util.Date(newSnapshot.lastModified())}")
+                        Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                        Log.d(TAG, "")
+                    } else {
+                        Log.e(TAG, "❌ FAILED TO SAVE NEW SNAPSHOT")
+                        Log.d(TAG, "")
+                    }
+
+                    Toast.makeText(requireContext(), "Outfit updated! ✅", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
+
                 }.onFailure { error ->
-                    Log.e(TAG, "Failed to update outfit: ${error.message}")
+                    Log.e(TAG, "")
+                    Log.e(TAG, "❌ API UPDATE FAILED")
+                    Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.e(TAG, "Error: ${error.message}")
+                    Log.e(TAG, "Stack trace: ${error.stackTraceToString()}")
+                    Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.e(TAG, "")
+
                     Toast.makeText(
                         requireContext(),
                         "Failed to update: ${error.message}",
@@ -557,12 +732,8 @@ class EditOutfitFragment : Fragment() {
                     ).show()
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error updating outfit", e)
-                Toast.makeText(
-                    requireContext(),
-                    "Error: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Log.e(TAG, "❌ EXCEPTION IN UPDATE", e)
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
                 progressBar.visibility = View.GONE
                 btnSaveOutfit.isEnabled = true
@@ -595,13 +766,5 @@ class EditOutfitFragment : Fragment() {
         removeButtons.forEach { it.visibility = View.VISIBLE }
 
         return bitmap
-    }
-
-    private fun saveBitmapToFile(bitmap: Bitmap, fileName: String) {
-        val file = File(requireContext().filesDir, "$fileName.png")
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-        }
-        Log.d(TAG, "Saved bitmap to: ${file.absolutePath}")
     }
 }

@@ -6,6 +6,7 @@ plugins {
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.kapt")
     id("jacoco") // <-- Added Jacoco
+
 }
 
 android {
@@ -137,6 +138,9 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.8.2")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    //Colour
+    implementation("androidx.palette:palette-ktx:1.0.0")
 
     // ==========================
     // TESTING
