@@ -242,6 +242,16 @@
     <string name="confirm_restore_item">Restore %1$s to your wardrobe?</string>
     <string name="remove_item">Remove item</string>
     <string name="outfit_item">Outfit item</string>
+    <string name="schedule_outfit">Schedule Outfit</string>
+    <string name="close">Close</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_a_date">Select a date</string>
+    <string name="choose_your_outfit">Choose Your Outfit</string>
+    <string name="no_outfits_available_n_ncreate_an_outfit_first_to_schedule_it">No outfits available.\n\nCreate an outfit first to schedule it!</string>
+    <string name="casual_friday_selected">Casual Friday Selected</string>
+    <string name="notes_optional">Notes (Optional)</string>
+    <string name="event_name_optional">Event Name (Optional)</string>
+    <string name="schedule_outfit2">Schedule Outfit</string>
 
 </resources>
 

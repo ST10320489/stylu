@@ -23,9 +23,7 @@ import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.network.ApiService
 import java.io.File
 
-/**
- * ✅ FIXED: Glide cache busting for updated snapshots
- */
+
 class OutfitAdapter(
     private val onOutfitClick: (ApiService.OutfitDetail) -> Unit
 ) : ListAdapter<ApiService.OutfitDetail, OutfitAdapter.OutfitViewHolder>(OutfitDiffCallback()) {
@@ -61,13 +59,13 @@ class OutfitAdapter(
                     scaleType = ImageView.ScaleType.FIT_CENTER
                 }
 
-                // ✅ FIX: Load image with cache busting
+
                 Glide.with(itemView.context)
                     .asBitmap()
                     .load(snapshotFile)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE) // ✅ Don't cache to disk
-                    .skipMemoryCache(true) // ✅ Don't cache in memory
-                    .signature(ObjectKey(snapshotFile.lastModified())) // ✅ Cache key = file timestamp
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .signature(ObjectKey(snapshotFile.lastModified()))
                     .placeholder(R.drawable.default_img)
                     .error(R.drawable.default_img)
                     .into(object : CustomTarget<Bitmap>() {
@@ -77,12 +75,12 @@ class OutfitAdapter(
                         ) {
                             imageView.setImageBitmap(bitmap)
 
-                            // ✅ Extract colors from bitmap using Palette API
+
                             extractColorsFromBitmap(bitmap)
                         }
 
                         override fun onLoadCleared(placeholder: Drawable?) {
-                            // Optional: handle cleanup
+
                         }
                     })
 
@@ -96,7 +94,7 @@ class OutfitAdapter(
             }
         }
 
-        // ✅ Extract colors using Palette API
+        // Extract colors using Palette API
         private fun extractColorsFromBitmap(bitmap: Bitmap) {
             Palette.from(bitmap).generate { palette ->
                 palette?.let {
@@ -108,7 +106,7 @@ class OutfitAdapter(
                     it.darkVibrantSwatch?.rgb?.let { color -> colors.add(color) }
                     it.mutedSwatch?.rgb?.let { color -> colors.add(color) }
 
-                    // If we still don't have 4 colors, add dominant swatch
+
                     if (colors.size < 4) {
                         it.dominantSwatch?.rgb?.let { color ->
                             if (!colors.contains(color)) {
@@ -117,7 +115,7 @@ class OutfitAdapter(
                         }
                     }
 
-                    // Take only first 4 unique colors and display them
+
                     colors.distinct().take(4).forEach { color ->
                         addColorDot(color)
                     }
@@ -125,7 +123,7 @@ class OutfitAdapter(
             }
         }
 
-        // ✅ Fallback - extract colors from item metadata
+
         private fun extractColorsFromItems(items: List<ApiService.OutfitItemDetail>) {
             items.take(4).forEach { item ->
                 item.colour?.let { colourString ->
@@ -133,14 +131,14 @@ class OutfitAdapter(
                         val color = android.graphics.Color.parseColor(colourString)
                         addColorDot(color)
                     } catch (e: Exception) {
-                        // If parsing fails, use a subtle gray
+
                         addColorDot(android.graphics.Color.LTGRAY)
                     }
                 }
             }
         }
 
-        // ✅ Helper to add color dot
+
         private fun addColorDot(color: Int) {
             val dot = View(itemView.context).apply {
                 layoutParams = LinearLayout.LayoutParams(

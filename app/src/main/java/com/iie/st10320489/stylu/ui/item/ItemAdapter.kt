@@ -46,7 +46,7 @@ class ItemAdapter(
                 .placeholder(R.drawable.default_img)
                 .error(R.drawable.default_img)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .fitCenter() // ✅ shows full image
+                .fitCenter()
                 .into(imageView)
 
         }

@@ -44,7 +44,7 @@ class AddItemFragment : Fragment() {
     private lateinit var btnCancel: Button
     private lateinit var progressBar: ProgressBar
 
-    // ✅ FIXED: Added SessionManager
+
     private val sessionManager by lazy { SessionManager(requireContext()) }
     private val itemRepository by lazy { ItemRepository(requireContext()) }
 
@@ -337,7 +337,7 @@ class AddItemFragment : Fragment() {
                 progressBar.visibility = View.VISIBLE
                 btnSaveItem.isEnabled = false
 
-                // ✅ FIXED: Use SessionManager to get user ID and email
+
                 val userId = sessionManager.getCurrentUserId()
                 if (userId == null) {
                     Toast.makeText(requireContext(), "Please log in first", Toast.LENGTH_SHORT).show()
@@ -363,7 +363,7 @@ class AddItemFragment : Fragment() {
                         price = etPrice.text.toString().toDoubleOrNull(),
                         imageUrl = imageUrl,
                         weatherTag = spWeatherTag.selectedItem.toString(),
-                        createdBy = userEmail // ✅ FIXED: Now uses String type
+                        createdBy = userEmail
                     )
 
                     val result = itemRepository.createItem(itemRequest)
@@ -399,4 +399,33 @@ class AddItemFragment : Fragment() {
 
         return 0
     }
+
+
+    override fun onResume() {
+        super.onResume()
+        hideBottomNavigation()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        showBottomNavigation()
+    }
+
+    private fun hideBottomNavigation() {
+        val bottomNav = activity?.findViewById<View>(R.id.bottomNavCard)
+        bottomNav?.visibility = View.GONE
+
+        val fabNav = activity?.findViewById<View>(R.id.fab)
+        fabNav?.visibility = View.GONE
+    }
+
+    private fun showBottomNavigation() {
+        val bottomNav = activity?.findViewById<View>(R.id.bottomNavCard)
+        bottomNav?.visibility = View.VISIBLE
+
+        val fabNav = activity?.findViewById<View>(R.id.fab)
+        fabNav?.visibility = View.VISIBLE
+    }
+
+
 }

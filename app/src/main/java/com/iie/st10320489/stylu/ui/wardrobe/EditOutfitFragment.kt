@@ -45,9 +45,7 @@ data class EditItemLayout(
     val height: Int
 )
 
-/**
- * ✅ COMPLETE: Full functionality WITH debug logging
- */
+
 class EditOutfitFragment : Fragment() {
 
     private lateinit var canvasContainer: FrameLayout
@@ -77,7 +75,7 @@ class EditOutfitFragment : Fragment() {
     private var canvasWidth: Int = 0
     private var canvasHeight: Int = 0
 
-    // ✅ FIX: Store canvas dimensions when items are loaded/added
+
     private var capturedCanvasWidth: Int = 0
     private var capturedCanvasHeight: Int = 0
 
@@ -121,7 +119,7 @@ class EditOutfitFragment : Fragment() {
 
         loadItems()
 
-        // ✅ Wait for canvas to be measured BEFORE loading
+
         canvasContainer.viewTreeObserver.addOnGlobalLayoutListener(
             object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
@@ -131,7 +129,7 @@ class EditOutfitFragment : Fragment() {
                     canvasHeight = canvasContainer.height
 
                     Log.d(TAG, "")
-                    Log.d(TAG, "📐 CANVAS MEASURED")
+                    Log.d(TAG, "CANVAS MEASURED")
                     Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                     Log.d(TAG, "Canvas Size: ${canvasWidth}x${canvasHeight}")
                     Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -301,11 +299,11 @@ class EditOutfitFragment : Fragment() {
             try {
                 progressBar.visibility = View.VISIBLE
 
-                Log.d(TAG, "🌐 LOADING OUTFIT FROM API...")
+                Log.d(TAG, "LOADING OUTFIT FROM API...")
 
                 val existingSnapshot = File(requireContext().filesDir, "outfit_$outfitId.png")
                 Log.d(TAG, "")
-                Log.d(TAG, "📸 CHECKING EXISTING SNAPSHOT")
+                Log.d(TAG, "CHECKING EXISTING SNAPSHOT")
                 Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                 Log.d(TAG, "File path: ${existingSnapshot.absolutePath}")
                 Log.d(TAG, "File exists: ${existingSnapshot.exists()}")
@@ -321,7 +319,7 @@ class EditOutfitFragment : Fragment() {
                     val outfit = outfits.find { it.outfitId == outfitId }
 
                     if (outfit == null) {
-                        Log.e(TAG, "❌ Outfit $outfitId not found in API response")
+                        Log.e(TAG, "Outfit $outfitId not found in API response")
                         Toast.makeText(requireContext(), "Outfit not found", Toast.LENGTH_SHORT).show()
                         findNavController().navigateUp()
                         return@onSuccess
@@ -330,7 +328,7 @@ class EditOutfitFragment : Fragment() {
                     outfitName = outfit.name
 
                     Log.d(TAG, "")
-                    Log.d(TAG, "✅ OUTFIT LOADED FROM API")
+                    Log.d(TAG, "OUTFIT LOADED FROM API")
                     Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                     Log.d(TAG, "Outfit Name: ${outfit.name}")
                     Log.d(TAG, "Items Count: ${outfit.items.size}")
@@ -341,7 +339,7 @@ class EditOutfitFragment : Fragment() {
 
                 }.onFailure { error ->
                     Log.e(TAG, "")
-                    Log.e(TAG, "❌ FAILED TO LOAD OUTFIT FROM API")
+                    Log.e(TAG, "FAILED TO LOAD OUTFIT FROM API")
                     Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                     Log.e(TAG, "Error: ${error.message}")
                     Log.e(TAG, "Stack trace: ${error.stackTraceToString()}")
@@ -355,7 +353,7 @@ class EditOutfitFragment : Fragment() {
                     ).show()
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "❌ EXCEPTION IN LOAD", e)
+                Log.e(TAG, "EXCEPTION IN LOAD", e)
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
                 progressBar.visibility = View.GONE
@@ -365,14 +363,14 @@ class EditOutfitFragment : Fragment() {
 
     private fun loadItemsToCanvas(outfit: ApiService.OutfitDetail) {
         Log.d(TAG, "")
-        Log.d(TAG, "📦 LOADING ITEMS TO CANVAS")
+        Log.d(TAG, "LOADING ITEMS TO CANVAS")
         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         Log.d(TAG, "Canvas: ${canvasWidth}x${canvasHeight}")
         Log.d(TAG, "Items to load: ${outfit.items.size}")
         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         Log.d(TAG, "")
 
-        // ✅ FIX: Capture canvas size when loading existing items
+
         capturedCanvasWidth = canvasWidth
         capturedCanvasHeight = canvasHeight
         Log.d(TAG, "📐 CAPTURED CANVAS SIZE: ${capturedCanvasWidth}x${capturedCanvasHeight}")
@@ -398,7 +396,7 @@ class EditOutfitFragment : Fragment() {
         }
 
         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        Log.d(TAG, "✅ Finished loading ${outfit.items.size} items")
+        Log.d(TAG, "Finished loading ${outfit.items.size} items")
         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         Log.d(TAG, "")
     }
@@ -409,7 +407,7 @@ class EditOutfitFragment : Fragment() {
             return
         }
 
-        // ✅ FIX: Capture canvas size if adding new items
+
         if (capturedCanvasWidth == 0 || capturedCanvasHeight == 0) {
             capturedCanvasWidth = canvasWidth
             capturedCanvasHeight = canvasHeight
@@ -434,7 +432,7 @@ class EditOutfitFragment : Fragment() {
                 .setTitle("Remove Item")
                 .setMessage("Remove this item from the outfit?")
                 .setPositiveButton("Remove") { _, _ ->
-                    Log.d(TAG, "🗑️ Removing item ${item.itemId}")
+                    Log.d(TAG, "Removing item ${item.itemId}")
                     itemLayouts.remove(item.itemId)
                     canvasContainer.removeView(itemView)
                     Toast.makeText(requireContext(), "Item removed", Toast.LENGTH_SHORT).show()
@@ -478,7 +476,7 @@ class EditOutfitFragment : Fragment() {
                     Log.d(TAG, "  Applied to View:")
                     Log.d(TAG, "    ├─ Position: ($absoluteX, $absoluteY)")
                     Log.d(TAG, "    ├─ Scale: ${existingLayout.scale}")
-                    Log.d(TAG, "    └─ ✅ POSITIONED SUCCESSFULLY")
+                    Log.d(TAG, "    └─ POSITIONED SUCCESSFULLY")
                     Log.d(TAG, "")
 
                     itemLayouts[item.itemId] = EditItemLayout(
@@ -491,7 +489,7 @@ class EditOutfitFragment : Fragment() {
                     )
 
                 } catch (e: Exception) {
-                    Log.e(TAG, "  ❌ ERROR POSITIONING ITEM", e)
+                    Log.e(TAG, "  ERROR POSITIONING ITEM", e)
                     Log.d(TAG, "")
                 }
             }
@@ -630,10 +628,10 @@ class EditOutfitFragment : Fragment() {
                 progressBar.visibility = View.VISIBLE
                 btnSaveOutfit.isEnabled = false
 
-                Log.d(TAG, "📊 UPDATED ITEM LAYOUT DATA:")
+                Log.d(TAG, "UPDATED ITEM LAYOUT DATA:")
                 Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-                // ✅ FIX: Use CAPTURED canvas dimensions
+
                 val canvasWidthForSaving = if (capturedCanvasWidth > 0) capturedCanvasWidth else canvasWidth
                 val canvasHeightForSaving = if (capturedCanvasHeight > 0) capturedCanvasHeight else canvasHeight
 
@@ -664,7 +662,7 @@ class EditOutfitFragment : Fragment() {
                 Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                 Log.d(TAG, "")
 
-                Log.d(TAG, "🌐 SENDING UPDATE TO API...")
+                Log.d(TAG, "SENDING UPDATE TO API...")
                 val result = outfitRepository.updateOutfit(
                     outfitId = outfitId,
                     name = outfitName,
@@ -673,20 +671,20 @@ class EditOutfitFragment : Fragment() {
 
                 result.onSuccess {
                     Log.d(TAG, "")
-                    Log.d(TAG, "✅ API UPDATE SUCCESS")
+                    Log.d(TAG, "API UPDATE SUCCESS")
                     Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                     Log.d(TAG, "")
 
                     val oldSnapshot = File(requireContext().filesDir, "outfit_$outfitId.png")
                     if (oldSnapshot.exists()) {
                         val deleted = oldSnapshot.delete()
-                        Log.d(TAG, "🗑️ OLD SNAPSHOT")
+                        Log.d(TAG, "OLD SNAPSHOT")
                         Log.d(TAG, "Path: ${oldSnapshot.absolutePath}")
                         Log.d(TAG, "Deleted: $deleted")
                         Log.d(TAG, "")
                     }
 
-                    Log.d(TAG, "📸 CREATING NEW SNAPSHOT...")
+                    Log.d(TAG, "CREATING NEW SNAPSHOT...")
                     Log.d(TAG, "Canvas: ${canvasContainer.width}x${canvasContainer.height}")
 
                     val bitmap = getCanvasBitmap()
@@ -694,14 +692,14 @@ class EditOutfitFragment : Fragment() {
                     Log.d(TAG, "Bitmap: ${bitmap.width}x${bitmap.height} (${bitmap.byteCount} bytes)")
                     Log.d(TAG, "")
 
-                    Log.d(TAG, "💾 SAVING NEW SNAPSHOT...")
+                    Log.d(TAG, "SAVING NEW SNAPSHOT...")
                     val saved = SnapshotManager.saveSnapshot(requireContext(), outfitId, bitmap)
 
                     if (saved) {
                         val newSnapshot = File(requireContext().filesDir, "outfit_$outfitId.png")
 
                         Log.d(TAG, "")
-                        Log.d(TAG, "✅ NEW SNAPSHOT SAVED")
+                        Log.d(TAG, "NEW SNAPSHOT SAVED")
                         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                         Log.d(TAG, "Path: ${newSnapshot.absolutePath}")
                         Log.d(TAG, "Size: ${newSnapshot.length()} bytes")
@@ -709,16 +707,16 @@ class EditOutfitFragment : Fragment() {
                         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                         Log.d(TAG, "")
                     } else {
-                        Log.e(TAG, "❌ FAILED TO SAVE NEW SNAPSHOT")
+                        Log.e(TAG, "FAILED TO SAVE NEW SNAPSHOT")
                         Log.d(TAG, "")
                     }
 
-                    Toast.makeText(requireContext(), "Outfit updated! ✅", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Outfit updated!", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
 
                 }.onFailure { error ->
                     Log.e(TAG, "")
-                    Log.e(TAG, "❌ API UPDATE FAILED")
+                    Log.e(TAG, "API UPDATE FAILED")
                     Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                     Log.e(TAG, "Error: ${error.message}")
                     Log.e(TAG, "Stack trace: ${error.stackTraceToString()}")
@@ -732,7 +730,7 @@ class EditOutfitFragment : Fragment() {
                     ).show()
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "❌ EXCEPTION IN UPDATE", e)
+                Log.e(TAG, "EXCEPTION IN UPDATE", e)
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
                 progressBar.visibility = View.GONE

@@ -6,10 +6,7 @@ import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
 
-/**
- * ✅ Centralized Snapshot Management
- * Handles saving, loading, and cleaning up outfit snapshot images
- */
+
 object SnapshotManager {
     private const val TAG = "SnapshotManager"
     private const val SNAPSHOT_PREFIX = "outfit_"
@@ -33,10 +30,10 @@ object SnapshotManager {
                 out.flush()
             }
 
-            Log.d(TAG, "✅ Saved snapshot for outfit $outfitId: ${file.length()} bytes")
+            Log.d(TAG, "Saved snapshot for outfit $outfitId: ${file.length()} bytes")
             true
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to save snapshot for outfit $outfitId", e)
+            Log.e(TAG, "Failed to save snapshot for outfit $outfitId", e)
             false
         }
     }
@@ -64,18 +61,16 @@ object SnapshotManager {
             val file = getSnapshotFile(context, outfitId)
             val deleted = file.delete()
             if (deleted) {
-                Log.d(TAG, "✅ Deleted snapshot for outfit $outfitId")
+                Log.d(TAG, "Deleted snapshot for outfit $outfitId")
             }
             deleted
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to delete snapshot for outfit $outfitId", e)
+            Log.e(TAG, "Failed to delete snapshot for outfit $outfitId", e)
             false
         }
     }
 
-    /**
-     * ✅ Clean up orphaned snapshots (snapshots for deleted outfits)
-     */
+
     fun cleanupOrphanedSnapshots(context: Context, validOutfitIds: List<Int>): Int {
         var deletedCount = 0
 
@@ -85,8 +80,8 @@ object SnapshotManager {
                 file.name.startsWith(SNAPSHOT_PREFIX) && file.name.endsWith(SNAPSHOT_EXTENSION)
             } ?: emptyArray()
 
-            Log.d(TAG, "🧹 Cleanup: Found ${snapshotFiles.size} snapshot files")
-            Log.d(TAG, "🧹 Valid outfit IDs: $validIds")
+            Log.d(TAG, "Cleanup: Found ${snapshotFiles.size} snapshot files")
+            Log.d(TAG, "Valid outfit IDs: $validIds")
 
             snapshotFiles.forEach { file ->
                 try {
@@ -98,7 +93,7 @@ object SnapshotManager {
                     if (outfitId == null || outfitId !in validIds) {
                         if (file.delete()) {
                             deletedCount++
-                            Log.d(TAG, "🗑️ Deleted orphaned snapshot: ${file.name}")
+                            Log.d(TAG, "Deleted orphaned snapshot: ${file.name}")
                         }
                     }
                 } catch (e: Exception) {
@@ -106,17 +101,15 @@ object SnapshotManager {
                 }
             }
 
-            Log.d(TAG, "✅ Cleanup complete: Deleted $deletedCount orphaned snapshots")
+            Log.d(TAG, "Cleanup complete: Deleted $deletedCount orphaned snapshots")
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Cleanup failed", e)
+            Log.e(TAG, "Cleanup failed", e)
         }
 
         return deletedCount
     }
 
-    /**
-     * ✅ Delete ALL snapshots (for cache reset)
-     */
+
     fun deleteAllSnapshots(context: Context): Int {
         var deletedCount = 0
 
@@ -131,9 +124,9 @@ object SnapshotManager {
                 }
             }
 
-            Log.d(TAG, "🗑️ Deleted ALL snapshots: $deletedCount files")
+            Log.d(TAG, "Deleted ALL snapshots: $deletedCount files")
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to delete all snapshots", e)
+            Log.e(TAG, "Failed to delete all snapshots", e)
         }
 
         return deletedCount

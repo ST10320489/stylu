@@ -26,7 +26,7 @@ class NotificationRepository(private val context: Context) {
             try {
                 val prefs = context.getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
                 val accessToken = prefs.getString("access_token", null)
-                val userId = prefs.getString("user_id", null)  // This is a UUID string
+                val userId = prefs.getString("user_id", null)
 
                 if (accessToken == null) {
                     Log.e(TAG, "No access token found")
@@ -65,7 +65,7 @@ class NotificationRepository(private val context: Context) {
                 for (i in 0 until jsonArray.length()) {
                     val obj = jsonArray.getJSONObject(i)
 
-                    // ✅ Parse user_id as string (UUID) but convert to int for model
+                    // Parse user_id as string (UUID) but convert to int for model
                     val userIdFromDb = obj.getString("user_id")
 
                     notifications.add(
@@ -82,11 +82,11 @@ class NotificationRepository(private val context: Context) {
                     )
                 }
 
-                Log.d(TAG, "✅ Loaded ${notifications.size} notifications")
+                Log.d(TAG, "Loaded ${notifications.size} notifications")
                 notifications
 
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error fetching notifications: ${e.message}", e)
+                Log.e(TAG, "Error fetching notifications: ${e.message}", e)
                 emptyList()
             }
         }
@@ -109,7 +109,7 @@ class NotificationRepository(private val context: Context) {
                     return@withContext false
                 }
 
-                // ✅ USE UUID DIRECTLY
+
                 val json = JSONObject().apply {
                     put("user_id", userId)  // Send UUID string, not int
                     put("title", notification.title)
@@ -138,16 +138,16 @@ class NotificationRepository(private val context: Context) {
                 val responseBody = response.body?.string()
 
                 if (response.isSuccessful) {
-                    Log.d(TAG, "✅ Notification saved successfully!")
+                    Log.d(TAG, "Notification saved successfully!")
                     Log.d(TAG, "Response: $responseBody")
                     true
                 } else {
-                    Log.e(TAG, "❌ Failed to save notification: ${response.code}")
+                    Log.e(TAG, "Failed to save notification: ${response.code}")
                     Log.e(TAG, "Response body: $responseBody")
                     false
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error saving notification: ${e.message}", e)
+                Log.e(TAG, "Error saving notification: ${e.message}", e)
                 false
             }
         }

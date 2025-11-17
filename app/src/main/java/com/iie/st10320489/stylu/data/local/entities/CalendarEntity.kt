@@ -9,7 +9,7 @@ data class CalendarEntity(
     val scheduleId: Int,
     val userId: String,
     val outfitId: Int,
-    val scheduledDate: Long, // Store as timestamp for easier querying
+    val scheduledDate: Long,
     val eventName: String?,
     val notes: String?,
 

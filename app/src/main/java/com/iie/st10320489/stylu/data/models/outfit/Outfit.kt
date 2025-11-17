@@ -3,7 +3,7 @@ package com.iie.st10320489.stylu.data.models.outfit
 import com.iie.st10320489.stylu.network.ApiService
 
 data class Outfit(
-    val outfitId: Int,  // ✅ Changed from String to Int
+    val outfitId: Int,
     val userId: String,
     val name: String,
     val category: String?,

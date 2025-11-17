@@ -5,5 +5,5 @@ data class UserProfile(
     val lastName: String,
     val phoneNumber: String?,
     val email: String,
-    val password: String? // optional, only send if updating
+    val password: String?
 )

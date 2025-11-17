@@ -73,8 +73,8 @@ class ItemFragment : Fragment() {
         setupSearchBar()
         setupFilterButton()
         setupOrganizeButton()
-        setupSwipeRefresh() // ✅ NEW: Setup pull-to-refresh
-        loadItemsWithCaching() // ✅ CHANGED: Now uses Flow-based caching
+        setupSwipeRefresh()
+        loadItemsWithCaching()
     }
 
     private fun setupRecyclerView() {
@@ -120,7 +120,7 @@ class ItemFragment : Fragment() {
         }
     }
 
-    // ✅ NEW: Setup SwipeRefreshLayout
+
     private fun setupSwipeRefresh() {
         binding.swipeRefresh?.setOnRefreshListener {
             // Force refresh from API
@@ -134,7 +134,7 @@ class ItemFragment : Fragment() {
         )
     }
 
-    // ✅ NEW: Load items using Flow-based caching
+
     private fun loadItemsWithCaching(forceRefresh: Boolean = false) {
         lifecycleScope.launch {
             try {
@@ -149,7 +149,7 @@ class ItemFragment : Fragment() {
                     showLoading(true)
                 }
 
-                // ✅ NEW: Use Flow-based API from repository
+
                 itemRepository.getUserItems(forceRefresh = forceRefresh)
                     .collect { result ->
                         result.onSuccess { items ->
@@ -187,7 +187,7 @@ class ItemFragment : Fragment() {
         }
     }
 
-    // ✅ NEW: Better error handling
+
     private fun handleLoadError(error: Throwable) {
         val errorMessage = when {
             error.message?.contains("timed out", ignoreCase = true) == true -> {
@@ -646,7 +646,7 @@ class ItemFragment : Fragment() {
             .show()
     }
 
-    // ✅ UPDATED: Navigate to EditItemFragment instead of showing dialog
+
     private fun editItem(item: WardrobeItem) {
         try {
             val action = ItemFragmentDirections.actionItemsToEditItem(item)
@@ -679,7 +679,7 @@ class ItemFragment : Fragment() {
                 val result = itemRepository.deleteItem(item.itemId)
                 result.onSuccess {
                     Toast.makeText(requireContext(), getString(R.string.item_deleted), Toast.LENGTH_SHORT).show()
-                    // ✅ CHANGED: Trigger refresh after delete
+
                     loadItemsWithCaching(forceRefresh = true)
                 }.onFailure { error ->
                     Toast.makeText(
@@ -751,9 +751,7 @@ class ItemFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Don't show "first load" message on resume
         isFirstLoad = false
-        // Reload items (will use cache automatically)
         loadItemsWithCaching(forceRefresh = false)
     }
 

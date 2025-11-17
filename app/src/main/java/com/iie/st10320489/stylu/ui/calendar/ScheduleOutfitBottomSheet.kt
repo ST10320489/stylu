@@ -2,6 +2,7 @@ package com.iie.st10320489.stylu.ui.calendar
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,6 +32,10 @@ class ScheduleOutfitBottomSheet(
     private var selectedDate: Date = initialDate
     private var selectedOutfit: ApiService.OutfitDetail? = null
 
+    companion object {
+        private const val TAG = "ScheduleOutfitBottomSheet"
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -49,6 +54,11 @@ class ScheduleOutfitBottomSheet(
         updateDateDisplay()
         setupRecyclerView()
         setupClickListeners()
+        loadOutfits()
+    }
+
+    override fun onResume() {
+        super.onResume()
         loadOutfits()
     }
 
@@ -152,13 +162,20 @@ class ScheduleOutfitBottomSheet(
         binding.tvSelectedDate.text = dateFormat.format(selectedDate)
     }
 
-    /**
-     * ✅ UPDATED: Schedule outfit (works offline)
-     */
     private fun scheduleOutfit() {
         val outfit = selectedOutfit
         if (outfit == null) {
             Toast.makeText(requireContext(), "Please select an outfit", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Check if outfit has items
+        if (outfit.items.isEmpty()) {
+            Toast.makeText(
+                requireContext(),
+                "This outfit has no items. Please add items to the outfit first.",
+                Toast.LENGTH_LONG
+            ).show()
             return
         }
 
@@ -169,31 +186,92 @@ class ScheduleOutfitBottomSheet(
         binding.progressBar.visibility = View.VISIBLE
 
         lifecycleScope.launch {
-            val result = calendarRepository.scheduleOutfit(
-                outfitId = outfit.outfitId,
-                date = selectedDate,
-                eventName = eventName,
-                notes = notes
-            )
+            try {
+                // Check if date already has a scheduled outfit
+                val calendar = Calendar.getInstance()
+                calendar.time = selectedDate
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                val startDate = calendar.time
 
-            result.onSuccess {
-                Toast.makeText(
-                    requireContext(),
-                    "✅ Outfit scheduled successfully\n(Will sync when online)",
-                    Toast.LENGTH_SHORT
-                ).show()
-                onScheduled()
-                dismiss()
-            }.onFailure { error ->
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
+                val endDate = calendar.time
+
+                val existingResult = calendarRepository.getScheduledOutfits(startDate, endDate)
+
+                existingResult.onSuccess { existingOutfits ->
+                    if (existingOutfits.isNotEmpty()) {
+                        binding.btnSchedule.isEnabled = true
+                        binding.progressBar.visibility = View.GONE
+
+                        Toast.makeText(
+                            requireContext(),
+                            "This date already has a scheduled outfit. Please choose a different date.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@launch
+                    }
+
+                    proceedWithScheduling(outfit, eventName, notes)
+                }.onFailure {
+                    Log.w(TAG, "Could not check existing schedules, proceeding anyway")
+                    proceedWithScheduling(outfit, eventName, notes)
+                }
+
+            } catch (e: Exception) {
                 binding.btnSchedule.isEnabled = true
                 binding.progressBar.visibility = View.GONE
-
                 Toast.makeText(
                     requireContext(),
-                    "Failed to schedule: ${error.message}",
-                    Toast.LENGTH_LONG
+                    "Error: ${e.message}",
+                    Toast.LENGTH_SHORT
                 ).show()
             }
+        }
+    }
+
+    private suspend fun proceedWithScheduling(
+        outfit: ApiService.OutfitDetail,
+        eventName: String?,
+        notes: String?
+    ) {
+        val result = calendarRepository.scheduleOutfit(
+            outfitId = outfit.outfitId,
+            date = selectedDate,
+            eventName = eventName,
+            notes = notes
+        )
+
+        result.onSuccess { event ->
+            val message = if (event.eventId < 0) {
+                "Saved offline - will sync when online"
+            } else {
+                "Outfit scheduled successfully"
+            }
+
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            onScheduled()
+            dismiss()
+        }.onFailure { error ->
+            binding.btnSchedule.isEnabled = true
+            binding.progressBar.visibility = View.GONE
+
+            val message = when {
+                error.message?.contains("Authentication") == true ->
+                    "Session expired - saved offline"
+                error.message?.contains("connect") == true ->
+                    "No internet - saved offline"
+                error.message?.contains("already scheduled") == true ->
+                    "This date already has a scheduled outfit"
+                else -> "Failed to schedule: ${error.message}"
+            }
+
+            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
         }
     }
 

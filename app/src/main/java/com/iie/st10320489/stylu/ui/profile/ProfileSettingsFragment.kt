@@ -77,7 +77,7 @@ class ProfileSettingsFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                // ✅ 1. Load cached data immediately if available
+                // Load cached data immediately if available
                 val cached = ProfileCacheManager.getProfile(requireContext())
                 if (cached != null) {
                     etFirstName.setText(cached.firstName ?: "")
@@ -86,7 +86,7 @@ class ProfileSettingsFragment : Fragment() {
                     etPhone.setText(cached.phoneNumber ?: "")
                 }
 
-                // ✅ 2. Check Internet before API call
+                // Check Internet before API call
                 if (!isInternetAvailable()) {
                     Toast.makeText(
                         requireContext(),
@@ -97,7 +97,7 @@ class ProfileSettingsFragment : Fragment() {
                     return@launch
                 }
 
-                // ✅ 3. Fetch fresh data from API
+                // Fetch fresh data from API
                 val result = apiService.getCurrentProfile()
 
                 result.onSuccess { profile ->
@@ -108,7 +108,7 @@ class ProfileSettingsFragment : Fragment() {
                     etPassword.setText("")
                     etEmail.isEnabled = false
 
-                    // ✅ Cache new data
+                    // Cache new data
                     ProfileCacheManager.saveProfile(
                         requireContext(),
                         CachedProfile(

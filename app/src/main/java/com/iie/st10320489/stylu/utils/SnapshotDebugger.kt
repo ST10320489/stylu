@@ -5,9 +5,6 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import java.io.File
 
-/**
- * ✅ DEBUG: Snapshot Verification Utility
- */
 object SnapshotDebugger {
     private const val TAG = "SnapshotDebug"
 
@@ -23,13 +20,13 @@ object SnapshotDebugger {
 
         val file = File(context.filesDir, "outfit_$outfitId.png")
 
-        Log.d(TAG, "📁 FILE INFO:")
+        Log.d(TAG, "FILE INFO:")
         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         Log.d(TAG, "Path: ${file.absolutePath}")
         Log.d(TAG, "Exists: ${file.exists()}")
 
         if (!file.exists()) {
-            Log.e(TAG, "❌ FILE DOES NOT EXIST")
+            Log.e(TAG, "FILE DOES NOT EXIST")
             Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             Log.d(TAG, "")
             return false
@@ -43,17 +40,17 @@ object SnapshotDebugger {
 
         // Try to decode bitmap
         try {
-            Log.d(TAG, "🖼️ DECODING BITMAP...")
+            Log.d(TAG, "DECODING BITMAP...")
             val bitmap = BitmapFactory.decodeFile(file.absolutePath)
 
             if (bitmap == null) {
-                Log.e(TAG, "❌ FAILED TO DECODE BITMAP - File may be corrupted")
+                Log.e(TAG, "FAILED TO DECODE BITMAP - File may be corrupted")
                 Log.d(TAG, "")
                 return false
             }
 
             Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            Log.d(TAG, "✅ BITMAP DECODED SUCCESSFULLY")
+            Log.d(TAG, "BITMAP DECODED SUCCESSFULLY")
             Log.d(TAG, "Width: ${bitmap.width}px")
             Log.d(TAG, "Height: ${bitmap.height}px")
             Log.d(TAG, "Config: ${bitmap.config}")
@@ -65,7 +62,7 @@ object SnapshotDebugger {
             return true
 
         } catch (e: Exception) {
-            Log.e(TAG, "❌ ERROR DECODING BITMAP", e)
+            Log.e(TAG, "ERROR DECODING BITMAP", e)
             Log.e(TAG, "Exception: ${e.message}")
             Log.e(TAG, "Stack trace: ${e.stackTraceToString()}")
             Log.d(TAG, "")
@@ -88,12 +85,12 @@ object SnapshotDebugger {
         }
 
         if (snapshots == null || snapshots.isEmpty()) {
-            Log.d(TAG, "📁 No snapshot files found")
+            Log.d(TAG, "No snapshot files found")
             Log.d(TAG, "")
             return
         }
 
-        Log.d(TAG, "📁 Found ${snapshots.size} snapshot file(s):")
+        Log.d(TAG, "Found ${snapshots.size} snapshot file(s):")
         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
         snapshots.sortedBy { it.name }.forEach { file ->
@@ -122,12 +119,12 @@ object SnapshotDebugger {
         val currentFile = File(context.filesDir, "outfit_$outfitId.png")
 
         if (!currentFile.exists()) {
-            Log.d(TAG, "❌ Current snapshot does not exist")
+            Log.d(TAG, "Current snapshot does not exist")
             Log.d(TAG, "")
             return
         }
 
-        Log.d(TAG, "📸 CURRENT SNAPSHOT:")
+        Log.d(TAG, "CURRENT SNAPSHOT:")
         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         Log.d(TAG, "Size: ${currentFile.length()} bytes")
         Log.d(TAG, "Modified: ${java.util.Date(currentFile.lastModified())}")

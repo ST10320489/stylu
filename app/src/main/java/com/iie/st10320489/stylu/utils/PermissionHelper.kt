@@ -24,7 +24,7 @@ class PermissionHelper(private val activity: AppCompatActivity) {
 
     private val sharedPrefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    // ✅ Permission launchers
+
     private var locationLauncher: ActivityResultLauncher<Array<String>>? = null
     private var notificationLauncher: ActivityResultLauncher<String>? = null
 

@@ -32,10 +32,10 @@ class NotificationsAdapter(private val notifications: List<Notification>) :
 
         // Add emoji based on notification type
         val titleWithEmoji = when (notification.type) {
-            "new_drop" -> "🔥 ${notification.title}"
-            "outfit_liked" -> "❤️ ${notification.title}"
-            "reminder" -> "⏰ ${notification.title}"
-            "social" -> "👥 ${notification.title}"
+            "new_drop" -> " ${notification.title}"
+            "outfit_liked" -> "${notification.title}"
+            "reminder" -> " ${notification.title}"
+            "social" -> "${notification.title}"
             else -> notification.title
         }
 
@@ -47,7 +47,7 @@ class NotificationsAdapter(private val notifications: List<Notification>) :
     override fun getItemCount(): Int = notifications.size
 
     /**
-     * Format timestamp as relative time (e.g., "2 hours ago", "Just now")
+     * Format timestamp as relative time
      */
     private fun formatRelativeTime(timestamp: String): String {
         try {

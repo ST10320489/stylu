@@ -30,7 +30,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     private val TAG = "FCM_Service"
 
-    //  TALK DIRECTLY TO SUPABASE
+
     private val SUPABASE_URL = "https://fkmhmtioehokrukqwano.supabase.co"
     private val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrbWhtdGlvZWhva3J1a3F3YW5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMDAzNDIsImV4cCI6MjA3Mzc3NjM0Mn0.wg5fNm5_M8CRN3uzHnqvaxovIUDLCUWDcSiFJ14WqNE"
 
@@ -46,13 +46,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         FirebaseMessaging.getInstance().subscribeToTopic("fashion")
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d(TAG, "✅ Subscribed to topic: fashion")
+                    Log.d(TAG, "Subscribed to topic: fashion")
                 } else {
-                    Log.e(TAG, "❌ Failed to subscribe to topic", task.exception)
+                    Log.e(TAG, "Failed to subscribe to topic", task.exception)
                 }
             }
 
-        // Send directly to Supabase
+
         sendTokenToSupabase(token)
     }
 
@@ -98,9 +98,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 val response = client.newCall(request).execute()
 
                 if (response.isSuccessful) {
-                    Log.d(TAG, "✅ Token sent to Supabase successfully")
+                    Log.d(TAG, "Token sent to Supabase successfully")
                 } else {
-                    Log.e(TAG, "❌ Failed to send token: ${response.code}")
+                    Log.e(TAG, "Failed to send token: ${response.code}")
                 }
 
                 response.close()
@@ -120,7 +120,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Log.d(TAG, "Notification Title: ${it.title}")
             Log.d(TAG, "Notification Body: ${it.body}")
 
-            // ✅ Save to database and show notification
+            // Save to database and show notification
             saveNotificationToDatabase(
                 title = it.title ?: "Stylu",
                 message = it.body ?: "",
@@ -145,24 +145,24 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         when (type) {
             "new_drop" -> {
                 saveNotificationToDatabase(
-                    title = "New Drop Available! 🔥",
+                    title = "New Drop Available! ",
                     message = message ?: "Check out the latest styles",
                     type = "new_drop"
                 )
                 showNotification(
-                    title = "New Drop Available! 🔥",
+                    title = "New Drop Available! ",
                     body = message ?: "Check out the latest styles",
                     channelId = "stylu_drops"
                 )
             }
             "outfit_liked" -> {
                 saveNotificationToDatabase(
-                    title = "Someone liked your outfit! ❤️",
+                    title = "Someone liked your outfit! ",
                     message = message ?: "Your style is inspiring others",
                     type = "outfit_liked"
                 )
                 showNotification(
-                    title = "Someone liked your outfit! ❤️",
+                    title = "Someone liked your outfit! ",
                     body = message ?: "Your style is inspiring others",
                     channelId = "stylu_social"
                 )
@@ -194,13 +194,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    // ✅ NEW METHOD: Save notification to Supabase database
+
     private fun saveNotificationToDatabase(title: String, message: String, type: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val prefs = getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
                 val accessToken = prefs.getString("access_token", null)
-                val userId = prefs.getString("user_id", null)  // ✅ UUID string
+                val userId = prefs.getString("user_id", null)
 
                 if (accessToken == null || userId == null) {
                     Log.w(TAG, "No auth token or user ID, cannot save notification")
@@ -213,7 +213,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }.format(Date())
 
                 val json = JSONObject().apply {
-                    put("user_id", userId)  // ✅ Send UUID string
+                    put("user_id", userId)
                     put("title", title)
                     put("message", message)
                     put("type", type)
@@ -237,10 +237,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 val response = client.newCall(request).execute()
 
                 if (response.isSuccessful) {
-                    Log.d(TAG, "✅ Notification saved to database")
+                    Log.d(TAG, "Notification saved to database")
                     sendBroadcast(Intent("com.iie.st10320489.stylu.NEW_NOTIFICATION"))
                 } else {
-                    Log.e(TAG, "❌ Failed to save notification: ${response.code} - ${response.body?.string()}")
+                    Log.e(TAG, "Failed to save notification: ${response.code} - ${response.body?.string()}")
                 }
 
                 response.close()

@@ -14,7 +14,7 @@ class BiometricAuthManager(private val context: Context) {
 
     private val TAG = "BiometricAuthManager"
 
-    // ✅ FIXED: Use lazy initialization with better error handling
+
     private val sharedPreferences: SharedPreferences by lazy {
         getReliableSharedPreferences()
     }
@@ -23,15 +23,12 @@ class BiometricAuthManager(private val context: Context) {
         private const val KEY_BIOMETRIC_ENABLED = "biometric_enabled"
         private const val KEY_SAVED_EMAIL = "saved_email"
         private const val KEY_SAVED_PASSWORD = "saved_password"
-        private const val PREFS_NAME = "stylu_biometric_v2" // Changed name for fresh start
+        private const val PREFS_NAME = "stylu_biometric_v2"
     }
 
-    /**
-     * ✅ IMPROVED: More reliable SharedPreferences retrieval
-     * Tries EncryptedSharedPreferences first, falls back to regular if it fails
-     */
+
     private fun getReliableSharedPreferences(): SharedPreferences {
-        Log.d(TAG, "📁 Initializing SharedPreferences...")
+        Log.d(TAG, "Initializing SharedPreferences...")
 
         return try {
             // Try encrypted first
@@ -47,15 +44,14 @@ class BiometricAuthManager(private val context: Context) {
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
 
-            Log.d(TAG, "✅ Using EncryptedSharedPreferences")
+            Log.d(TAG, "Using EncryptedSharedPreferences")
             encrypted
 
         } catch (e: Exception) {
-            Log.e(TAG, "❌ EncryptedSharedPreferences failed: ${e.message}")
-            Log.d(TAG, "⚠️ Falling back to regular SharedPreferences")
+            Log.e(TAG, "EncryptedSharedPreferences failed: ${e.message}")
+            Log.d(TAG, "Falling back to regular SharedPreferences")
 
-            // Use regular SharedPreferences as fallback
-            // MODE_PRIVATE ensures it's only accessible by this app
+
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         }
     }
@@ -69,13 +65,13 @@ class BiometricAuthManager(private val context: Context) {
             BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> BiometricStatus.NONE_ENROLLED
             else -> BiometricStatus.UNSUPPORTED
         }
-        Log.d(TAG, "🔍 isBiometricAvailable: $result")
+        Log.d(TAG, "isBiometricAvailable: $result")
         return result
     }
 
     fun enableBiometricLogin(email: String, password: String) {
         Log.d(TAG, "═══════════════════════════════════════")
-        Log.d(TAG, "💾 ENABLING BIOMETRIC LOGIN")
+        Log.d(TAG, "ENABLING BIOMETRIC LOGIN")
         Log.d(TAG, "   - Email: $email")
         Log.d(TAG, "   - Password length: ${password.length}")
 
@@ -103,13 +99,13 @@ class BiometricAuthManager(private val context: Context) {
             Log.d(TAG, "     * Password length: ${verifyPassword?.length ?: 0}")
 
             if (!verifyEnabled || verifyEmail == null || verifyPassword == null) {
-                Log.e(TAG, "❌ VERIFICATION FAILED! Data not saved correctly!")
+                Log.e(TAG, "VERIFICATION FAILED! Data not saved correctly!")
             } else {
-                Log.d(TAG, "✅ Biometric credentials saved and verified successfully")
+                Log.d(TAG, "Biometric credentials saved and verified successfully")
             }
 
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error saving biometric credentials: ${e.message}", e)
+            Log.e(TAG, "Error saving biometric credentials: ${e.message}", e)
             e.printStackTrace()
         }
 
@@ -117,7 +113,7 @@ class BiometricAuthManager(private val context: Context) {
     }
 
     fun disableBiometricLogin() {
-        Log.d(TAG, "🗑️ DISABLING BIOMETRIC LOGIN")
+        Log.d(TAG, "DISABLING BIOMETRIC LOGIN")
 
         try {
             val editor = sharedPreferences.edit()
@@ -126,20 +122,20 @@ class BiometricAuthManager(private val context: Context) {
             editor.remove(KEY_SAVED_PASSWORD)
 
             val success = editor.commit()
-            Log.d(TAG, "   - Commit result: $success")
-            Log.d(TAG, "✅ Biometric login disabled")
+            Log.d(TAG, " - Commit result: $success")
+            Log.d(TAG, "Biometric login disabled")
 
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error disabling biometric: ${e.message}")
+            Log.e(TAG, "Error disabling biometric: ${e.message}")
         }
     }
 
     fun isBiometricEnabled(): Boolean {
         return try {
             val enabled = sharedPreferences.getBoolean(KEY_BIOMETRIC_ENABLED, false)
-            Log.d(TAG, "🔍 isBiometricEnabled: $enabled")
+            Log.d(TAG, "isBiometricEnabled: $enabled")
 
-            // Also log what else is in there
+
             if (enabled) {
                 val email = sharedPreferences.getString(KEY_SAVED_EMAIL, null)
                 val hasPassword = sharedPreferences.contains(KEY_SAVED_PASSWORD)
@@ -149,13 +145,13 @@ class BiometricAuthManager(private val context: Context) {
 
             enabled
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error checking biometric status: ${e.message}")
+            Log.e(TAG, "Error checking biometric status: ${e.message}")
             false
         }
     }
 
     fun getSavedCredentials(): Pair<String, String>? {
-        Log.d(TAG, "🔍 getSavedCredentials called")
+        Log.d(TAG, "getSavedCredentials called")
 
         return try {
             val enabled = isBiometricEnabled()
@@ -173,18 +169,17 @@ class BiometricAuthManager(private val context: Context) {
             Log.d(TAG, "   - Password length: ${password?.length ?: 0}")
 
             if (email != null && password != null) {
-                Log.d(TAG, "✅ Credentials retrieved successfully")
+                Log.d(TAG, "Credentials retrieved successfully")
                 Pair(email, password)
             } else {
-                Log.e(TAG, "❌ Biometric enabled but credentials missing!")
+                Log.e(TAG, "Biometric enabled but credentials missing!")
                 Log.e(TAG, "   - Email is null: ${email == null}")
                 Log.e(TAG, "   - Password is null: ${password == null}")
                 null
             }
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error retrieving credentials: ${e.message}", e)
+            Log.e(TAG, "Error retrieving credentials: ${e.message}", e)
             e.printStackTrace()
-            // Clear corrupted data
             disableBiometricLogin()
             null
         }
@@ -209,19 +204,19 @@ class BiometricAuthManager(private val context: Context) {
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
-                    Log.d(TAG, "✅ Biometric authentication SUCCEEDED")
+                    Log.d(TAG, "Biometric authentication SUCCEEDED")
                     onSuccess(result)
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
-                    Log.e(TAG, "❌ Biometric authentication ERROR: $errorCode - $errString")
+                    Log.e(TAG, "Biometric authentication ERROR: $errorCode - $errString")
                     onError(errorCode, errString)
                 }
 
                 override fun onAuthenticationFailed() {
                     super.onAuthenticationFailed()
-                    Log.w(TAG, "⚠️ Biometric authentication FAILED")
+                    Log.w(TAG, "Biometric authentication FAILED")
                     onFailed()
                 }
             }
@@ -237,28 +232,26 @@ class BiometricAuthManager(private val context: Context) {
         biometricPrompt.authenticate(promptInfo)
     }
 
-    /**
-     * 🔧 DEBUG HELPER: Check all SharedPreferences files
-     */
+
     fun debugAllPreferences() {
         Log.d(TAG, "═══════════════════════════════════════")
-        Log.d(TAG, "🔍 DEBUG ALL PREFERENCES")
+        Log.d(TAG, "DEBUG ALL PREFERENCES")
 
         // Check our main preferences
-        Log.d(TAG, "📁 Main ($PREFS_NAME):")
+        Log.d(TAG, "Main ($PREFS_NAME):")
         sharedPreferences.all.forEach { (key, value) ->
             Log.d(TAG, "   - $key: ${if (key.contains("password")) "***" else value}")
         }
 
         // Check legacy preferences
         val legacy1 = context.getSharedPreferences("biometric_prefs", Context.MODE_PRIVATE)
-        Log.d(TAG, "📁 Legacy (biometric_prefs):")
+        Log.d(TAG, " Legacy (biometric_prefs):")
         legacy1.all.forEach { (key, value) ->
             Log.d(TAG, "   - $key: ${if (key.contains("password")) "***" else value}")
         }
 
         val legacy2 = context.getSharedPreferences("biometric_prefs_fallback", Context.MODE_PRIVATE)
-        Log.d(TAG, "📁 Legacy Fallback:")
+        Log.d(TAG, "Legacy Fallback:")
         legacy2.all.forEach { (key, value) ->
             Log.d(TAG, "   - $key: ${if (key.contains("password")) "***" else value}")
         }
