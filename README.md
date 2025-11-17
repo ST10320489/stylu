@@ -62,6 +62,47 @@ Built using **Kotlin** and **MVVM architecture**, Stylu leverages a custom REST 
 
 ---
 
+## Screenshots
+
+### Weather Integration & Home Screen
+![Weather Home](screenshots/weather_home.jpg)
+*7-day weather forecast with scheduled outfit recommendations*
+
+### Wardrobe Management
+![Item Grid](screenshots/item_grid.jpg)
+*Digital wardrobe with AI background-removed clothing items*
+
+![Filtering](screenshots/filtering.jpg)
+*Advanced search and multi-criteria filtering*
+
+### Outfit Creation
+![Create Outfit](screenshots/create_outfit.jpg)
+*Drag-and-drop canvas with real-time preview*
+
+![Outfit Grid](screenshots/outfit_grid.jpg)
+*Saved outfits gallery with color palette analysis*
+
+### Calendar Planning
+![Calendar](screenshots/calender.jpg)
+*Calendar view with scheduled outfits*
+
+![Schedule](screenshots/schedule.jpg)
+*Multiple outfits per day scheduling*
+
+### Smart Organization
+![Wardrobe Organizing](screenshots/wardrobe_organsing.jpg)
+*Swipe-based closet organization interface*
+
+![Wardrobe Organizing 1](screenshots/wardrobe_organsing1.jpg)
+*Keep or discard items with simple swipes*
+
+![Wardrobe Organizing 2](screenshots/wardrobe_organsising2.jpg)
+*Discarded items management with restore option*
+
+### Notifications
+![Notifications](screenshots/notifications.jpg)
+*Weather alerts and outfit reminders*
+
 ##  Demonstration
 
 **YouTube Demo Link:** *(Coming Soon)*
@@ -618,16 +659,28 @@ Report location: `app/build/reports/jacoco/jacocoTestReport/html/index.html`
 
 ---
 
-**What's New:**
-- Initial release with full wardrobe management
-- AI background removal for clothing items
-- Drag-and-drop outfit creator
-- Calendar-based outfit planning
-- Real-time weather integration
-- Offline mode with smart caching
-- Multi-language support
+## Release Notes
 
----
+For detailed information about all updates since the prototype, including:
+- Complete feature changelog
+- What's NEW vs. what existed in prototype
+- Technical implementations
+- Bug fixes and improvements
+
+See **[RELEASE_NOTES.md](RELEASE_NOTES.md)**
+
+### Quick Summary - Version 1.0.0
+
+**Five NEW Innovative Features:**
+1. AI-Powered Background Removal
+2. Drag-and-Drop Outfit Creator
+3. Calendar-Based Planning
+4. Weather Integration & Alerts
+5. Swipe-Based Organization
+
+**Performance:** 90% fewer API calls, 97% faster load times
+**Testing:** 26+ automated tests, 85%+ coverage
+**Languages:** 10 languages supported
 
 ## Sources 
 
