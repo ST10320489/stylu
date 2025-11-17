@@ -105,7 +105,7 @@ Built using **Kotlin** and **MVVM architecture**, Stylu leverages a custom REST 
 
 ##  Demonstration
 
-**YouTube Demo Link:** *(Coming Soon)*
+**YouTube Demo Link:** [https://www.youtube.com/watch?v=vY-s_k3i2YE](https://www.youtube.com/watch?v=vY-s_k3i2YE)
 
 ---
 
@@ -367,7 +367,7 @@ https://stylu-api-x69c.onrender.com
 
 ---
 
-## 💾 Offline Mode, Caching & Synchronization
+## Offline Mode, Caching & Synchronization
 
 ### Architecture
 
