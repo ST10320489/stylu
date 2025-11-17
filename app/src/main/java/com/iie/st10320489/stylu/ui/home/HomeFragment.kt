@@ -37,16 +37,15 @@ class HomeFragment : Fragment() {
     private lateinit var locationHelper: LocationHelper
     private lateinit var calendarRepository: CalendarRepository
 
-    // Views
     private lateinit var ivScheduledOutfit: ImageView
     private lateinit var tvDate: TextView
     private lateinit var tvWeatherLabel: TextView
     private lateinit var tvTemperature: TextView
     private lateinit var calendarBtn: ImageView
     private lateinit var progressBar: ProgressBar
-    private lateinit var swipeRefresh: SwipeRefreshLayout // ✅ NEW
+    private lateinit var swipeRefresh: SwipeRefreshLayout
 
-    // Track if this is the first load
+
     private var isFirstLoad = true
 
     companion object {
@@ -92,8 +91,8 @@ class HomeFragment : Fragment() {
         tvWeatherLabel = view.findViewById(R.id.tvWeatherLabel)
         tvTemperature = view.findViewById(R.id.tvTemperature)
         calendarBtn = view.findViewById(R.id.calendarBtn)
-        progressBar = view.findViewById(R.id.progressBar) // ✅ NEW
-        swipeRefresh = view.findViewById(R.id.swipeRefresh) // ✅ NEW
+        progressBar = view.findViewById(R.id.progressBar)
+        swipeRefresh = view.findViewById(R.id.swipeRefresh)
 
         // Setup RecyclerView
         rvWeeklyWeather.layoutManager =
@@ -108,7 +107,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupSwipeRefresh() // ✅ NEW
+        setupSwipeRefresh()
         requestLocationAndFetchWeather()
 
         val notifButton = view.findViewById<ImageButton>(R.id.ivNotification)
@@ -123,7 +122,7 @@ class HomeFragment : Fragment() {
         updateCurrentDate()
     }
 
-    // ✅ NEW: Setup SwipeRefreshLayout
+
     private fun setupSwipeRefresh() {
         swipeRefresh.setOnRefreshListener {
             isFirstLoad = false
@@ -139,7 +138,7 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         updateCurrentDate()
-        // Don't show "first load" message on resume
+
         isFirstLoad = false
         fetchWeatherAndOutfit(forceRefresh = false)
     }
@@ -157,10 +156,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    /**
-     * ✅ NEW: Combined loading method for weather and outfit
-     * Loads both in parallel for better performance
-     */
+
     private fun fetchWeatherAndOutfit(forceRefresh: Boolean = false) {
         lifecycleScope.launch {
             try {
@@ -234,7 +230,7 @@ class HomeFragment : Fragment() {
 
     private suspend fun loadTodaysOutfit() {
         try {
-            Log.d(TAG, "🏠 Loading today's outfit...")
+            Log.d(TAG, "Loading today's outfit...")
 
             // Calculate today's date range
             val calendar = Calendar.getInstance()
@@ -251,25 +247,25 @@ class HomeFragment : Fragment() {
             val endDate = calendar.time
 
             val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-            Log.d(TAG, "🗓️ Looking for outfit scheduled for: $dateStr")
+            Log.d(TAG, "Looking for outfit scheduled for: $dateStr")
 
             // Use CalendarRepository
             val result = calendarRepository.getScheduledOutfits(startDate, endDate)
 
             result.onSuccess { scheduledOutfits ->
-                Log.d(TAG, "📦 Found ${scheduledOutfits.size} scheduled outfits for today")
+                Log.d(TAG, "Found ${scheduledOutfits.size} scheduled outfits for today")
 
                 if (scheduledOutfits.isNotEmpty()) {
                     // Get the first (or most relevant) outfit for today
                     val todaysOutfit = scheduledOutfits.first()
-                    Log.d(TAG, "👕 Today's outfit: ${todaysOutfit.outfit.name}")
+                    Log.d(TAG, "Today's outfit: ${todaysOutfit.outfit.name}")
                     displayScheduledOutfit(todaysOutfit.outfit)
                 } else {
                     Log.d(TAG, "No outfit scheduled for today")
                     showNoOutfitScheduled()
                 }
             }.onFailure { error ->
-                Log.w(TAG, "⚠️Failed to load today's outfit: ${error.message}")
+                Log.w(TAG, "Failed to load today's outfit: ${error.message}")
                 handleOutfitError(error)
             }
         } catch (e: Exception) {
@@ -291,7 +287,7 @@ class HomeFragment : Fragment() {
                 .error(R.drawable.default_outfit)
                 .into(ivScheduledOutfit)
         } else if (outfit.items.isNotEmpty()) {
-            Log.d(TAG, "🖼️ No saved image, showing first item: ${outfit.items.first().imageUrl}")
+            Log.d(TAG, "No saved image, showing first item: ${outfit.items.first().imageUrl}")
             // Fallback: Show first item's image
             Glide.with(requireContext())
                 .load(outfit.items.first().imageUrl)
@@ -299,25 +295,25 @@ class HomeFragment : Fragment() {
                 .error(R.drawable.default_outfit)
                 .into(ivScheduledOutfit)
         } else {
-            Log.d(TAG, "🖼️ No items in outfit, showing default image")
+            Log.d(TAG, " No items in outfit, showing default image")
             ivScheduledOutfit.setImageResource(R.drawable.default_outfit)
         }
 
         // Make outfit clickable to view details
         ivScheduledOutfit.setOnClickListener {
-            Log.d(TAG, "🔗 Navigating to outfit detail: ${outfit.outfitId}")
+            Log.d(TAG, " Navigating to outfit detail: ${outfit.outfitId}")
             val bundle = Bundle().apply {
                 putInt("outfitId", outfit.outfitId)
             }
             findNavController().navigate(R.id.action_home_to_outfit_detail, bundle)
         }
 
-        // Add visual indicator that there's a scheduled outfit
-        ivScheduledOutfit.alpha = 1.0f // Full opacity when outfit is scheduled
+
+        ivScheduledOutfit.alpha = 1.0f
     }
 
     private fun showNoOutfitScheduled() {
-        Log.d(TAG, "📭 Showing 'no outfit scheduled' state")
+        Log.d(TAG, "Showing 'no outfit scheduled' state")
 
         // Show default outfit image
         ivScheduledOutfit.setImageResource(R.drawable.default_outfit)
@@ -325,7 +321,7 @@ class HomeFragment : Fragment() {
 
         // Make it clickable to navigate to calendar for scheduling
         ivScheduledOutfit.setOnClickListener {
-            Log.d(TAG, "🗓️ Navigating to calendar to schedule outfit")
+            Log.d(TAG, "Navigating to calendar to schedule outfit")
             Toast.makeText(
                 requireContext(),
                 "No outfit scheduled for today. Tap to schedule one!",
@@ -342,7 +338,7 @@ class HomeFragment : Fragment() {
         return if (exists) file.absolutePath else ""
     }
 
-    // ✅ NEW: Better error handling
+
     private fun handleLoadError(error: Throwable) {
         val errorMessage = when {
             error.message?.contains("timed out", ignoreCase = true) == true -> {
@@ -393,22 +389,21 @@ class HomeFragment : Fragment() {
             Log.w(TAG, errorMessage)
         }
 
-        // Always show "no outfit" state on error
         showNoOutfitScheduled()
     }
 
-    // ✅ NEW: Loading with message support - hides content while loading
+
     private fun showLoadingWithMessage(show: Boolean, message: String) {
         try {
             if (show) {
                 progressBar.visibility = View.VISIBLE
-                swipeRefresh.visibility = View.GONE // ✅ Hide content while loading
+                swipeRefresh.visibility = View.GONE
                 if (message.isNotEmpty() && isAdded && context != null) {
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                 }
             } else {
                 progressBar.visibility = View.GONE
-                swipeRefresh.visibility = View.VISIBLE // ✅ Show content when done
+                swipeRefresh.visibility = View.VISIBLE
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error in showLoadingWithMessage: ${e.message}")
@@ -422,7 +417,7 @@ class HomeFragment : Fragment() {
                 // Don't hide content for quick refreshes
             } else {
                 progressBar.visibility = View.GONE
-                swipeRefresh.visibility = View.VISIBLE // ✅ Ensure content is visible
+                swipeRefresh.visibility = View.VISIBLE
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error in showLoading: ${e.message}")

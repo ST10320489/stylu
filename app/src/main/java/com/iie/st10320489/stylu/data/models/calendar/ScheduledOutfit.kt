@@ -3,7 +3,7 @@ package com.iie.st10320489.stylu.data.models.calendar
 import com.iie.st10320489.stylu.network.ApiService
 import java.util.Date
 
-// Simplified - reuses OutfitDetail from ApiService
+
 data class ScheduledOutfit(
     val scheduleId: Int,
     val date: Date,

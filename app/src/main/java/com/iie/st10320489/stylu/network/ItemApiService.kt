@@ -42,7 +42,7 @@ class ItemApiService(private val context: Context) {
         private const val READ_TIMEOUT = 30000     // 30 seconds
     }
 
-    // Get all categories with subcategories directly from Supabase
+
     suspend fun getCategories(): Result<List<Category>> = withContext(Dispatchers.IO) {
         try {
             val url = URL("$SUPABASE_URL/rest/v1/category?select=*,sub_category(*)")

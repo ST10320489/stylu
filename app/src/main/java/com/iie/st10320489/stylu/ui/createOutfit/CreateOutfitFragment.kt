@@ -44,9 +44,7 @@ data class ItemLayout(
     val height: Int
 )
 
-/**
- * ✅ COMPLETE: Full functionality WITH debug logging
- */
+
 class CreateOutfitFragment : Fragment() {
 
     private lateinit var canvasContainer: FrameLayout
@@ -70,7 +68,7 @@ class CreateOutfitFragment : Fragment() {
     private var selectedCategory: String = "All"
     private val itemLayouts = mutableMapOf<Int, ItemLayout>()
 
-    // ✅ FIX: Store canvas dimensions when items are added
+
     private var capturedCanvasWidth: Int = 0
     private var capturedCanvasHeight: Int = 0
 
@@ -264,7 +262,7 @@ class CreateOutfitFragment : Fragment() {
             return
         }
 
-        // ✅ FIX: Capture canvas size ONCE when first item is added
+
         if (capturedCanvasWidth == 0 || capturedCanvasHeight == 0) {
             capturedCanvasWidth = canvasContainer.width
             capturedCanvasHeight = canvasContainer.height
@@ -452,10 +450,10 @@ class CreateOutfitFragment : Fragment() {
                 btnSaveOutfit.isEnabled = false
 
                 Log.d(TAG, "")
-                Log.d(TAG, "📊 ITEM LAYOUT DATA:")
+                Log.d(TAG, " ITEM LAYOUT DATA:")
                 Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-                // ✅ FIX: Use CAPTURED canvas dimensions for relative positions
+
                 val canvasWidthForSaving = if (capturedCanvasWidth > 0) capturedCanvasWidth else canvasContainer.width
                 val canvasHeightForSaving = if (capturedCanvasHeight > 0) capturedCanvasHeight else canvasContainer.height
 
@@ -487,7 +485,7 @@ class CreateOutfitFragment : Fragment() {
                 Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                 Log.d(TAG, "")
 
-                Log.d(TAG, "🌐 SENDING TO API...")
+                Log.d(TAG, "SENDING TO API...")
                 val result = outfitRepository.createOutfitWithLayout(
                     name = name,
                     category = category,
@@ -497,7 +495,7 @@ class CreateOutfitFragment : Fragment() {
 
                 result.onSuccess { savedOutfit ->
                     Log.d(TAG, "")
-                    Log.d(TAG, "✅ API SUCCESS")
+                    Log.d(TAG, "API SUCCESS")
                     Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                     Log.d(TAG, "Outfit ID: ${savedOutfit.outfitId}")
                     Log.d(TAG, "Outfit Name: ${savedOutfit.name}")
@@ -505,7 +503,7 @@ class CreateOutfitFragment : Fragment() {
                     Log.d(TAG, "")
 
                     try {
-                        Log.d(TAG, "📸 CREATING SNAPSHOT...")
+                        Log.d(TAG, "CREATING SNAPSHOT...")
                         Log.d(TAG, "Canvas dimensions: ${canvasContainer.width}x${canvasContainer.height}")
 
                         val bitmap = getCanvasBitmap()
@@ -514,7 +512,7 @@ class CreateOutfitFragment : Fragment() {
                         Log.d(TAG, "Bitmap size: ${bitmap.byteCount} bytes")
                         Log.d(TAG, "")
 
-                        Log.d(TAG, "💾 SAVING SNAPSHOT...")
+                        Log.d(TAG, "SAVING SNAPSHOT...")
                         val saved = SnapshotManager.saveSnapshot(
                             requireContext(),
                             savedOutfit.outfitId,
@@ -528,7 +526,7 @@ class CreateOutfitFragment : Fragment() {
                             )
 
                             Log.d(TAG, "")
-                            Log.d(TAG, "✅ SNAPSHOT VERIFICATION")
+                            Log.d(TAG, "SNAPSHOT VERIFICATION")
                             Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                             Log.d(TAG, "File path: ${snapshotFile.absolutePath}")
                             Log.d(TAG, "File exists: ${snapshotFile.exists()}")
@@ -537,21 +535,21 @@ class CreateOutfitFragment : Fragment() {
                             Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                             Log.d(TAG, "")
                         } else {
-                            Log.e(TAG, "❌ SNAPSHOT SAVE FAILED!")
+                            Log.e(TAG, "SNAPSHOT SAVE FAILED!")
                         }
 
                     } catch (e: Exception) {
-                        Log.e(TAG, "❌ SNAPSHOT ERROR", e)
+                        Log.e(TAG, "SNAPSHOT ERROR", e)
                         Log.e(TAG, "Error message: ${e.message}")
                         Log.e(TAG, "Stack trace: ${e.stackTraceToString()}")
                     }
 
-                    Toast.makeText(requireContext(), "Outfit saved! ✅", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Outfit saved! ", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
 
                 }.onFailure { error ->
                     Log.e(TAG, "")
-                    Log.e(TAG, "❌ API FAILED")
+                    Log.e(TAG, "API FAILED")
                     Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                     Log.e(TAG, "Error: ${error.message}")
                     Log.e(TAG, "Stack trace: ${error.stackTraceToString()}")
@@ -567,7 +565,7 @@ class CreateOutfitFragment : Fragment() {
 
             } catch (e: Exception) {
                 Log.e(TAG, "")
-                Log.e(TAG, "❌ EXCEPTION IN SAVE")
+                Log.e(TAG, "EXCEPTION IN SAVE")
                 Log.e(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                 Log.e(TAG, "Exception: ${e.message}")
                 Log.e(TAG, "Stack trace: ${e.stackTraceToString()}")
@@ -583,7 +581,7 @@ class CreateOutfitFragment : Fragment() {
     }
 
     private fun getCanvasBitmap(): Bitmap {
-        Log.d(TAG, "🎨 Preparing canvas for bitmap capture...")
+        Log.d(TAG, "Preparing canvas for bitmap capture...")
 
         fabAddItems.visibility = View.INVISIBLE
 
@@ -613,5 +611,31 @@ class CreateOutfitFragment : Fragment() {
         Log.d(TAG, "Bitmap captured successfully")
 
         return bitmap
+    }
+
+    override fun onResume() {
+        super.onResume()
+        hideBottomNavigation()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        showBottomNavigation()
+    }
+
+    private fun hideBottomNavigation() {
+        val bottomNav = activity?.findViewById<View>(R.id.bottomNavCard)
+        bottomNav?.visibility = View.GONE
+
+        val fabNav = activity?.findViewById<View>(R.id.fab)
+        fabNav?.visibility = View.GONE
+    }
+
+    private fun showBottomNavigation() {
+        val bottomNav = activity?.findViewById<View>(R.id.bottomNavCard)
+        bottomNav?.visibility = View.VISIBLE
+
+        val fabNav = activity?.findViewById<View>(R.id.fab)
+        fabNav?.visibility = View.VISIBLE
     }
 }

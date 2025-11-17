@@ -22,6 +22,7 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -47,12 +48,8 @@ class CalendarRepository(private val context: Context) {
         }
     }
 
-    /**
-     * ✅ ONLINE-FIRST: Schedule outfit
-     * 1. Try API first (when online)
-     * 2. Save API response to Room (cache)
-     * 3. If API fails (offline), save to Room only
-     */
+
+
     suspend fun scheduleOutfit(
         outfitId: Int,
         date: Date,
@@ -69,7 +66,7 @@ class CalendarRepository(private val context: Context) {
             if (apiResult.isSuccess) {
                 val event = apiResult.getOrThrow()
 
-                // ✅ Save API response to Room (cache)
+                // Save API response to Room (cache)
                 val entity = CalendarEntity(
                     scheduleId = event.eventId,
                     userId = event.userId,
@@ -83,7 +80,7 @@ class CalendarRepository(private val context: Context) {
                     weatherPrecipitation = null
                 )
                 calendarDao.insertScheduledOutfit(entity)
-                Log.d(TAG, "✅ API success - saved to cache")
+                Log.d(TAG, "API success - saved to cache")
 
                 Result.success(event)
             } else {
@@ -92,23 +89,21 @@ class CalendarRepository(private val context: Context) {
             }
 
         } catch (e: java.net.SocketTimeoutException) {
-            Log.w(TAG, "⚠️ Timeout - trying offline mode", e)
+            Log.w(TAG, "Timeout - trying offline mode", e)
             scheduleOffline(outfitId, date, eventName, notes)
         } catch (e: java.net.ConnectException) {
-            Log.w(TAG, "⚠️ No connection - saving offline", e)
+            Log.w(TAG, "No connection - saving offline", e)
             scheduleOffline(outfitId, date, eventName, notes)
         } catch (e: java.net.UnknownHostException) {
-            Log.w(TAG, "⚠️ No internet - saving offline", e)
+            Log.w(TAG, "No internet - saving offline", e)
             scheduleOffline(outfitId, date, eventName, notes)
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error scheduling outfit", e)
+            Log.e(TAG, "Error scheduling outfit", e)
             Result.failure(Exception("Error: ${e.message}"))
         }
     }
 
-    /**
-     * Schedule via API
-     */
+
     private suspend fun scheduleOutfitViaApi(
         token: String,
         outfitId: Int,
@@ -188,14 +183,22 @@ class CalendarRepository(private val context: Context) {
         notes: String?
     ): Result<CalendarEvent> = withContext(Dispatchers.IO) {
         return@withContext try {
-            // Generate temporary negative ID for offline schedules
             val tempId = -(System.currentTimeMillis().toInt())
+
+            // Normalize date to midnight
+            val calendar = Calendar.getInstance()
+            calendar.time = date
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val normalizedDate = calendar.timeInMillis
 
             val entity = CalendarEntity(
                 scheduleId = tempId,
                 userId = "offline",
                 outfitId = outfitId,
-                scheduledDate = date.time,
+                scheduledDate = normalizedDate,  // Use normalized date
                 eventName = eventName,
                 notes = notes,
                 weatherMinTemp = null,
@@ -205,26 +208,26 @@ class CalendarRepository(private val context: Context) {
             )
 
             calendarDao.insertScheduledOutfit(entity)
-            Log.d(TAG, "💾 Saved offline with temp ID: $tempId")
+            Log.d(TAG, "💾 Saved offline with temp ID: $tempId, normalized date: $normalizedDate")
 
             val event = CalendarEvent(
                 eventId = tempId,
                 userId = "offline",
                 outfitId = outfitId,
-                eventDate = date,
+                eventDate = Date(normalizedDate),
                 eventName = eventName,
                 notes = notes
             )
 
             Result.success(event)
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to save offline", e)
+            Log.e(TAG, "Failed to save offline", e)
             Result.failure(Exception("Failed to save offline: ${e.message}"))
         }
     }
 
     /**
-     * ✅ ONLINE-FIRST: Get scheduled outfits
+     * ONLINE-FIRST: Get scheduled outfits
      * 1. Try API first (when online)
      * 2. Save API response to Room (cache)
      * 3. Return API data
@@ -244,13 +247,13 @@ class CalendarRepository(private val context: Context) {
             if (apiResult.isSuccess) {
                 val scheduledOutfits = apiResult.getOrThrow()
 
-                // ✅ Save API response to Room (cache)
+                // Save API response to Room (cache)
                 Log.d(TAG, "💾 Caching ${scheduledOutfits.size} schedules to Room...")
                 scheduledOutfits.forEach { scheduledOutfit ->
                     val entity = scheduledOutfit.toEntity(scheduledOutfit.outfit.userId)
                     calendarDao.insertScheduledOutfit(entity)
                 }
-                Log.d(TAG, "✅ API success - cache updated")
+                Log.d(TAG, "API success - cache updated")
 
                 Result.success(scheduledOutfits)
             } else {
@@ -259,16 +262,16 @@ class CalendarRepository(private val context: Context) {
             }
 
         } catch (e: java.net.SocketTimeoutException) {
-            Log.w(TAG, "⚠️ Timeout - loading from cache", e)
+            Log.w(TAG, "Timeout - loading from cache", e)
             getScheduledOutfitsFromCache(startDate, endDate)
         } catch (e: java.net.ConnectException) {
-            Log.w(TAG, "⚠️ No connection - loading from cache", e)
+            Log.w(TAG, "No connection - loading from cache", e)
             getScheduledOutfitsFromCache(startDate, endDate)
         } catch (e: java.net.UnknownHostException) {
-            Log.w(TAG, "⚠️ No internet - loading from cache", e)
+            Log.w(TAG, "No internet - loading from cache", e)
             getScheduledOutfitsFromCache(startDate, endDate)
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error, trying cache", e)
+            Log.e(TAG, "Error, trying cache", e)
             getScheduledOutfitsFromCache(startDate, endDate)
         }
     }
@@ -309,7 +312,37 @@ class CalendarRepository(private val context: Context) {
             when (responseCode) {
                 200 -> {
                     val scheduledOutfits = parseScheduledOutfits(responseText)
-                    Log.d(TAG, "✅ Parsed ${scheduledOutfits.size} scheduled outfits from API")
+                    Log.d(TAG, "Parsed ${scheduledOutfits.size} scheduled outfits from API")
+
+                    Log.d(TAG, "💾 Caching ${scheduledOutfits.size} schedules to Room...")
+                    scheduledOutfits.forEach { scheduledOutfit ->
+                        // Normalize date to midnight
+                        val calendar = Calendar.getInstance()
+                        calendar.time = scheduledOutfit.date
+                        calendar.set(Calendar.HOUR_OF_DAY, 0)
+                        calendar.set(Calendar.MINUTE, 0)
+                        calendar.set(Calendar.SECOND, 0)
+                        calendar.set(Calendar.MILLISECOND, 0)
+                        val normalizedDate = calendar.timeInMillis
+
+                        val entity = CalendarEntity(
+                            scheduleId = scheduledOutfit.scheduleId,
+                            userId = scheduledOutfit.outfit.userId,
+                            outfitId = scheduledOutfit.outfit.outfitId,
+                            scheduledDate = normalizedDate,
+                            eventName = scheduledOutfit.eventName,
+                            notes = scheduledOutfit.notes,
+                            weatherMinTemp = scheduledOutfit.weatherForecast?.minTemp,
+                            weatherMaxTemp = scheduledOutfit.weatherForecast?.maxTemp,
+                            weatherCondition = scheduledOutfit.weatherForecast?.condition,
+                            weatherPrecipitation = scheduledOutfit.weatherForecast?.precipitation
+                        )
+                        calendarDao.insertScheduledOutfit(entity)
+
+                        Log.d(TAG, "Saved schedule ${scheduledOutfit.scheduleId} with date: $normalizedDate (${Date(normalizedDate)})")
+                    }
+                    Log.d(TAG, "API success - cache updated")
+
                     Result.success(scheduledOutfits)
                 }
                 401 -> Result.failure(Exception("Authentication failed. Please login again."))
@@ -337,19 +370,19 @@ class CalendarRepository(private val context: Context) {
         endDate: Date
     ): Result<List<ScheduledOutfit>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            Log.d(TAG, "💾 Loading schedules from cache...")
+            Log.d(TAG, "Loading schedules from cache...")
 
             val entities = calendarDao.getScheduledOutfitsByDateRange(
                 startDate = startDate.time,
                 endDate = endDate.time
             )
 
-            Log.d(TAG, "📦 Found ${entities.size} schedules in cache")
+            Log.d(TAG, "Found ${entities.size} schedules in cache")
 
             val scheduledOutfits = entities.mapNotNull { entity ->
                 val outfitEntity = outfitDao.getOutfitById(entity.outfitId)
                 if (outfitEntity == null) {
-                    Log.w(TAG, "⚠️ Outfit ${entity.outfitId} not found for schedule ${entity.scheduleId}")
+                    Log.w(TAG, "Outfit ${entity.outfitId} not found for schedule ${entity.scheduleId}")
                     return@mapNotNull null
                 }
 
@@ -387,17 +420,17 @@ class CalendarRepository(private val context: Context) {
                 entity.toScheduledOutfit(outfit)
             }
 
-            Log.d(TAG, "✅ Returning ${scheduledOutfits.size} cached schedules")
+            Log.d(TAG, "Returning ${scheduledOutfits.size} cached schedules")
             Result.success(scheduledOutfits)
 
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error loading from cache", e)
+            Log.e(TAG, "Error loading from cache", e)
             Result.failure(Exception("Error loading cached data: ${e.message}"))
         }
     }
 
     /**
-     * ✅ ONLINE-FIRST: Delete scheduled outfit
+     * ONLINE-FIRST: Delete scheduled outfit
      * 1. Try API first (when online)
      * 2. Delete from Room (cache)
      * 3. If API fails (offline), delete from Room only
@@ -411,25 +444,25 @@ class CalendarRepository(private val context: Context) {
             val apiResult = deleteScheduleViaApi(token, scheduleId)
 
             if (apiResult.isSuccess) {
-                // ✅ Delete from Room (cache)
+                // Delete from Room (cache)
                 calendarDao.deleteScheduledOutfit(scheduleId)
-                Log.d(TAG, "✅ API delete success - removed from cache")
+                Log.d(TAG, "API delete success - removed from cache")
                 Result.success(Unit)
             } else {
                 throw apiResult.exceptionOrNull() ?: Exception("API delete failed")
             }
 
         } catch (e: java.net.SocketTimeoutException) {
-            Log.w(TAG, "⚠️ Timeout - deleting from cache only", e)
+            Log.w(TAG, "Timeout - deleting from cache only", e)
             deleteOffline(scheduleId)
         } catch (e: java.net.ConnectException) {
-            Log.w(TAG, "⚠️ No connection - deleting offline", e)
+            Log.w(TAG, "No connection - deleting offline", e)
             deleteOffline(scheduleId)
         } catch (e: java.net.UnknownHostException) {
-            Log.w(TAG, "⚠️ No internet - deleting offline", e)
+            Log.w(TAG, "No internet - deleting offline", e)
             deleteOffline(scheduleId)
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error deleting schedule", e)
+            Log.e(TAG, "Error deleting schedule", e)
             Result.failure(Exception("Error: ${e.message}"))
         }
     }
@@ -464,7 +497,7 @@ class CalendarRepository(private val context: Context) {
 
             when (responseCode) {
                 200, 204 -> {
-                    Log.d(TAG, "✅ API delete successful")
+                    Log.d(TAG, "API delete successful")
                     Result.success(Unit)
                 }
                 401 -> Result.failure(Exception("Authentication failed. Please login again."))
@@ -490,10 +523,10 @@ class CalendarRepository(private val context: Context) {
     private suspend fun deleteOffline(scheduleId: Int): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             calendarDao.deleteScheduledOutfit(scheduleId)
-            Log.d(TAG, "💾 Deleted from cache (offline)")
+            Log.d(TAG, "Deleted from cache (offline)")
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to delete offline", e)
+            Log.e(TAG, "Failed to delete offline", e)
             Result.failure(Exception("Failed to delete: ${e.message}"))
         }
     }
@@ -575,13 +608,13 @@ class CalendarRepository(private val context: Context) {
         val list = mutableListOf<ScheduledOutfit>()
 
         try {
-            Log.d(TAG, "📥 Raw JSON Response: $jsonString")
+            Log.d(TAG, "Raw JSON Response: $jsonString")
 
             val jsonArray = JSONArray(jsonString)
-            Log.d(TAG, "📊 Array length: ${jsonArray.length()}")
+            Log.d(TAG, "Array length: ${jsonArray.length()}")
 
             if (jsonArray.length() == 0) {
-                Log.w(TAG, "⚠️ API returned empty array")
+                Log.w(TAG, "API returned empty array")
                 return emptyList()
             }
 
@@ -591,7 +624,7 @@ class CalendarRepository(private val context: Context) {
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
 
-                Log.d(TAG, "📦 Processing schedule $i: ${obj.toString()}")
+                Log.d(TAG, "Processing schedule $i: ${obj.toString()}")
 
                 val eventDate = try {
                     dateFormat.parse(obj.getString("eventDate")) ?: Date()
@@ -599,18 +632,18 @@ class CalendarRepository(private val context: Context) {
                     try {
                         simpleDateFormat.parse(obj.getString("eventDate")) ?: Date()
                     } catch (e: Exception) {
-                        Log.e(TAG, "❌ Failed to parse date: ${obj.getString("eventDate")}", e)
+                        Log.e(TAG, "Failed to parse date: ${obj.getString("eventDate")}", e)
                         Date()
                     }
                 }
 
                 if (!obj.has("outfit") || obj.isNull("outfit")) {
-                    Log.w(TAG, "⚠️ Schedule $i has no outfit object - skipping")
+                    Log.w(TAG, "Schedule $i has no outfit object - skipping")
                     continue
                 }
 
                 val outfitObj = obj.getJSONObject("outfit")
-                Log.d(TAG, "👕 Outfit object: ${outfitObj.toString()}")
+                Log.d(TAG, "Outfit object: ${outfitObj.toString()}")
 
                 val outfitId = outfitObj.getInt("outfitId")
                 val outfitName = outfitObj.getString("name")
@@ -619,7 +652,7 @@ class CalendarRepository(private val context: Context) {
                 val itemsArray = outfitObj.getJSONArray("items")
                 val items = mutableListOf<ApiService.OutfitItemDetail>()
 
-                Log.d(TAG, "🎨 Processing ${itemsArray.length()} items for outfit $outfitId")
+                Log.d(TAG, "Processing ${itemsArray.length()} items for outfit $outfitId")
 
                 for (j in 0 until itemsArray.length()) {
                     val itemObj = itemsArray.getJSONObject(j)
@@ -634,7 +667,7 @@ class CalendarRepository(private val context: Context) {
                             height = ldObj.optInt("height", 100)
                         )
                     } else {
-                        Log.d(TAG, "⚠️ Item $j has no layoutData")
+                        Log.d(TAG, "Item $j has no layoutData")
                         null
                     }
 
@@ -681,12 +714,12 @@ class CalendarRepository(private val context: Context) {
                     )
                 )
 
-                Log.d(TAG, "✅ Successfully parsed schedule $i: $outfitName for $eventDate")
+                Log.d(TAG, "Successfully parsed schedule $i: $outfitName for $eventDate")
             }
 
-            Log.d(TAG, "✅ Total scheduled outfits parsed: ${list.size}")
+            Log.d(TAG, "Total scheduled outfits parsed: ${list.size}")
         } catch (e: Exception) {
-            Log.e(TAG, "❌ FATAL: Error parsing scheduled outfits", e)
+            Log.e(TAG, "FATAL: Error parsing scheduled outfits", e)
             e.printStackTrace()
         }
 

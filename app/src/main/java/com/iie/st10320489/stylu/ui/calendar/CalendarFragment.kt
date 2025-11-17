@@ -13,8 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.iie.st10320489.stylu.databinding.FragmentCalendarBinding
 import com.iie.st10320489.stylu.repository.CalendarRepository
 import com.iie.st10320489.stylu.network.ApiService
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -29,9 +27,6 @@ class CalendarFragment : Fragment() {
     private lateinit var adapter: ScheduledOutfitAdapter
 
     private var selectedDate: Date = Date()
-    private var observerJob: Job? = null
-
-    // Track if this is the first load
     private var isFirstLoad = true
 
     companion object {
@@ -56,13 +51,9 @@ class CalendarFragment : Fragment() {
         setupCalendarView()
         setupRecyclerView()
         setupFab()
-        setupSwipeRefresh() // ✅ NEW: Setup pull-to-refresh
+        setupSwipeRefresh()
 
-        // Initial load from API (with cache fallback)
         loadScheduledOutfitsWithCaching()
-
-        // Then observe cache for real-time updates
-        observeScheduledOutfitsCache()
     }
 
     private fun setupCalendarView() {
@@ -70,12 +61,10 @@ class CalendarFragment : Fragment() {
             val calendar = Calendar.getInstance()
             calendar.set(year, month, dayOfMonth)
             selectedDate = calendar.time
-            Log.d(TAG, "📅 Date selected: $selectedDate")
+            Log.d(TAG, "Date selected: $selectedDate")
 
-            // Reload for new date
-            isFirstLoad = false // Don't show first load message for date changes
+            isFirstLoad = false
             loadScheduledOutfitsWithCaching()
-            observeScheduledOutfitsCache()
         }
     }
 
@@ -101,7 +90,7 @@ class CalendarFragment : Fragment() {
         binding.fabAddSchedule.setOnClickListener {
             val bottomSheet = ScheduleOutfitBottomSheet(
                 onScheduled = {
-                    // Reload after scheduling
+                    isFirstLoad = false
                     loadScheduledOutfitsWithCaching(forceRefresh = true)
                 },
                 initialDate = selectedDate
@@ -110,30 +99,21 @@ class CalendarFragment : Fragment() {
         }
     }
 
-    // ✅ NEW: Setup SwipeRefreshLayout
     private fun setupSwipeRefresh() {
         binding.swipeRefresh?.setOnRefreshListener {
-            // Force refresh from API
             isFirstLoad = false
             loadScheduledOutfitsWithCaching(forceRefresh = true)
         }
 
-        // Set color scheme for refresh indicator
         binding.swipeRefresh?.setColorSchemeResources(
             com.iie.st10320489.stylu.R.color.purple_primary,
             com.iie.st10320489.stylu.R.color.orange_secondary
         )
     }
 
-    /**
-     * ✅ NEW: Load with caching pattern similar to ItemFragment
-     * ONLINE-FIRST: Load from API, which will cache to Room
-     * This triggers once, then Flow observes the cache for updates
-     */
     private fun loadScheduledOutfitsWithCaching(forceRefresh: Boolean = false) {
         lifecycleScope.launch {
             try {
-                // Show loading message only on first load
                 if (isFirstLoad && !forceRefresh) {
                     showLoadingWithMessage(
                         show = true,
@@ -159,16 +139,16 @@ class CalendarFragment : Fragment() {
                 val endDate = calendar.time
 
                 val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
-                Log.d(TAG, "📅 Selected date: ${df.format(selectedDate)}")
-                Log.d(TAG, "📅 Query range: ${df.format(startDate)} to ${df.format(endDate)}")
+                Log.d(TAG, "Selected date: ${df.format(selectedDate)}")
+                Log.d(TAG, "Query range: ${df.format(startDate)} to ${df.format(endDate)}")
 
-                // This will try API first, cache the results, then return
                 val result = calendarRepository.getScheduledOutfits(startDate, endDate)
 
                 result.onSuccess { outfits ->
-                    Log.d(TAG, "✅ Loaded ${outfits.size} scheduled outfits")
+                    Log.d(TAG, "Loaded ${outfits.size} scheduled outfits")
 
-                    // Note: Flow will update UI, but we show initial state
+                    adapter.submitList(outfits)
+
                     if (outfits.isEmpty()) {
                         binding.tvNoScheduled.visibility = View.VISIBLE
                         binding.rvScheduledOutfits.visibility = View.GONE
@@ -177,14 +157,13 @@ class CalendarFragment : Fragment() {
                         binding.rvScheduledOutfits.visibility = View.VISIBLE
                     }
 
-                    // Mark first load as complete
                     isFirstLoad = false
 
                 }.onFailure { error ->
                     handleLoadError(error)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Exception loading scheduled outfits", e)
+                Log.e(TAG, "Exception loading scheduled outfits", e)
                 Toast.makeText(
                     requireContext(),
                     "Error: ${e.message}",
@@ -198,7 +177,6 @@ class CalendarFragment : Fragment() {
         }
     }
 
-    // ✅ NEW: Better error handling
     private fun handleLoadError(error: Throwable) {
         val errorMessage = when {
             error.message?.contains("timed out", ignoreCase = true) == true -> {
@@ -213,61 +191,15 @@ class CalendarFragment : Fragment() {
                 "Session expired. Showing cached data."
             }
             error.message?.contains("cached data") == true -> {
-                "📱 Offline mode - showing cached data"
+                "Offline mode - showing cached data"
             }
             error.message?.contains("connect") == true -> {
-                "📱 No internet - showing cached data"
+                "No internet - showing cached data"
             }
             else -> "Using cached data: ${error.message}"
         }
 
         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-    }
-
-    /**
-     * ✅ Observe cache for real-time updates
-     * This keeps UI in sync with database (which is synced with API when online)
-     */
-    private fun observeScheduledOutfitsCache() {
-        // Cancel previous observer
-        observerJob?.cancel()
-
-        observerJob = lifecycleScope.launch {
-            try {
-                val calendar = Calendar.getInstance()
-                calendar.time = selectedDate
-                calendar.set(Calendar.HOUR_OF_DAY, 0)
-                calendar.set(Calendar.MINUTE, 0)
-                calendar.set(Calendar.SECOND, 0)
-                calendar.set(Calendar.MILLISECOND, 0)
-                val startDate = calendar.time
-
-                calendar.set(Calendar.HOUR_OF_DAY, 23)
-                calendar.set(Calendar.MINUTE, 59)
-                calendar.set(Calendar.SECOND, 59)
-                calendar.set(Calendar.MILLISECOND, 999)
-                val endDate = calendar.time
-
-                // Observe cache for real-time updates
-                calendarRepository.getScheduledOutfitsFlow(startDate, endDate)
-                    .collect { outfits ->
-                        Log.d(TAG, "🔄 Cache update: ${outfits.size} scheduled outfits")
-
-                        adapter.submitList(outfits)
-
-                        if (outfits.isEmpty()) {
-                            binding.tvNoScheduled.visibility = View.VISIBLE
-                            binding.rvScheduledOutfits.visibility = View.GONE
-                        } else {
-                            binding.tvNoScheduled.visibility = View.GONE
-                            binding.rvScheduledOutfits.visibility = View.VISIBLE
-                        }
-                    }
-
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ Exception observing cache", e)
-            }
-        }
     }
 
     private fun confirmDelete(scheduledOutfit: com.iie.st10320489.stylu.data.models.calendar.ScheduledOutfit) {
@@ -281,10 +213,6 @@ class CalendarFragment : Fragment() {
             .show()
     }
 
-    /**
-     * ✅ ONLINE-FIRST: Delete via API, which will also remove from cache
-     * Falls back to cache-only delete if offline
-     */
     private fun deleteSchedule(scheduleId: Int) {
         lifecycleScope.launch {
             try {
@@ -295,10 +223,10 @@ class CalendarFragment : Fragment() {
                 result.onSuccess {
                     Toast.makeText(
                         requireContext(),
-                        "✅ Removed from calendar",
+                        "Removed from calendar",
                         Toast.LENGTH_SHORT
                     ).show()
-                    // Flow will automatically update UI
+                    loadScheduledOutfitsWithCaching(forceRefresh = true)
                 }.onFailure { error ->
                     val message = when {
                         error.message?.contains("Authentication failed") == true ||
@@ -313,7 +241,7 @@ class CalendarFragment : Fragment() {
                             "Request timed out. Removed locally."
                         }
                         error.message?.contains("connect") == true -> {
-                            "📱 Offline - removed from local cache"
+                            "Offline - removed from local cache"
                         }
                         else -> "Failed to remove: ${error.message}"
                     }
@@ -332,18 +260,17 @@ class CalendarFragment : Fragment() {
         }
     }
 
-    // ✅ NEW: Loading with message support - hides content while loading
     private fun showLoadingWithMessage(show: Boolean, message: String) {
         _binding?.let { binding ->
             if (show) {
                 binding.progressBar.visibility = View.VISIBLE
-                binding.swipeRefresh?.visibility = View.GONE // ✅ Hide content during first load
+                binding.swipeRefresh?.visibility = View.GONE
                 if (message.isNotEmpty()) {
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                 }
             } else {
                 binding.progressBar.visibility = View.GONE
-                binding.swipeRefresh?.visibility = View.VISIBLE // ✅ Show content when ready
+                binding.swipeRefresh?.visibility = View.VISIBLE
             }
         }
     }
@@ -351,9 +278,8 @@ class CalendarFragment : Fragment() {
     private fun showLoading(show: Boolean) {
         _binding?.let { binding ->
             binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
-            // Don't hide content for quick refreshes
             if (!show) {
-                binding.swipeRefresh?.visibility = View.VISIBLE // ✅ Ensure content is visible
+                binding.swipeRefresh?.visibility = View.VISIBLE
             }
         }
     }
@@ -361,14 +287,12 @@ class CalendarFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume - refreshing from API")
-        // Don't show "first load" message on resume
         isFirstLoad = false
         loadScheduledOutfitsWithCaching(forceRefresh = false)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        observerJob?.cancel()
         _binding = null
     }
 }

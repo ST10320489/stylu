@@ -1,10 +1,3 @@
-// ApiService.kt - UPDATED VERSION
-// Changes made:
-// 1. Increased all connectTimeout to 60000ms (60 seconds) for Render cold starts
-// 2. Increased all readTimeout to 30000ms (30 seconds)
-// 3. Added specific error handling for SocketTimeoutException and ConnectException
-// 4. Added helpful error messages for users
-
 package com.iie.st10320489.stylu.network
 
 import android.content.Context

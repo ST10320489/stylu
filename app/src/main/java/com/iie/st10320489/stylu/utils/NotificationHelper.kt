@@ -38,7 +38,7 @@ class NotificationHelper(private val context: Context) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val prefs = context.getSharedPreferences("stylu_prefs", Context.MODE_PRIVATE)
-                    val userId = prefs.getString("user_id", null)  // ✅ UUID string
+                    val userId = prefs.getString("user_id", null)
 
                     if (userId == null) {
                         Log.e(TAG, "Cannot save notification: User ID not found")
@@ -53,7 +53,7 @@ class NotificationHelper(private val context: Context) {
                     }.format(Date())
 
                     val notification = Notification(
-                        userId = userId.hashCode(),  // ✅ For model compatibility
+                        userId = userId.hashCode(),
                         title = title,
                         message = message,
                         type = type,
@@ -66,15 +66,15 @@ class NotificationHelper(private val context: Context) {
                     val success = repository.saveNotification(notification)
 
                     if (success) {
-                        Log.d(TAG, "✅ Local notification saved")
+                        Log.d(TAG, "Local notification saved")
                         val intent = Intent("com.iie.st10320489.stylu.NEW_NOTIFICATION")
                         context.sendBroadcast(intent)
                     } else {
-                        Log.e(TAG, "❌ Failed to save local notification")
+                        Log.e(TAG, "Failed to save local notification")
                     }
 
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ Error saving local notification: ${e.message}", e)
+                    Log.e(TAG, "Error saving local notification: ${e.message}", e)
                 }
             }
         }

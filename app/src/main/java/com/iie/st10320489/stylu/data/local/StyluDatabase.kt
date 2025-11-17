@@ -20,7 +20,7 @@ import com.iie.st10320489.stylu.data.local.entities.OutfitEntity
         OutfitItemEntity::class,
         CalendarEntity::class
     ],
-    version = 3,  // ✅ Increment version
+    version = 3,
     exportSchema = false
 )
 abstract class StyluDatabase : RoomDatabase() {
@@ -40,7 +40,7 @@ abstract class StyluDatabase : RoomDatabase() {
                     StyluDatabase::class.java,
                     "stylu_database"
                 )
-                    .fallbackToDestructiveMigration() // For development
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

@@ -66,13 +66,13 @@ class ProfileFragment : Fragment() {
     private fun performLogout() {
         lifecycleScope.launch {
             try {
-                // ✅ STEP 1: Unregister FCM token first (before clearing session)
+                // Unregister FCM token first (before clearing session)
                 MyFirebaseMessagingService.unregisterToken(requireContext())
 
-                // ✅ STEP 2: Sign out from Supabase (clears session)
+                // Sign out from Supabase (clears session)
                 authRepository.signOut()
                     .onSuccess {
-                        // ✅ STEP 3: Navigate to Welcome/Login screen
+                        // Navigate to Welcome/Login screen
                         val intent = Intent(requireContext(), WelcomeActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)

@@ -5,15 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.card.MaterialCardView
 import com.iie.st10320489.stylu.R
 import com.iie.st10320489.stylu.network.ApiService
@@ -34,7 +34,6 @@ class OutfitGridAdapter(
         private val ivCheckmark: ImageView = itemView.findViewById(R.id.ivCheckmark)
         private val colorDotsContainer: LinearLayout = itemView.findViewById(R.id.colorDotsContainer)
 
-
         init {
             itemView.setOnClickListener {
                 val position = adapterPosition
@@ -42,7 +41,6 @@ class OutfitGridAdapter(
                     val previousSelected = selectedPosition
                     selectedPosition = position
 
-                    // Notify changes
                     if (previousSelected != RecyclerView.NO_POSITION) {
                         notifyItemChanged(previousSelected)
                     }
@@ -51,13 +49,11 @@ class OutfitGridAdapter(
                     onOutfitClick(getItem(position))
                 }
             }
-
         }
 
         fun bind(outfit: ApiService.OutfitDetail, isSelected: Boolean) {
             tvOutfitName.text = outfit.name
 
-            // Update selection state
             if (isSelected) {
                 cardOutfit.strokeWidth = (3 * itemView.resources.displayMetrics.density).toInt()
                 selectionOverlay.visibility = View.VISIBLE
@@ -68,21 +64,26 @@ class OutfitGridAdapter(
                 ivCheckmark.visibility = View.GONE
             }
 
-            // Load outfit image
+            // Optimized image loading
             val savedImagePath = getSavedOutfitImagePath(outfit.outfitId, itemView.context)
+
+            val requestOptions = RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .override(300, 300)
+                .centerCrop()
+                .placeholder(R.drawable.cloudy)
+                .error(R.drawable.sunny)
+                .timeout(10000)
+
             if (savedImagePath.isNotEmpty()) {
                 Glide.with(itemView.context)
                     .load(savedImagePath)
-                    .centerCrop()
-                    .placeholder(R.drawable.cloudy)
-                    .error(R.drawable.sunny)
+                    .apply(requestOptions)
                     .into(ivOutfitPreview)
             } else if (outfit.items.isNotEmpty()) {
                 Glide.with(itemView.context)
                     .load(outfit.items.first().imageUrl)
-                    .centerCrop()
-                    .placeholder(R.drawable.cloudy)
-                    .error(R.drawable.sunny)
+                    .apply(requestOptions)
                     .into(ivOutfitPreview)
             } else {
                 ivOutfitPreview.setImageResource(R.drawable.cloudy)

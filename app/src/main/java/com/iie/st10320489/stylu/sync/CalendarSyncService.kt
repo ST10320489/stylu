@@ -9,10 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 
-/**
- * ✅ Background sync service for calendar schedules
- * Supports dependency injection for testing
- */
+
 class CalendarSyncService(
     private val context: Context,
     private val calendarRepository: CalendarRepository? = null,
@@ -57,7 +54,7 @@ class CalendarSyncService(
                     if (result.isSuccess) syncedCount++ else failedCount++
                 } catch (e: Exception) {
                     failedCount++
-                    Log.e(TAG, "❌ Error syncing schedule: ${schedule.scheduleId}", e)
+                    Log.e(TAG, "Error syncing schedule: ${schedule.scheduleId}", e)
                 }
             }
 
@@ -71,19 +68,19 @@ class CalendarSyncService(
                 val endDate = calendar.time
                 repo.getScheduledOutfits(startDate, endDate)
             } catch (e: Exception) {
-                Log.w(TAG, "⚠️ Could not sync down from API", e)
+                Log.w(TAG, "Could not sync down from API", e)
             }
 
             val message = when {
-                failedCount == 0 && syncedCount > 0 -> "✅ Synced $syncedCount schedules"
-                failedCount > 0 && syncedCount > 0 -> "⚠️ Synced $syncedCount, failed $failedCount"
-                failedCount > 0 -> "❌ Failed to sync $failedCount schedules"
-                else -> "✅ Everything is up to date"
+                failedCount == 0 && syncedCount > 0 -> "Synced $syncedCount schedules"
+                failedCount > 0 && syncedCount > 0 -> "Synced $syncedCount, failed $failedCount"
+                failedCount > 0 -> "Failed to sync $failedCount schedules"
+                else -> "Everything is up to date"
             }
 
             SyncResult(failedCount == 0, message, syncedCount, failedCount)
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Sync failed", e)
+            Log.e(TAG, "Sync failed", e)
             SyncResult(false, "Sync error: ${e.message}", 0, 0)
         }
     }

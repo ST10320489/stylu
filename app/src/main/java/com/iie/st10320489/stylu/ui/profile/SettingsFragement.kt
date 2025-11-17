@@ -50,17 +50,17 @@ class SettingsFragment : Fragment() {
         systemBtn = view.findViewById(R.id.systemBtn)
         logoutBtn = view.findViewById(R.id.logoutBtn)
 
-        // Optional: Add biometric switch if you include it in the layout
+
         try {
             biometricContainer = view.findViewById(R.id.biometricContainer)
             biometricSwitch = view.findViewById(R.id.biometricSwitch)
         } catch (e: Exception) {
-            // Views not found - biometric toggle not in layout
+
         }
     }
 
     private fun setupBiometricUI() {
-        // Only setup if biometric views exist in layout
+
         if (::biometricSwitch.isInitialized) {
             when (authRepository.isBiometricAvailable()) {
                 BiometricStatus.AVAILABLE -> {
@@ -69,7 +69,7 @@ class SettingsFragment : Fragment() {
 
                     biometricSwitch.setOnCheckedChangeListener { _, isChecked ->
                         if (isChecked && !authRepository.isBiometricEnabled()) {
-                            // Can't enable without login credentials
+
                             biometricSwitch.isChecked = false
                             Toast.makeText(
                                 requireContext(),
@@ -108,13 +108,13 @@ class SettingsFragment : Fragment() {
 
     private fun setupClickListeners() {
         profileBtn.setOnClickListener {
-            // Navigate to profile settings
+
             // TODO: Implement navigation to ProfileFragment or ProfileActivity
             Toast.makeText(requireContext(), "Profile Settings", Toast.LENGTH_SHORT).show()
         }
 
         systemBtn.setOnClickListener {
-            // Navigate to system settings
+
             // TODO: Implement navigation to SystemSettingsFragment or SystemActivity
             Toast.makeText(requireContext(), "System Settings", Toast.LENGTH_SHORT).show()
         }
@@ -147,7 +147,7 @@ class SettingsFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                // Sign out using AuthRepository (this also disables biometric)
+                // Sign out using AuthRepository
                 authRepository.signOut()
                     .onSuccess {
                         Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()

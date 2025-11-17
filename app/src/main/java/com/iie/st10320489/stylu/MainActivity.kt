@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
@@ -26,9 +27,8 @@ import com.iie.st10320489.stylu.utils.PermissionHelper
 import kotlinx.coroutines.launch
 import com.google.firebase.messaging.FirebaseMessaging
 import com.iie.st10320489.stylu.utils.WorkManagerScheduler
-
 import com.iie.st10320489.stylu.utils.NotificationPreferences
-
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,53 +37,54 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sessionManager: SessionManager
     private lateinit var permissionHelper: PermissionHelper
 
+    private var defaultExceptionHandler: Thread.UncaughtExceptionHandler? = null
+
     private val topLevelDestinations = setOf(
         R.id.navigation_home,
         R.id.navigation_profile
     )
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    companion object {
+        private const val TAG = "MainActivity"
+        private const val PREF_CRASH_COUNT = "crash_count"
+        private const val MAX_CRASH_COUNT = 3
+    }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
 
+        // Set up global exception handler FIRST
+        setupGlobalExceptionHandler()
 
         sessionManager = SessionManager(this)
 
         if (!sessionManager.isAuthenticated()) {
-            Log.d("MainActivity", "Not authenticated - redirecting to login")
-            redirectToLogin()
-            return  // ✅ EXIT IMMEDIATELY - Don't continue setup
-        }
-
-        Log.d("MainActivity", "✅ User authenticated: ${sessionManager.getCurrentUserEmail()}")
-
-
-        // Initialize PermissionHelper
-        permissionHelper = PermissionHelper(this)
-
-        // Only redirect if truly not authenticated (no session at all)
-        if (!sessionManager.isAuthenticated()) {
-            Log.d("MainActivity", "No active session, redirecting to login")
+            Log.d(TAG, "Not authenticated - redirecting to login")
             redirectToLogin()
             return
         }
+
+        Log.d(TAG, "User authenticated: ${sessionManager.getCurrentUserEmail()}")
+
+        // Initialize PermissionHelper
+        permissionHelper = PermissionHelper(this)
 
         // Register permission launchers BEFORE any requests
         permissionHelper.registerLaunchers(
             onLocationResult = { granted ->
                 if (granted) {
-                    Log.d("MainActivity", "✅ Location permission granted")
+                    Log.d(TAG, "Location permission granted")
                 } else {
-                    Log.d("MainActivity", "❌ Location permission denied")
+                    Log.d(TAG, "Location permission denied")
                     Toast.makeText(this, "Weather will use default location", Toast.LENGTH_SHORT).show()
                 }
             },
             onNotificationResult = { granted ->
                 if (granted) {
-                    Log.d("MainActivity", "✅ Notification permission granted")
+                    Log.d(TAG, "Notification permission granted")
                 } else {
-                    Log.d("MainActivity", "❌ Notification permission denied")
+                    Log.d(TAG, "Notification permission denied")
                 }
             }
         )
@@ -92,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         FirebaseMessaging.getInstance().subscribeToTopic("fashion")
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d("MainActivity", "Subscribed to fashion topic")
+                    Log.d(TAG, "Subscribed to fashion topic")
                 }
             }
 
@@ -136,8 +137,146 @@ class MainActivity : AppCompatActivity() {
         switchToDefaultMenu()
         setupBackButtonHandling()
         initializeWeatherNotifications()
+
         // Request permissions on first launch
         requestPermissionsIfNeeded()
+
+        // Reset crash count on successful launch
+        resetCrashCount()
+    }
+
+    /**
+     * Global exception handler to catch unexpected crashes
+     */
+    private fun setupGlobalExceptionHandler() {
+        defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            Log.e(TAG, "💥 UNCAUGHT EXCEPTION", throwable)
+
+            handleCrash(throwable)
+
+            // Call default handler to let system handle it
+            defaultExceptionHandler?.uncaughtException(thread, throwable)
+        }
+    }
+
+    /**
+     * Handle crash gracefully
+     */
+    private fun handleCrash(throwable: Throwable) {
+        try {
+            val crashCount = incrementCrashCount()
+
+            Log.e(TAG, "Crash count: $crashCount")
+            Log.e(TAG, "Error type: ${throwable.javaClass.simpleName}")
+            Log.e(TAG, "Error message: ${throwable.message}")
+
+            // If crashing too many times, clear session and go to login
+            if (crashCount >= MAX_CRASH_COUNT) {
+                Log.e(TAG, "Too many crashes - clearing session")
+                runOnUiThread {
+                    sessionManager.clearSession()
+                    redirectToLogin()
+                }
+            } else {
+                // Show error dialog on UI thread
+                runOnUiThread {
+                    showCrashDialog(throwable)
+                }
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in crash handler", e)
+        }
+    }
+
+    /**
+     * Show crash dialog to user
+     */
+    private fun showCrashDialog(throwable: Throwable) {
+        try {
+            val errorType = when {
+                throwable.message?.contains("Session expired") == true -> "Session Expired"
+                throwable.message?.contains("Authentication") == true -> "Authentication Error"
+                throwable.message?.contains("Network") == true -> "Network Error"
+                throwable is IllegalStateException -> "App State Error"
+                else -> "Unexpected Error"
+            }
+
+            AlertDialog.Builder(this)
+                .setTitle(errorType)
+                .setMessage("The app encountered an error. Would you like to restart or go to login?")
+                .setCancelable(false)
+                .setPositiveButton("Restart") { _, _ ->
+                    restartApp()
+                }
+                .setNegativeButton("Login") { _, _ ->
+                    sessionManager.clearSession()
+                    redirectToLogin()
+                }
+                .setNeutralButton("Exit") { _, _ ->
+                    finish()
+                    exitProcess(0)
+                }
+                .show()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to show crash dialog", e)
+            // Fallback - just restart
+            restartApp()
+        }
+    }
+
+    /**
+     * Restart the app
+     */
+    private fun restartApp() {
+        try {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            startActivity(intent)
+            finish()
+            exitProcess(0)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to restart app", e)
+            finish()
+        }
+    }
+
+    /**
+     * Track crash count
+     */
+    private fun incrementCrashCount(): Int {
+        val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val count = prefs.getInt(PREF_CRASH_COUNT, 0) + 1
+        prefs.edit().putInt(PREF_CRASH_COUNT, count).apply()
+        return count
+    }
+
+    /**
+     * Reset crash count on successful launch
+     */
+    private fun resetCrashCount() {
+        val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putInt(PREF_CRASH_COUNT, 0).apply()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Validate session on resume
+        validateSession()
+    }
+
+    /**
+     * Validate session is still valid
+     */
+    private fun validateSession() {
+        if (!sessionManager.isAuthenticated()) {
+            Log.w(TAG, "Session expired while app was in background")
+            Toast.makeText(this, "Session expired. Please login again.", Toast.LENGTH_LONG).show()
+            redirectToLogin()
+        }
     }
 
     /**
@@ -145,40 +284,32 @@ class MainActivity : AppCompatActivity() {
      */
     private fun requestPermissionsIfNeeded() {
         if (permissionHelper.isFirstLaunch()) {
-            Log.d("MainActivity", "🎉 First launch detected - requesting permissions")
+            Log.d(TAG, "First launch detected - requesting permissions")
 
-            // Small delay to let UI settle
             binding.root.postDelayed({
                 permissionHelper.requestFirstLaunchPermissions {
-                    Log.d("MainActivity", "✅ First launch permission flow complete")
+                    Log.d(TAG, "First launch permission flow complete")
                 }
-            }, 1000) // 1 second delay
+            }, 1000)
         } else {
-            Log.d("MainActivity", "Not first launch, skipping permission request")
-
-            // Log current permission status
-            Log.d("MainActivity", "Location: ${permissionHelper.hasLocationPermission()}")
-            Log.d("MainActivity", "Notifications: ${permissionHelper.hasNotificationPermission()}")
+            Log.d(TAG, "Not first launch, skipping permission request")
+            Log.d(TAG, "Location: ${permissionHelper.hasLocationPermission()}")
+            Log.d(TAG, "Notifications: ${permissionHelper.hasNotificationPermission()}")
         }
     }
 
-    //weather notifications
     private fun initializeWeatherNotifications() {
         val notificationPrefs = NotificationPreferences(this)
         val workManagerScheduler = WorkManagerScheduler(this)
 
-        // If weather notifications are enabled but work is not scheduled, reschedule it
         if (notificationPrefs.isWeatherNotificationEnabled()) {
             if (!workManagerScheduler.isWorkScheduled()) {
                 val reminderTime = notificationPrefs.getReminderTime()
                 workManagerScheduler.scheduleWeatherNotification(reminderTime)
-                Log.d("MainActivity", "Weather notifications rescheduled at startup")
+                Log.d(TAG, "Weather notifications rescheduled at startup")
             }
         }
     }
-
-
-
 
     private fun setupBackButtonHandling() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -204,8 +335,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
-
-
 
     private fun redirectToLogin() {
         val intent = Intent(this, LoginActivity::class.java)
@@ -325,6 +454,7 @@ class MainActivity : AppCompatActivity() {
 
         dialog.show()
     }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleNotificationIntent(intent)
@@ -332,9 +462,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleNotificationIntent(intent: Intent?) {
         if (intent?.getBooleanExtra("open_notifications", false) == true) {
-            Log.d("MainActivity", "Opening notifications from notification tap")
-            // Navigate to notifications fragment
+            Log.d(TAG, "Opening notifications from notification tap")
             navController.navigate(R.id.navigation_notifications)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Restore default exception handler
+        Thread.setDefaultUncaughtExceptionHandler(defaultExceptionHandler)
     }
 }

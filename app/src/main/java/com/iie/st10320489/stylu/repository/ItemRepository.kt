@@ -61,7 +61,6 @@ class ItemRepository(private val context: Context? = null) {
 
     /**
      * Get all categories with subcategories from API
-     * (Categories don't need caching as they rarely change)
      */
     suspend fun getCategories(): Result<List<Category>> = withContext(Dispatchers.IO) {
         return@withContext try {
@@ -218,8 +217,7 @@ class ItemRepository(private val context: Context? = null) {
     /**
      * Get all user items with CACHING
      *
-     * FLOW:
-     * 1. Emit cached items immediately (instant load!)
+     * 1. Emit cached items immediately
      * 2. Check if cache is stale (>5 minutes)
      * 3. If stale, fetch from API in background
      * 4. Update cache and emit fresh data
@@ -233,7 +231,7 @@ class ItemRepository(private val context: Context? = null) {
                 val cachedItems = itemDao.getAllItems()
                 if (cachedItems.isNotEmpty()) {
                     val cacheAge = System.currentTimeMillis() - (cachedItems.firstOrNull()?.updatedAt ?: 0)
-                    Log.d(TAG, "✅ Cache HIT: ${cachedItems.size} items, age: ${cacheAge}ms")
+                    Log.d(TAG, "Cache HIT: ${cachedItems.size} items, age: ${cacheAge}ms")
 
                     // Emit cached data immediately
                     emit(Result.success(cachedItems.map { it.toWardrobeItem() }))
@@ -246,7 +244,7 @@ class ItemRepository(private val context: Context? = null) {
 
                     Log.d(TAG, "Cache is STALE, fetching from API...")
                 } else {
-                    Log.d(TAG, "❌ Cache MISS: No items in cache")
+                    Log.d(TAG, "Cache MISS: No items in cache")
                 }
             }
 
@@ -294,7 +292,7 @@ class ItemRepository(private val context: Context? = null) {
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 val items = parseUserItems(responseText)
-                Log.d(TAG, "✅ API returned ${items.size} items")
+                Log.d(TAG, "API returned ${items.size} items")
 
                 // STEP 3: Update cache
                 if (itemDao != null) {
@@ -302,7 +300,7 @@ class ItemRepository(private val context: Context? = null) {
                         val entities = items.map { it.toEntity() }
                         itemDao.deleteAllItems()
                         itemDao.insertItems(entities)
-                        Log.d(TAG, "💾 Cache UPDATED with ${entities.size} items")
+                        Log.d(TAG, "Cache UPDATED with ${entities.size} items")
                     }
                 }
 
@@ -328,7 +326,7 @@ class ItemRepository(private val context: Context? = null) {
             }
 
         } catch (e: java.net.SocketTimeoutException) {
-            Log.e(TAG, "⏱️ Timeout fetching user items", e)
+            Log.e(TAG, "Timeout fetching user items", e)
 
             if (itemDao != null) {
                 val cachedItems = itemDao.getAllItems()
@@ -342,7 +340,7 @@ class ItemRepository(private val context: Context? = null) {
                 emit(Result.failure(Exception("Request timed out. Please try again.")))
             }
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error fetching user items", e)
+            Log.e(TAG, "Error fetching user items", e)
 
             if (itemDao != null) {
                 val cachedItems = itemDao.getAllItems()
@@ -356,7 +354,7 @@ class ItemRepository(private val context: Context? = null) {
                 emit(Result.failure(e))
             }
         }
-    }.flowOn(Dispatchers.IO) // ✅ Run everything on background thread
+    }.flowOn(Dispatchers.IO)
 
     /**
      * Get items Flow for real-time updates
@@ -449,7 +447,7 @@ class ItemRepository(private val context: Context? = null) {
             }
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                // 🔥 TRIGGER CACHE REFRESH
+
                 refreshCacheInBackground()
 
                 val jsonResponse = JSONObject(responseText)
@@ -495,7 +493,7 @@ class ItemRepository(private val context: Context? = null) {
             }
 
             if (responseCode in 200..299) {
-                // 🔥 REMOVE FROM CACHE IMMEDIATELY
+
                 if (itemDao != null) {
                     withContext(Dispatchers.IO) {
                         itemDao.deleteItem(itemId)

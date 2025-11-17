@@ -53,7 +53,7 @@ class LoginActivity : AppCompatActivity() {
         // Check biometric and trigger if enabled
         if (authRepository.isBiometricEnabled() &&
             authRepository.isBiometricAvailable() == BiometricStatus.AVAILABLE) {
-            Log.d("LoginActivity", "✅ Biometric enabled - triggering prompt")
+            Log.d("LoginActivity", "Biometric enabled - triggering prompt")
             btnBiometric.postDelayed({ showBiometricPrompt() }, 500)
         }
     }
@@ -67,7 +67,7 @@ class LoginActivity : AppCompatActivity() {
                         val email = etEmail.text.toString().trim()
                         val password = etPassword.text.toString()
 
-                        Log.d("DEBUG", "🎉 Login SUCCESS")
+                        Log.d("DEBUG", "Login SUCCESS")
 
                         if (authRepository.isBiometricAvailable() == BiometricStatus.AVAILABLE &&
                             email.isNotEmpty() && password.isNotEmpty()) {
@@ -75,26 +75,24 @@ class LoginActivity : AppCompatActivity() {
                             if (authRepository.isBiometricEnabled()) {
                                 // Already enabled - just update and continue
                                 authRepository.enableBiometric(email, password)
-                                Log.d("DEBUG", "✅ Updated biometric credentials")
+                                Log.d("DEBUG", "Updated biometric credentials")
 
                                 // Continue immediately
                                 registerFCMToken()
                                 navigateToMain()
                             } else {
-                                // NOT enabled yet - show dialog and WAIT
-                                Log.d("DEBUG", "💬 Showing biometric enable dialog...")
-                                showEnableBiometricDialog(email, password) // This WAITS for user
+                                Log.d("DEBUG", "Showing biometric enable dialog...")
+                                showEnableBiometricDialog(email, password)
                             }
                         } else {
-                            // No biometric available - continue immediately
-                            Log.d("DEBUG", "⚠️ Biometric not available, continuing...")
+                            Log.d("DEBUG", "Biometric not available, continuing...")
                             registerFCMToken()
                             navigateToMain()
                         }
                     }
                     is AuthState.Error -> {
                         setButtonsEnabled(true)
-                        Log.e("DEBUG", "❌ Login ERROR: ${state.message}")
+                        Log.e("DEBUG", "Login ERROR: ${state.message}")
                         Toast.makeText(this@LoginActivity, state.message, Toast.LENGTH_LONG).show()
                     }
                     else -> setButtonsEnabled(true)
@@ -202,7 +200,7 @@ class LoginActivity : AppCompatActivity() {
             negativeButtonText = "Use Password",
             onSuccess = { _ ->
                 val (email, password) = credentials
-                Log.d("DEBUG", "✅ Biometric SUCCESS")
+                Log.d("DEBUG", "Biometric SUCCESS")
                 setButtonsEnabled(false)
                 authViewModel.signIn(email, password)
             },
@@ -218,16 +216,16 @@ class LoginActivity : AppCompatActivity() {
         )
     }
 
-    // ✅ FIXED: Dialog now calls navigateToMain() AFTER user responds
+
     private fun showEnableBiometricDialog(email: String, password: String) {
         Log.d("DEBUG", "💬 Showing enable biometric dialog")
 
         AlertDialog.Builder(this)
             .setTitle("Enable Biometric Login?")
             .setMessage("Use fingerprint or face recognition to log in faster next time?")
-            .setCancelable(false) // Force user to choose
+            .setCancelable(false)
             .setPositiveButton("Enable") { _, _ ->
-                Log.d("DEBUG", "✅ User clicked ENABLE")
+                Log.d("DEBUG", "User clicked ENABLE")
                 authRepository.enableBiometric(email, password)
                 btnBiometric.alpha = 1.0f
 
@@ -237,14 +235,14 @@ class LoginActivity : AppCompatActivity() {
 
                 Toast.makeText(this, "Biometric login enabled", Toast.LENGTH_SHORT).show()
 
-                // ✅ NOW navigate after enabling
+
                 registerFCMToken()
                 navigateToMain()
             }
             .setNegativeButton("Not Now") { _, _ ->
-                Log.d("DEBUG", "❌ User clicked NOT NOW")
+                Log.d("DEBUG", "User clicked NOT NOW")
 
-                // ✅ Still navigate, just without enabling biometric
+
                 registerFCMToken()
                 navigateToMain()
             }
@@ -298,7 +296,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToMain() {
-        Log.d("DEBUG", "🚀 Navigating to MainActivity")
+        Log.d("DEBUG", "Navigating to MainActivity")
 
         startActivity(Intent(this@LoginActivity, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

@@ -24,9 +24,7 @@ import com.iie.st10320489.stylu.repository.OutfitRepository
 import kotlinx.coroutines.launch
 import java.io.File
 
-/**
- * ✅ FIXED: Shows snapshot image with cache busting and refreshes on resume
- */
+
 class OutfitDetailFragment : Fragment() {
 
     private lateinit var apiService: ApiService
@@ -67,7 +65,7 @@ class OutfitDetailFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // ✅ Reload outfit when returning from edit
+
         if (outfitId != -1) {
             Log.d(TAG, "onResume - reloading outfit detail")
             loadOutfitDetail()
@@ -131,9 +129,7 @@ class OutfitDetailFragment : Fragment() {
         }
     }
 
-    /**
-     * ✅ FIXED: Display snapshot with Glide cache busting
-     */
+
     private fun displayOutfitSnapshot(outfit: ApiService.OutfitDetail) {
         view?.findViewById<TextView>(R.id.tvOutfitName)?.text = outfit.name
 
@@ -144,7 +140,7 @@ class OutfitDetailFragment : Fragment() {
         val snapshotFile = File(requireContext().filesDir, "outfit_${outfit.outfitId}.png")
 
         Log.d(TAG, "")
-        Log.d(TAG, "📸 DISPLAYING SNAPSHOT")
+        Log.d(TAG, "DISPLAYING SNAPSHOT")
         Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         Log.d(TAG, "Expected file: ${snapshotFile.absolutePath}")
         Log.d(TAG, "File exists: ${snapshotFile.exists()}")
@@ -164,14 +160,14 @@ class OutfitDetailFragment : Fragment() {
                 scaleType = ImageView.ScaleType.FIT_CENTER
             }
 
-            Log.d(TAG, "🖼️ LOADING IMAGE WITH GLIDE (cache busting enabled)...")
+            Log.d(TAG, "LOADING IMAGE WITH GLIDE (cache busting enabled)...")
 
-            // ✅ FIX: Cache busting with file timestamp
+
             Glide.with(requireContext())
                 .load(snapshotFile)
-                .diskCacheStrategy(DiskCacheStrategy.NONE) // ✅ Don't cache to disk
-                .skipMemoryCache(true) // ✅ Don't cache in memory
-                .signature(ObjectKey(snapshotFile.lastModified())) // ✅ Cache key = timestamp
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .signature(ObjectKey(snapshotFile.lastModified()))
                 .placeholder(R.drawable.default_img)
                 .error(R.drawable.default_img)
                 .listener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
@@ -181,7 +177,7 @@ class OutfitDetailFragment : Fragment() {
                         target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        Log.e(TAG, "❌ Glide failed to load snapshot", e)
+                        Log.e(TAG, "Glide failed to load snapshot", e)
                         e?.logRootCauses(TAG)
                         return false
                     }
@@ -193,7 +189,7 @@ class OutfitDetailFragment : Fragment() {
                         dataSource: com.bumptech.glide.load.DataSource?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        Log.d(TAG, "✅ Glide loaded snapshot successfully")
+                        Log.d(TAG, "Glide loaded snapshot successfully")
                         Log.d(TAG, "Data source: $dataSource")
                         return false
                     }
@@ -201,15 +197,15 @@ class OutfitDetailFragment : Fragment() {
                 .into(imageView)
 
             canvas?.addView(imageView)
-            Log.d(TAG, "✅ ImageView added to canvas")
+            Log.d(TAG, "ImageView added to canvas")
 
         } else {
-            Log.w(TAG, "⚠️ NO SNAPSHOT FILE FOUND")
+            Log.w(TAG, "NO SNAPSHOT FILE FOUND")
             Log.d(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             Log.d(TAG, "")
 
             // List what files DO exist
-            Log.d(TAG, "📁 FILES THAT DO EXIST:")
+            Log.d(TAG, "FILES THAT DO EXIST:")
             requireContext().filesDir.listFiles()?.filter {
                 it.name.startsWith("outfit_")
             }?.forEach {
@@ -237,7 +233,7 @@ class OutfitDetailFragment : Fragment() {
     }
 
     /**
-     * ✅ Delete outfit and its snapshot
+     * Delete outfit and its snapshot
      */
     private fun deleteOutfit() {
         lifecycleScope.launch {
@@ -248,7 +244,7 @@ class OutfitDetailFragment : Fragment() {
                 val result = outfitRepository.deleteOutfit(outfitId.toString())
 
                 result.onSuccess {
-                    Log.d(TAG, "✅ API deletion successful")
+                    Log.d(TAG, "API deletion successful")
 
                     // Delete the snapshot file
                     val snapshotFile = File(requireContext().filesDir, "outfit_$outfitId.png")
@@ -266,7 +262,7 @@ class OutfitDetailFragment : Fragment() {
                         Log.w(TAG, "Failed to clear cache: ${e.message}")
                     }
 
-                    Toast.makeText(requireContext(), "Outfit deleted ✅", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Outfit deleted ", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
 
                 }.onFailure { error ->

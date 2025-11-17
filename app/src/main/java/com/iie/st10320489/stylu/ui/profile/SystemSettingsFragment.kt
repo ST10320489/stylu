@@ -86,7 +86,7 @@ class SystemSettingsFragment : Fragment() {
         initializeViews(view)
         setupSpinners()
         setupClicks()
-        setupSwipeRefresh() // ✅ NEW
+        setupSwipeRefresh()
         loadCurrentSystemSettings()
     }
 
@@ -104,7 +104,7 @@ class SystemSettingsFragment : Fragment() {
         contentLayout = view.findViewById(R.id.contentLayout)
     }
 
-    // ✅ NEW: Setup SwipeRefreshLayout
+
     private fun setupSwipeRefresh() {
         swipeRefreshLayout.setOnRefreshListener {
             loadCurrentSystemSettings()
@@ -452,15 +452,15 @@ class SystemSettingsFragment : Fragment() {
         requireActivity().finish()
     }
 
-    // ✅ UPDATED: Hide content during loading, show when done
+
     private fun showLoading(isLoading: Boolean) {
         if (isLoading) {
             progressBar.visibility = View.VISIBLE
-            swipeRefreshLayout.visibility = View.GONE // ✅ Hide content while loading
+            swipeRefreshLayout.visibility = View.GONE
             swipeRefreshLayout.isEnabled = false
         } else {
             progressBar.visibility = View.GONE
-            swipeRefreshLayout.visibility = View.VISIBLE // ✅ Show content when done
+            swipeRefreshLayout.visibility = View.VISIBLE
             swipeRefreshLayout.isEnabled = true
         }
 

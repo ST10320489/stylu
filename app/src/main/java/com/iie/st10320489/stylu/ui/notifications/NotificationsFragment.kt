@@ -30,7 +30,7 @@ class NotificationsFragment : Fragment() {
     private var rvNotifications: RecyclerView? = null
     private var tvEmptyState: LinearLayout? = null
     private var progressBar: ProgressBar? = null
-    private var swipeRefresh: SwipeRefreshLayout? = null // ✅ NEW
+    private var swipeRefresh: SwipeRefreshLayout? = null
     private lateinit var adapter: NotificationsAdapter
     private val notificationsList = mutableListOf<Notification>()
     private var repository: NotificationRepository? = null
@@ -46,7 +46,7 @@ class NotificationsFragment : Fragment() {
     private val notificationReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "com.iie.st10320489.stylu.NEW_NOTIFICATION") {
-                Log.d(TAG, "📬 Received broadcast: NEW_NOTIFICATION")
+                Log.d(TAG, "Received broadcast: NEW_NOTIFICATION")
                 isFirstLoad = false
                 fetchNotifications()
             }
@@ -67,24 +67,24 @@ class NotificationsFragment : Fragment() {
             rvNotifications = view.findViewById(R.id.rvNotifications)
             tvEmptyState = view.findViewById(R.id.tvEmptyState)
             progressBar = view.findViewById(R.id.progressBar)
-            swipeRefresh = view.findViewById(R.id.swipeRefresh) // ✅ NEW
+            swipeRefresh = view.findViewById(R.id.swipeRefresh)
 
             // Setup RecyclerView
             rvNotifications?.layoutManager = LinearLayoutManager(requireContext())
             adapter = NotificationsAdapter(notificationsList)
             rvNotifications?.adapter = adapter
 
-            // ✅ Initialize repository in onCreateView
+            // Initialize repository in onCreateView
             repository = NotificationRepository(requireContext())
 
-            // ✅ NEW: Setup swipe-to-refresh
+
             setupSwipeRefresh()
 
-            Log.d(TAG, "✅ Views initialized successfully")
+            Log.d(TAG, "Views initialized successfully")
 
             view
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error in onCreateView: ${e.message}", e)
+            Log.e(TAG, "Error in onCreateView: ${e.message}", e)
             Toast.makeText(context, "Error loading notifications", Toast.LENGTH_SHORT).show()
             inflater.inflate(R.layout.fragment_notifications, container, false)
         }
@@ -97,7 +97,7 @@ class NotificationsFragment : Fragment() {
         fetchNotifications()
     }
 
-    // ✅ NEW: Setup SwipeRefreshLayout
+
     private fun setupSwipeRefresh() {
         swipeRefresh?.setOnRefreshListener {
             isFirstLoad = false
@@ -133,14 +133,14 @@ class NotificationsFragment : Fragment() {
                 )
             }
 
-            Log.d(TAG, "✅ Broadcast receiver registered")
+            Log.d(TAG, "Broadcast receiver registered")
 
             // Refresh when returning to fragment (but don't show first load message)
             isFirstLoad = false
             fetchNotifications()
 
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error in onResume: ${e.message}", e)
+            Log.e(TAG, "Error in onResume: ${e.message}", e)
         }
     }
 
@@ -151,7 +151,7 @@ class NotificationsFragment : Fragment() {
         // Unregister broadcast receiver
         try {
             requireContext().unregisterReceiver(notificationReceiver)
-            Log.d(TAG, "✅ Broadcast receiver unregistered")
+            Log.d(TAG, "Broadcast receiver unregistered")
         } catch (e: Exception) {
             Log.e(TAG, "Error unregistering receiver: ${e.message}")
         }
@@ -173,7 +173,7 @@ class NotificationsFragment : Fragment() {
     private fun fetchNotifications(forceRefresh: Boolean = false) {
         lifecycleScope.launch {
             try {
-                Log.d(TAG, "📥 Fetching notifications...")
+                Log.d(TAG, "Fetching notifications...")
 
                 // Show loading message only on first load
                 if (isFirstLoad && !forceRefresh) {
@@ -202,22 +202,22 @@ class NotificationsFragment : Fragment() {
                 notificationsList.addAll(notifications)
                 adapter.notifyDataSetChanged()
 
-                Log.d(TAG, "✅ Loaded ${notifications.size} notifications")
+                Log.d(TAG, "Loaded ${notifications.size} notifications")
 
                 // Show empty state if no notifications
                 if (notifications.isEmpty()) {
                     showEmptyState(true)
-                    Log.d(TAG, "📭 No notifications found")
+                    Log.d(TAG, "No notifications found")
                 } else {
                     showEmptyState(false)
-                    Log.d(TAG, "📬 ${notifications.size} notifications displayed")
+                    Log.d(TAG, "${notifications.size} notifications displayed")
                 }
 
                 // Mark first load as complete
                 isFirstLoad = false
 
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error fetching notifications: ${e.message}", e)
+                Log.e(TAG, "Error fetching notifications: ${e.message}", e)
                 handleLoadError(e)
             } finally {
                 showLoading(false)
@@ -227,7 +227,7 @@ class NotificationsFragment : Fragment() {
         }
     }
 
-    // ✅ NEW: Better error handling
+
     private fun handleLoadError(error: Throwable) {
         val errorMessage = when {
             error.message?.contains("timed out", ignoreCase = true) == true -> {
@@ -249,18 +249,18 @@ class NotificationsFragment : Fragment() {
         }
     }
 
-    // ✅ NEW: Loading with message support - hides content while loading
+
     private fun showLoadingWithMessage(show: Boolean, message: String) {
         try {
             if (show) {
                 progressBar?.visibility = View.VISIBLE
-                swipeRefresh?.visibility = View.GONE // ✅ Hide content during first load
+                swipeRefresh?.visibility = View.GONE
                 if (message.isNotEmpty() && isAdded && context != null) {
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                 }
             } else {
                 progressBar?.visibility = View.GONE
-                swipeRefresh?.visibility = View.VISIBLE // ✅ Show content when ready
+                swipeRefresh?.visibility = View.VISIBLE
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error in showLoadingWithMessage: ${e.message}")
@@ -272,7 +272,7 @@ class NotificationsFragment : Fragment() {
             progressBar?.visibility = if (isLoading) View.VISIBLE else View.GONE
             // Don't hide content for quick refreshes
             if (!isLoading) {
-                swipeRefresh?.visibility = View.VISIBLE // ✅ Ensure content is visible
+                swipeRefresh?.visibility = View.VISIBLE
             }
             rvNotifications?.visibility = if (isLoading) View.GONE else View.VISIBLE
         } catch (e: Exception) {

@@ -5,6 +5,9 @@ import android.content.Intent
 import com.iie.st10320489.stylu.network.DirectSupabaseAuth
 import com.iie.st10320489.stylu.service.MyFirebaseMessagingService
 import com.iie.st10320489.stylu.ui.auth.LoginActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SessionManager(private val context: Context) {
 
@@ -30,6 +33,24 @@ class SessionManager(private val context: Context) {
         supabaseAuth.signOut()
 
         // Redirect to login
+        redirectToLogin()
+    }
+
+    /**
+     * Clear session immediately (non-suspending version for crash handling)
+     */
+    fun clearSession() {
+        // Launch logout in background
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                MyFirebaseMessagingService.unregisterToken(context)
+                supabaseAuth.signOut()
+            } catch (e: Exception) {
+                // Ignore errors during emergency clear
+            }
+        }
+
+        // Immediately redirect to login (don't wait for logout)
         redirectToLogin()
     }
 
