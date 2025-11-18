@@ -471,9 +471,73 @@ The initial prototype (October 2025) included:
 
 ---
 
-**Download Stylu on Google Play Store** *(Coming Soon)*
+## Sources & References
+
+### Development Tools & Frameworks
+
+**Android Development:**
+- Android Developers. (2024). *Guide to app architecture*. Google. Available at: https://developer.android.com/jetpack/guide [Accessed 17 November 2025]
+- Android Developers. (2024). *Room Persistence Library*. Google. Available at: https://developer.android.com/training/data-storage/room [Accessed 17 November 2025]
+- JetBrains. (2024). *Kotlin Documentation*. Available at: https://kotlinlang.org/docs/home.html [Accessed 17 November 2025]
+- Google. (2024). *Material Design 3*. Available at: https://m3.material.io [Accessed 17 November 2025]
+
+**Networking & APIs:**
+- Square Inc. (2024). *Retrofit: A type-safe HTTP client for Android and Java*. GitHub. Available at: https://github.com/square/retrofit [Accessed 17 November 2025]
+- Square Inc. (2024). *OkHttp*. GitHub. Available at: https://square.github.io/okhttp/ [Accessed 17 November 2025]
+
+**Image Processing:**
+- Bump Technologies. (2024). *Glide: Image loading and caching library for Android*. GitHub. Available at: https://github.com/bumptech/glide [Accessed 17 November 2025]
+- Remove.bg. (2024). *AI Background Removal API Documentation*. Kaleido AI. Available at: https://www.remove.bg/api [Accessed 17 November 2025]
+
+**Backend & Cloud Services:**
+- Supabase. (2024). *Supabase Documentation*. Available at: https://supabase.com/docs [Accessed 17 November 2025]
+- Supabase. (2024). *Supabase JavaScript Client Library*. GitHub. Available at: https://github.com/supabase/supabase-js [Accessed 17 November 2025]
+- Render. (2025). *Render Deployment Platform Documentation*. Available at: https://render.com/docs [Accessed 17 November 2025]
+
+**Push Notifications:**
+- Firebase. (2024). *Firebase Cloud Messaging Documentation*. Google. Available at: https://firebase.google.com/docs/cloud-messaging [Accessed 17 November 2025]
+- Firebase. (2024). *Firebase Android SDK*. Google. Available at: https://firebase.google.com/docs/android/setup [Accessed 17 November 2025]
+
+**Weather Integration:**
+- Open-Meteo. (2024). *Open-Meteo Weather API Documentation*. Available at: https://open-meteo.com/en/docs [Accessed 17 November 2025]
+
+**Authentication:**
+- Google. (2024). *Google Sign-In for Android*. Available at: https://developers.google.com/identity/sign-in/android [Accessed 17 November 2025]
+- Android Developers. (2024). *Biometric Authentication*. Google. Available at: https://developer.android.com/training/sign-in/biometric-auth [Accessed 17 November 2025]
+
+### Testing & CI/CD
+
+- GitHub. (2024). *GitHub Actions Documentation*. Available at: https://docs.github.com/en/actions [Accessed 17 November 2025]
+- Android Developers. (2024). *Test apps on Android*. Google. Available at: https://developer.android.com/training/testing [Accessed 17 November 2025]
+- JUnit. (2024). *JUnit 5 User Guide*. Available at: https://junit.org/junit5/docs/current/user-guide/ [Accessed 17 November 2025]
+- Google. (2024). *Truth Assertion Library*. GitHub. Available at: https://truth.dev/ [Accessed 17 November 2025]
+- MockK. (2024). *MockK: Mocking library for Kotlin*. GitHub. Available at: https://mockk.io/ [Accessed 17 November 2025]
+
+### Inspiration & Research
+
+**Wardrobe Management Apps:**
+- Whering. (2025). *Whering - Your Digital Wardrobe*. Available at: https://whering.co.uk/ [Accessed 17 November 2025]
+- FITS. (2025). *FITS App - AI Wardrobe Manager*. Available at: https://www.fitsyourapps.com/ [Accessed 17 November 2025]
+- Acloset. (2025). *Acloset - Digital Closet App*. Available at: https://acloset.app/ [Accessed 17 November 2025]
+
+**Design Patterns & Best Practices:**
+- Android Developers. (2024). *App Architecture: UI Layer*. Google. Available at: https://developer.android.com/topic/architecture/ui-layer [Accessed 17 November 2025]
+- Android Developers. (2024). *App Architecture: Data Layer*. Google. Available at: https://developer.android.com/topic/architecture/data-layer [Accessed 17 November 2025]
+- Fowler, M. (2024). *Patterns of Enterprise Application Architecture*. MartinFowler.com. Available at: https://martinfowler.com/eaaCatalog/ [Accessed 17 November 2025]
+
+### Security & Privacy
+
+- Android Developers. (2024). *Security Best Practices*. Google. Available at: https://developer.android.com/privacy-and-security/security-tips [Accessed 17 November 2025]
+- Android Developers. (2024). *App security best practices*. Google. Available at: https://developer.android.com/topic/security/best-practices [Accessed 17 November 2025]
+
+### Academic References
+
+**Software Engineering & Development Methodology:**
+- Sommerville, I. (2016). *Software Engineering* (10th ed.). Pearson Education Limited.
+- Pressman, R.S. & Maxim, B.R. (2020). *Software Engineering: A Practitioner's Approach* (9th ed.). McGraw-Hill Education.
 
 ---
+
 
 © 2025 Stylu Team - Cherika Bodde, Marene van der Merwe, Charné Janse van Rensburg  
 All Rights Reserved.
